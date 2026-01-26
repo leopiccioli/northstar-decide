@@ -65,7 +65,13 @@ export function DimensionSlider({ label, value, onChange, colorClass, tooltip }:
       <SliderPrimitive.Root
         className="relative flex items-center select-none touch-none w-full h-5"
         value={[value]}
-        onValueChange={([v]) => onChange(v)}
+        onValueChange={([v]) => {
+          // Haptic feedback on mobile
+          if ('vibrate' in navigator) {
+            navigator.vibrate(10);
+          }
+          onChange(v);
+        }}
         max={10}
         min={1}
         step={1}
