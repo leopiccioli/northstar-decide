@@ -68,6 +68,7 @@ export type Database = {
         Row: {
           comment: string | null
           comparison: Json | null
+          country: string | null
           created_at: string | null
           desarrollo: number
           dinero: number
@@ -92,6 +93,7 @@ export type Database = {
         Insert: {
           comment?: string | null
           comparison?: Json | null
+          country?: string | null
           created_at?: string | null
           desarrollo: number
           dinero: number
@@ -116,6 +118,7 @@ export type Database = {
         Update: {
           comment?: string | null
           comparison?: Json | null
+          country?: string | null
           created_at?: string | null
           desarrollo?: number
           dinero?: number

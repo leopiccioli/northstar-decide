@@ -5,6 +5,33 @@ import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
 import { GlobalScore } from './GlobalScore';
 import { Bookmark } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+const COUNTRIES = [
+  { code: 'AR', name: 'Argentina' },
+  { code: 'BO', name: 'Bolivia' },
+  { code: 'PY', name: 'Paraguay' },
+  { code: 'CL', name: 'Chile' },
+  { code: 'UY', name: 'Uruguay' },
+  { code: 'US', name: 'Estados Unidos' },
+  { code: 'ES', name: 'España' },
+  { code: 'CO', name: 'Colombia' },
+  { code: 'VE', name: 'Venezuela' },
+  { code: 'PE', name: 'Perú' },
+  { code: 'HN', name: 'Honduras' },
+  { code: 'CR', name: 'Costa Rica' },
+  { code: 'MX', name: 'México' },
+  { code: 'IT', name: 'Italia' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'NI', name: 'Nicaragua' },
+  { code: 'EC', name: 'Ecuador' },
+];
 
 interface ResultScreenProps {
   currentOption: Option;
@@ -109,9 +136,11 @@ function SaveSection({
   // Pre-llenar email si viene en URL y auto-expandir
   const [isExpanded, setIsExpanded] = useState(!!trackingData.email);
   const [email, setEmail] = useState(trackingData.email || '');
+  const [country, setCountry] = useState('');
   const [reminder, setReminder] = useState<ReminderPeriod>('1m');
   const [isSaving, setIsSaving] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [countryError, setCountryError] = useState('');
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -120,23 +149,33 @@ function SaveSection({
 
   const handleSave = async () => {
     const trimmedEmail = email.trim();
+    let hasError = false;
     
     if (!trimmedEmail) {
       setEmailError('Ingresá tu email');
-      return;
+      hasError = true;
+    } else if (!validateEmail(trimmedEmail)) {
+      setEmailError('Email inválido');
+      hasError = true;
+    } else {
+      setEmailError('');
     }
     
-    if (!validateEmail(trimmedEmail)) {
-      setEmailError('Email inválido');
-      return;
+    if (!country) {
+      setCountryError('Seleccioná tu país');
+      hasError = true;
+    } else {
+      setCountryError('');
     }
 
-    setEmailError('');
+    if (hasError) return;
+
     setIsSaving(true);
 
     try {
       const payload = {
         email: trimmedEmail,
+        country,
         optionName: currentOption.name,
         scores: currentOption.scores,
         comment: currentOption.comment,
@@ -183,6 +222,7 @@ function SaveSection({
 
       setIsExpanded(false);
       setEmail('');
+      setCountry('');
       setReminder('1m');
     } catch (error) {
       console.error('Save error:', error);
@@ -235,6 +275,28 @@ function SaveSection({
         />
         {emailError && (
           <p className="text-sm text-destructive">{emailError}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">País</label>
+        <Select value={country} onValueChange={(val) => {
+          setCountry(val);
+          if (countryError) setCountryError('');
+        }}>
+          <SelectTrigger className={`w-full ${countryError ? 'border-destructive' : ''}`}>
+            <SelectValue placeholder="Seleccioná tu país" />
+          </SelectTrigger>
+          <SelectContent>
+            {COUNTRIES.map((c) => (
+              <SelectItem key={c.code} value={c.code}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {countryError && (
+          <p className="text-sm text-destructive">{countryError}</p>
         )}
       </div>
 

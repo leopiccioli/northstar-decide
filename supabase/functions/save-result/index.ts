@@ -25,6 +25,7 @@ interface Comparison {
 
 interface SaveResultRequest {
   email: string;
+  country?: string;
   optionName: string;
   scores: Scores;
   comment?: string;
@@ -317,6 +318,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('records_3d')
       .insert({
         email: body.email.toLowerCase(),
+        country: body.country || null,
         option_name: body.optionName,
         dinero: body.scores.dinero,
         desarrollo: body.scores.desarrollo,
