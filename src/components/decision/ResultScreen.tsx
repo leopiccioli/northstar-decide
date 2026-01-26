@@ -104,12 +104,14 @@ function SaveSection({
   currentOption: Option; 
   comparisonOption: Option | null;
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [email, setEmail] = useState('');
+  const trackingData = useTrackingData();
+  
+  // Pre-llenar email si viene en URL y auto-expandir
+  const [isExpanded, setIsExpanded] = useState(!!trackingData.email);
+  const [email, setEmail] = useState(trackingData.email || '');
   const [reminder, setReminder] = useState<ReminderPeriod>('1m');
   const [isSaving, setIsSaving] = useState(false);
   const [emailError, setEmailError] = useState('');
-  const trackingData = useTrackingData();
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

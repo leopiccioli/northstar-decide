@@ -9,6 +9,7 @@ export interface TrackingData {
   gclid: string | null;
   fbclid: string | null;
   referrer: string | null;
+  email: string | null;
 }
 
 export function useTrackingData(): TrackingData {
@@ -24,6 +25,7 @@ export function useTrackingData(): TrackingData {
       gclid: params.get('gclid'),
       fbclid: params.get('fbclid'),
       referrer: document.referrer || null,
+      email: params.get('email'),
     };
   }, []);
 }
