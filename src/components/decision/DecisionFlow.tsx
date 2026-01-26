@@ -24,26 +24,26 @@ export function DecisionFlow() {
     setState(prev => ({ ...prev, context, step: 'input' }));
   };
 
-  const handleInputComplete = (name: string, scores: Scores) => {
+  const handleInputComplete = (name: string, scores: Scores, comment?: string) => {
     if (state.context === 'compare' && !state.currentOption) {
       // First option in comparison flow
       setState(prev => ({
         ...prev,
-        currentOption: { name: 'Opción A', scores },
+        currentOption: { name: 'Opción A', scores, comment },
         step: 'input-comparison',
       }));
     } else if (state.step === 'input-comparison') {
       // Second option in comparison flow
       setState(prev => ({
         ...prev,
-        comparisonOption: { name, scores },
+        comparisonOption: { name, scores, comment },
         step: 'result',
       }));
     } else {
       // Single evaluation
       setState(prev => ({
         ...prev,
-        currentOption: { name, scores },
+        currentOption: { name, scores, comment },
         step: 'result',
       }));
     }
@@ -75,16 +75,18 @@ export function DecisionFlow() {
         <ContextScreen onSelect={handleContextSelect} />
       )}
       
-      {state.step === 'input' && (
+      {state.step === 'input' && state.context && (
         <InputScreen
+          context={state.context}
           isComparison={false}
           onComplete={handleInputComplete}
           onBack={handleBack}
         />
       )}
       
-      {state.step === 'input-comparison' && (
+      {state.step === 'input-comparison' && state.context && (
         <InputScreen
+          context={state.context}
           isComparison={true}
           onComplete={handleInputComplete}
           onBack={handleBack}
