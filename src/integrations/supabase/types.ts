@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      measurements: {
+      outbound_emails: {
+        Row: {
+          created_at: string
+          email_type: string
+          error_message: string | null
+          id: string
+          provider_id: string | null
+          record_id: string | null
+          scheduled_for: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          to_email: string
+        }
+        Insert: {
+          created_at?: string
+          email_type: string
+          error_message?: string | null
+          id?: string
+          provider_id?: string | null
+          record_id?: string | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          to_email: string
+        }
+        Update: {
+          created_at?: string
+          email_type?: string
+          error_message?: string | null
+          id?: string
+          provider_id?: string | null
+          record_id?: string | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          to_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outbound_emails_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "records_3d"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      records_3d: {
         Row: {
           comment: string | null
           comparison: Json | null
@@ -23,6 +73,7 @@ export type Database = {
           dinero: number
           diversion: number
           email: string
+          email_sent: boolean | null
           fbclid: string | null
           gclid: string | null
           id: string
@@ -46,6 +97,7 @@ export type Database = {
           dinero: number
           diversion: number
           email: string
+          email_sent?: boolean | null
           fbclid?: string | null
           gclid?: string | null
           id?: string
@@ -69,6 +121,7 @@ export type Database = {
           dinero?: number
           diversion?: number
           email?: string
+          email_sent?: boolean | null
           fbclid?: string | null
           gclid?: string | null
           id?: string
