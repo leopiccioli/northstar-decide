@@ -13,7 +13,7 @@ export function DimensionSlider({ label, value, onChange, colorClass }: Dimensio
     <div className="space-y-3">
       <div className="flex items-baseline justify-between">
         <span className="text-base font-medium">{label}</span>
-        <span className={cn("number-display", colorClass)}>{value}</span>
+        <span className="number-display">{value}</span>
       </div>
       
       <SliderPrimitive.Root

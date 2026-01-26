@@ -9,10 +9,9 @@ interface ResultScreenProps {
   onRestart: () => void;
 }
 
-function ScoreBar({ label, value, colorClass, maxValue = 10 }: { 
+function ScoreBar({ label, value, maxValue = 10 }: { 
   label: string; 
   value: number; 
-  colorClass: string;
   maxValue?: number;
 }) {
   const percentage = (value / maxValue) * 100;
@@ -21,11 +20,11 @@ function ScoreBar({ label, value, colorClass, maxValue = 10 }: {
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
         <span className="text-sm font-medium">{label}</span>
-        <span className={`font-mono text-lg ${colorClass}`}>{value}</span>
+        <span className="font-mono text-lg">{value}</span>
       </div>
       <div className="h-3 bg-secondary rounded-sm overflow-hidden">
         <div 
-          className={`result-bar ${colorClass.replace('text-', 'bar-')}`}
+          className="result-bar bg-foreground"
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -42,9 +41,9 @@ function ComparisonTable({ a, b }: { a: Option; b: Option }) {
   };
 
   const rows = [
-    { key: 'dinero' as const, label: 'Dinero', color: 'text-dinero' },
-    { key: 'desarrollo' as const, label: 'Desarrollo', color: 'text-desarrollo' },
-    { key: 'diversion' as const, label: 'Diversión', color: 'text-diversion' },
+    { key: 'dinero' as const, label: 'Dinero' },
+    { key: 'desarrollo' as const, label: 'Desarrollo' },
+    { key: 'diversion' as const, label: 'Diversión' },
   ];
 
   return (
@@ -61,7 +60,7 @@ function ComparisonTable({ a, b }: { a: Option; b: Option }) {
         <tbody>
           {rows.map(row => (
             <tr key={row.key} className="border-b border-border last:border-0">
-              <td className={`px-4 py-3 font-medium ${row.color}`}>{row.label}</td>
+              <td className="px-4 py-3 font-medium">{row.label}</td>
               <td className="px-4 py-3 text-center font-mono">{a.scores[row.key]}</td>
               <td className="px-4 py-3 text-center font-mono">{b.scores[row.key]}</td>
               <td className="px-4 py-3 text-center font-mono text-muted-foreground">
@@ -158,17 +157,14 @@ export function ResultScreen({
               <ScoreBar 
                 label="Dinero" 
                 value={currentOption.scores.dinero} 
-                colorClass="text-dinero" 
               />
               <ScoreBar 
                 label="Desarrollo" 
                 value={currentOption.scores.desarrollo} 
-                colorClass="text-desarrollo" 
               />
               <ScoreBar 
                 label="Diversión" 
-                value={currentOption.scores.diversion} 
-                colorClass="text-diversion" 
+                value={currentOption.scores.diversion}
               />
             </div>
           </div>
