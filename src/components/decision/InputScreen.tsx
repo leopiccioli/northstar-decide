@@ -66,7 +66,7 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
               tooltip={{
                 title: "Libertad financiera hoy.",
                 bullets: [
-                  "¿Vivís tranquilo sin estrés por plata?",
+                  "Tus ingresos te permiten vivir sin estrés por plata",
                   "¿Podés ahorrar o invertir?",
                   "¿Tenés colchón si algo sale mal?"
                 ]
@@ -83,7 +83,7 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
               tooltip={{
                 title: "Cuánto aumenta tu valor futuro.",
                 bullets: [
-                  "¿Aprendés habilidades nuevas?",
+                  "En tu trabajo aprendés habilidades nuevas",
                   "¿Te abre más oportunidades o contactos?",
                   "¿Te hace más empleable en 2–3 años?"
                 ]
