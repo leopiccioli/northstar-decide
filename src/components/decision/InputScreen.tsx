@@ -94,13 +94,13 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
         {questionText && (
           <div className="space-y-2 animate-fade-up opacity-0 stagger-4">
             <label className="text-subtle block">{questionText} (opcional)</label>
-            <textarea
+            <input
+              type="text"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="..."
-              rows={2}
+              placeholder="ej: exceso de trabajo, poco sueldo, falta de desafíos"
               className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
-                         text-foreground placeholder:text-muted-foreground resize-none
+                         text-foreground placeholder:text-muted-foreground
                          focus:outline-none focus:ring-1 focus:ring-foreground"
             />
           </div>
@@ -116,6 +116,9 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
             disabled={showNameInput && !name.trim()}
             className="btn-primary flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
           >
+            Ver resultado
+          </button>
+        </div>
             Continuar
           </button>
         </div>
