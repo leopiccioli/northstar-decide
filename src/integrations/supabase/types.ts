@@ -14,7 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      measurements: {
+        Row: {
+          comment: string | null
+          comparison: Json | null
+          created_at: string | null
+          desarrollo: number
+          dinero: number
+          diversion: number
+          email: string
+          fbclid: string | null
+          gclid: string | null
+          id: string
+          ip_address: string | null
+          option_name: string
+          referrer: string | null
+          reminder_date: string | null
+          reminder_period: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          comment?: string | null
+          comparison?: Json | null
+          created_at?: string | null
+          desarrollo: number
+          dinero: number
+          diversion: number
+          email: string
+          fbclid?: string | null
+          gclid?: string | null
+          id?: string
+          ip_address?: string | null
+          option_name: string
+          referrer?: string | null
+          reminder_date?: string | null
+          reminder_period?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          comment?: string | null
+          comparison?: Json | null
+          created_at?: string | null
+          desarrollo?: number
+          dinero?: number
+          diversion?: number
+          email?: string
+          fbclid?: string | null
+          gclid?: string | null
+          id?: string
+          ip_address?: string | null
+          option_name?: string
+          referrer?: string | null
+          reminder_date?: string | null
+          reminder_period?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
