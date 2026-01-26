@@ -5,13 +5,15 @@ import { DimensionSlider } from './DimensionSlider';
 interface InputScreenProps {
   context: UserContext;
   isComparison?: boolean;
+  isFirstComparison?: boolean;
   optionName?: string;
   onComplete: (name: string, scores: Scores, comment?: string) => void;
   onBack: () => void;
 }
 
-export function InputScreen({ context, isComparison, optionName, onComplete, onBack }: InputScreenProps) {
-  const [name, setName] = useState(optionName || (isComparison ? '' : 'Situación actual'));
+export function InputScreen({ context, isComparison, isFirstComparison, optionName, onComplete, onBack }: InputScreenProps) {
+  const showNameInput = isComparison || isFirstComparison;
+  const [name, setName] = useState(optionName || (showNameInput ? '' : 'Situación actual'));
   const [comment, setComment] = useState('');
   const [scores, setScores] = useState<Scores>({
     dinero: 5,
@@ -20,7 +22,7 @@ export function InputScreen({ context, isComparison, optionName, onComplete, onB
   });
 
   const handleSubmit = () => {
-    if (isComparison && !name.trim()) return;
+    if (showNameInput && !name.trim()) return;
     onComplete(name || 'Situación actual', scores, comment || undefined);
   };
 
@@ -30,13 +32,17 @@ export function InputScreen({ context, isComparison, optionName, onComplete, onB
 
   const questionText = contextQuestions[context];
 
+  const headerText = isFirstComparison 
+    ? 'Cargá la primera opción' 
+    : 'Ahora cargá la otra opción';
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 pb-16">
       <div className="max-w-md w-full space-y-10">
         {/* Header for comparison */}
-        {isComparison && (
+        {showNameInput && (
           <div className="space-y-4 animate-fade-up opacity-0">
-            <p className="text-subtle">Ahora cargá la otra opción</p>
+            <p className="text-subtle">{headerText}</p>
             <input
               type="text"
               value={name}
@@ -105,7 +111,7 @@ export function InputScreen({ context, isComparison, optionName, onComplete, onB
           </button>
           <button
             onClick={handleSubmit}
-            disabled={isComparison && !name.trim()}
+            disabled={showNameInput && !name.trim()}
             className="btn-primary flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Continuar
