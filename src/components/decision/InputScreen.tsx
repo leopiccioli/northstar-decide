@@ -119,9 +119,6 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
             Ver resultado
           </button>
         </div>
-            Continuar
-          </button>
-        </div>
       </div>
 
       {/* Copyright */}
