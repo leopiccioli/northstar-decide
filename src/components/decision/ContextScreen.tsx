@@ -5,15 +5,17 @@ interface ContextScreenProps {
 }
 
 const options: { id: UserContext; label: string }[] = [
-  { id: 'evaluate', label: 'Evaluar mi situación actual' },
-  { id: 'compare', label: 'Comparar dos opciones' },
-  { id: 'clarity', label: 'Estoy confundido, necesito claridad' },
+  { id: 'improve', label: 'Quiero mejorar mi trabajo actual' },
+  { id: 'change', label: 'Estoy pensando en cambiar de trabajo' },
+  { id: 'compare', label: 'Comparar dos opciones (oferta / ascenso / cambio)' },
+  { id: 'burnout', label: 'Me siento estancado o agotado' },
+  { id: 'check', label: 'Solo quiero chequear cómo estoy' },
 ];
 
 export function ContextScreen({ onSelect }: ContextScreenProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
-      <div className="max-w-md w-full space-y-4">
+      <div className="max-w-md w-full space-y-3">
         {options.map((option, index) => (
           <button
             key={option.id}
@@ -21,7 +23,7 @@ export function ContextScreen({ onSelect }: ContextScreenProps) {
             className={`card-option animate-fade-up opacity-0`}
             style={{ animationDelay: `${index * 0.05}s` }}
           >
-            <span className="text-lg font-medium">{option.label}</span>
+            <span className="text-base font-medium">{option.label}</span>
           </button>
         ))}
       </div>
