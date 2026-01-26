@@ -5,6 +5,7 @@ import { ContextScreen } from './ContextScreen';
 import { InputScreen } from './InputScreen';
 import { ResultScreen } from './ResultScreen';
 import { CloseScreen } from './CloseScreen';
+import { ProgressIndicator } from './ProgressIndicator';
 
 const initialState: DecisionState = {
   context: null,
@@ -12,6 +13,19 @@ const initialState: DecisionState = {
   comparisonOption: null,
   step: 'entry',
 };
+
+function getStepNumber(step: DecisionState['step'], isCompare: boolean): number {
+  if (step === 'entry') return 0;
+  if (step === 'context') return 1;
+  if (step === 'input') return 2;
+  if (step === 'input-comparison') return 3;
+  if (step === 'result') return isCompare ? 4 : 3;
+  return 0;
+}
+
+function getTotalSteps(isCompare: boolean): number {
+  return isCompare ? 4 : 3;
+}
 
 export function DecisionFlow() {
   const [state, setState] = useState<DecisionState>(initialState);
@@ -65,8 +79,20 @@ export function DecisionFlow() {
     }
   };
 
+  const isCompare = state.context === 'compare';
+  const stepNumber = getStepNumber(state.step, isCompare);
+  const totalSteps = getTotalSteps(isCompare);
+  const showProgress = state.step !== 'entry' && state.step !== 'close' && state.step !== 'result';
+
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background relative">
+      {/* Progress indicator */}
+      {showProgress && (
+        <div className="absolute top-6 right-6 z-10">
+          <ProgressIndicator currentStep={stepNumber} totalSteps={totalSteps} />
+        </div>
+      )}
+
       {state.step === 'entry' && (
         <EntryScreen onStart={handleStart} />
       )}

@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
+import { GlobalScore } from './GlobalScore';
+import { Bookmark } from 'lucide-react';
 
 interface ResultScreenProps {
   currentOption: Option;
@@ -48,6 +50,12 @@ function ComparisonTable({ a, b }: { a: Option; b: Option }) {
     return '=';
   };
 
+  const getWinner = (key: keyof typeof a.scores): 'a' | 'b' | 'tie' => {
+    if (a.scores[key] > b.scores[key]) return 'a';
+    if (b.scores[key] > a.scores[key]) return 'b';
+    return 'tie';
+  };
+
   const rows = [
     { key: 'dinero' as const, label: 'Dinero' },
     { key: 'desarrollo' as const, label: 'Desarrollo' },
@@ -66,16 +74,23 @@ function ComparisonTable({ a, b }: { a: Option; b: Option }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map(row => (
-            <tr key={row.key} className="border-b border-border last:border-0">
-              <td className="px-4 py-3 font-medium">{row.label}</td>
-              <td className="px-4 py-3 text-center font-mono">{a.scores[row.key]}</td>
-              <td className="px-4 py-3 text-center font-mono">{b.scores[row.key]}</td>
-              <td className="px-4 py-3 text-center font-mono text-muted-foreground">
-                {getDiff(row.key)}
-              </td>
-            </tr>
-          ))}
+          {rows.map(row => {
+            const winner = getWinner(row.key);
+            return (
+              <tr key={row.key} className="border-b border-border last:border-0">
+                <td className="px-4 py-3 font-medium">{row.label}</td>
+                <td className={`px-4 py-3 text-center font-mono ${winner === 'a' ? 'font-bold' : ''}`}>
+                  {a.scores[row.key]}
+                </td>
+                <td className={`px-4 py-3 text-center font-mono ${winner === 'b' ? 'font-bold' : ''}`}>
+                  {b.scores[row.key]}
+                </td>
+                <td className="px-4 py-3 text-center font-mono text-muted-foreground">
+                  {getDiff(row.key)}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -169,6 +184,7 @@ function SaveSection({
       setReminder('1m');
     } catch (error) {
       console.error('Save error:', error);
+      // Keep email on error - don't clear it
       toast({
         title: "Error",
         description: "No pudimos guardar tu resultado. Intentá de nuevo.",
@@ -183,9 +199,12 @@ function SaveSection({
     return (
       <button 
         onClick={() => setIsExpanded(true)}
-        className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 
+                   text-sm font-medium bg-secondary text-foreground border border-border 
+                   rounded-sm transition-all hover:bg-muted hover:border-foreground/30"
       >
-        Guardar para después →
+        <Bookmark className="w-4 h-4" />
+        Guardar para después
       </button>
     );
   }
@@ -284,6 +303,9 @@ export function ResultScreen({
               />
             </div>
 
+            {/* Global score */}
+            <GlobalScore scores={currentOption.scores} />
+
             {currentOption.comment && (
               <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
                 "{currentOption.comment}"
@@ -296,6 +318,12 @@ export function ResultScreen({
         {comparisonOption && (
           <div className="space-y-6 animate-fade-up">
             <ComparisonTable a={currentOption} b={comparisonOption} />
+            
+            {/* Global scores for comparison */}
+            <div className="grid grid-cols-2 gap-3">
+              <GlobalScore scores={currentOption.scores} label={currentOption.name} />
+              <GlobalScore scores={comparisonOption.scores} label={comparisonOption.name} />
+            </div>
             
             {(currentOption.comment || comparisonOption.comment) && (
               <div className="space-y-3">
