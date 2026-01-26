@@ -1,6 +1,8 @@
 import { Option } from '@/types/decision';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { useTrackingData } from '@/hooks/useTrackingData';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ResultScreenProps {
   currentOption: Option;
@@ -91,26 +93,84 @@ function SaveSection({
   const [email, setEmail] = useState('');
   const [reminder, setReminder] = useState<ReminderPeriod>('1m');
   const [isSaving, setIsSaving] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const trackingData = useTrackingData();
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleSave = async () => {
-    if (!email.trim()) return;
+    const trimmedEmail = email.trim();
+    
+    if (!trimmedEmail) {
+      setEmailError('Ingresá tu email');
+      return;
+    }
+    
+    if (!validateEmail(trimmedEmail)) {
+      setEmailError('Email inválido');
+      return;
+    }
 
+    setEmailError('');
     setIsSaving(true);
-    
-    // Simulate save - in production this would call an edge function
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: "Resultado guardado",
-      description: reminder !== 'none'
-        ? `Te avisaremos ${reminderOptions.find(r => r.id === reminder)?.label.toLowerCase()}.`
-        : "Revisá tu email.",
-    });
-    
-    setIsSaving(false);
-    setIsExpanded(false);
-    setEmail('');
-    setReminder('1m');
+
+    try {
+      const payload = {
+        email: trimmedEmail,
+        optionName: currentOption.name,
+        scores: currentOption.scores,
+        comment: currentOption.comment,
+        comparison: comparisonOption ? {
+          name: comparisonOption.name,
+          dinero: comparisonOption.scores.dinero,
+          desarrollo: comparisonOption.scores.desarrollo,
+          diversion: comparisonOption.scores.diversion,
+          comment: comparisonOption.comment,
+        } : undefined,
+        reminderPeriod: reminder !== 'none' ? reminder : undefined,
+        tracking: {
+          utm_source: trackingData.utm_source,
+          utm_medium: trackingData.utm_medium,
+          utm_campaign: trackingData.utm_campaign,
+          utm_content: trackingData.utm_content,
+          utm_term: trackingData.utm_term,
+          gclid: trackingData.gclid,
+          fbclid: trackingData.fbclid,
+          referrer: trackingData.referrer,
+        },
+      };
+
+      const { data, error } = await supabase.functions.invoke('save-result', {
+        body: payload,
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Error al guardar');
+      }
+
+      toast({
+        title: "Resultado guardado",
+        description: reminder !== 'none'
+          ? `Te avisaremos ${reminderOptions.find(r => r.id === reminder)?.label.toLowerCase()}.`
+          : "Revisá tu email.",
+      });
+
+      setIsExpanded(false);
+      setEmail('');
+      setReminder('1m');
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        title: "Error",
+        description: "No pudimos guardar tu resultado. Intentá de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!isExpanded) {
@@ -136,12 +196,19 @@ function SaveSection({
         <input
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (emailError) setEmailError('');
+          }}
           placeholder="email@ejemplo.com"
-          className="w-full px-4 py-3 bg-background border border-border rounded-sm
+          className={`w-full px-4 py-3 bg-background border rounded-sm
                      text-foreground placeholder:text-muted-foreground
-                     focus:outline-none focus:ring-1 focus:ring-foreground"
+                     focus:outline-none focus:ring-1 focus:ring-foreground
+                     ${emailError ? 'border-destructive' : 'border-border'}`}
         />
+        {emailError && (
+          <p className="text-sm text-destructive">{emailError}</p>
+        )}
       </div>
 
       <div className="space-y-2">
