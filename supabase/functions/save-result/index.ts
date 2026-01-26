@@ -1,12 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Resend } from "resend";
+import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-version",
 };
 
 interface Scores {
@@ -78,7 +78,6 @@ function buildEmailContent(
   let content = `Tu medicion de hoy:\n\n`;
 
   if (comparison) {
-    // Comparison mode
     content += `${currentName}:\n`;
     content += `Dinero: ${currentScores.dinero}\n`;
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
@@ -91,7 +90,6 @@ function buildEmailContent(
 
     content += `Listo. Lo guarde para que puedas volver cuando quieras.\n\nLeo`;
   } else if (previousMeasurement) {
-    // Has history
     content += `Dinero: ${currentScores.dinero}\n`;
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
     content += `Diversion: ${currentScores.diversion}\n\n`;
@@ -108,7 +106,6 @@ function buildEmailContent(
 
     content += `Listo. Sigo guardando tu historial para que puedas compararte mas adelante.\n\nLeo`;
   } else {
-    // First time
     content += `Dinero: ${currentScores.dinero}\n`;
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
     content += `Diversion: ${currentScores.diversion}\n\n`;
@@ -117,6 +114,93 @@ function buildEmailContent(
   }
 
   return content;
+}
+
+// Async function to send email and update tables (fire-and-forget)
+async function sendEmailAsync(
+  supabase: any, // Use any to avoid type issues with new tables
+  recordId: string,
+  email: string,
+  emailContent: string,
+  reminderPeriod?: '1m' | '3m'
+): Promise<void> {
+  const subject = "Tu medicion 3D";
+  
+  try {
+    // Create outbound_emails record for the measurement email
+    const { data: outboundEmail, error: insertError } = await supabase
+      .from('outbound_emails')
+      .insert({
+        record_id: recordId,
+        to_email: email,
+        subject: subject,
+        email_type: 'measurement',
+        status: 'pending',
+      })
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error('Error creating outbound_emails record:', insertError);
+    }
+
+    // If there's a reminder period, create a scheduled reminder email
+    if (reminderPeriod) {
+      const reminderDate = calculateReminderDate(reminderPeriod);
+      await supabase
+        .from('outbound_emails')
+        .insert({
+          record_id: recordId,
+          to_email: email,
+          subject: 'Recordatorio: Medí tu 3D',
+          email_type: 'reminder',
+          status: 'pending',
+          scheduled_for: reminderDate.toISOString(),
+        });
+    }
+
+    // Try to send email via Resend
+    const emailResponse = await resend.emails.send({
+      from: "3D <3d@3d.ceoencamiseta.com>",
+      to: [email],
+      subject: subject,
+      text: emailContent,
+    });
+
+    // Update outbound_emails with success
+    if (outboundEmail?.id) {
+      await supabase
+        .from('outbound_emails')
+        .update({
+          status: 'sent',
+          provider_id: emailResponse.data?.id || null,
+          sent_at: new Date().toISOString(),
+        })
+        .eq('id', outboundEmail.id);
+    }
+
+    // Update records_3d.email_sent = true
+    await supabase
+      .from('records_3d')
+      .update({ email_sent: true })
+      .eq('id', recordId);
+
+    console.log('Email sent successfully:', emailResponse.data?.id);
+
+  } catch (emailError: any) {
+    console.error('Email error:', emailError);
+
+    // Update outbound_emails with failure
+    await supabase
+      .from('outbound_emails')
+      .update({
+        status: 'failed',
+        error_message: emailError.message || 'Unknown error',
+      })
+      .eq('record_id', recordId)
+      .eq('email_type', 'measurement')
+      .eq('status', 'pending');
+  }
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -180,7 +264,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Rate limiting: max 10 saves per hour per IP
     const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
     const { count: recentCount } = await supabase
-      .from('measurements')
+      .from('records_3d')
       .select('*', { count: 'exact', head: true })
       .eq('ip_address', ipAddress)
       .gte('created_at', oneHourAgo);
@@ -194,7 +278,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Find previous measurement for this email (only non-comparison ones for history)
     const { data: previousMeasurements } = await supabase
-      .from('measurements')
+      .from('records_3d')
       .select('dinero, desarrollo, diversion, created_at')
       .eq('email', body.email.toLowerCase())
       .is('comparison', null)
@@ -210,9 +294,9 @@ const handler = async (req: Request): Promise<Response> => {
       ? calculateReminderDate(body.reminderPeriod)
       : null;
 
-    // Insert measurement
-    const { error: insertError } = await supabase
-      .from('measurements')
+    // Insert record into records_3d (email_sent defaults to false)
+    const { data: insertedRecord, error: insertError } = await supabase
+      .from('records_3d')
       .insert({
         email: body.email.toLowerCase(),
         option_name: body.optionName,
@@ -233,7 +317,10 @@ const handler = async (req: Request): Promise<Response> => {
         referrer: body.tracking.referrer || null,
         ip_address: ipAddress,
         user_agent: userAgent,
-      });
+        email_sent: false,
+      })
+      .select('id')
+      .single();
 
     if (insertError) {
       console.error('Insert error:', insertError);
@@ -243,7 +330,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Build and send email
+    // Build email content for async sending
     const emailContent = buildEmailContent(
       body.optionName,
       body.scores,
@@ -251,20 +338,33 @@ const handler = async (req: Request): Promise<Response> => {
       previousMeasurement
     );
 
-    try {
-      await resend.emails.send({
-        from: "3D <3d@3d.ceoencamiseta.com>",
-        to: [body.email],
-        subject: "Tu medicion 3D",
-        text: emailContent,
-      });
-    } catch (emailError) {
-      console.error('Email error:', emailError);
-      // Don't fail the whole request if email fails - data is saved
+    // Fire-and-forget: send email asynchronously without blocking the response
+    // We use EdgeRuntime.waitUntil if available, otherwise just fire and forget
+    const emailPromise = sendEmailAsync(
+      supabase,
+      insertedRecord.id,
+      body.email.toLowerCase(),
+      emailContent,
+      body.reminderPeriod
+    );
+
+    // Try to use waitUntil if available (Deno Deploy / Supabase Edge Functions)
+    // @ts-ignore - waitUntil may not be typed
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(emailPromise);
+    } else {
+      // Fire and forget - don't await
+      emailPromise.catch(err => console.error('Background email error:', err));
     }
 
+    // Respond immediately with success
     return new Response(
-      JSON.stringify({ success: true, hasHistory: !!previousMeasurement }),
+      JSON.stringify({ 
+        success: true, 
+        hasHistory: !!previousMeasurement,
+        emailPending: true // Frontend knows email is being sent in background
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 

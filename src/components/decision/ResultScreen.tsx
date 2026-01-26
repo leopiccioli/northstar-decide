@@ -151,11 +151,17 @@ function SaveSection({
         throw new Error(error.message || 'Error al guardar');
       }
 
+      // Success - show appropriate message
+      // emailPending means email is being sent in background
+      const emailPending = data?.emailPending;
+      
       toast({
         title: "Resultado guardado",
         description: reminder !== 'none'
-          ? `Te avisaremos ${reminderOptions.find(r => r.id === reminder)?.label.toLowerCase()}.`
-          : "Revisá tu email.",
+          ? `Te avisaremos ${reminderOptions.find(r => r.id === reminder)?.label.toLowerCase()}. Revisá tu email.`
+          : emailPending 
+            ? "Revisá tu email en unos segundos."
+            : "Tus datos quedaron guardados.",
       });
 
       setIsExpanded(false);
