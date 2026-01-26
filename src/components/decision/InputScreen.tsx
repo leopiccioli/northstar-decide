@@ -63,6 +63,14 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
               value={scores.dinero}
               onChange={updateScore('dinero')}
               colorClass="text-dinero"
+              tooltip={{
+                title: "Libertad financiera hoy.",
+                bullets: [
+                  "¿Vivís tranquilo sin estrés por plata?",
+                  "¿Podés ahorrar o invertir?",
+                  "¿Tenés colchón si algo sale mal?"
+                ]
+              }}
             />
           </div>
           
@@ -72,6 +80,14 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
               value={scores.desarrollo}
               onChange={updateScore('desarrollo')}
               colorClass="text-desarrollo"
+              tooltip={{
+                title: "Cuánto aumenta tu valor futuro.",
+                bullets: [
+                  "¿Aprendés habilidades nuevas?",
+                  "¿Te abre más oportunidades o contactos?",
+                  "¿Te hace más empleable en 2–3 años?"
+                ]
+              }}
             />
           </div>
           
@@ -81,6 +97,14 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
               value={scores.diversion}
               onChange={updateScore('diversion')}
               colorClass="text-diversion"
+              tooltip={{
+                title: "Qué tan bien la pasás mientras trabajás.",
+                bullets: [
+                  "¿Arrancás el día con ganas?",
+                  "¿Las tareas te energizan o te drenan?",
+                  "¿Podrías hacerlo gratis por un tiempo?"
+                ]
+              }}
             />
           </div>
         </div>
