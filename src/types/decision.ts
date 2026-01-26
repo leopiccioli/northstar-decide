@@ -12,6 +12,7 @@ export interface Scores {
 export interface Option {
   name: string;
   scores: Scores;
+  comment?: string;
 }
 
 export interface DecisionState {
@@ -20,3 +21,9 @@ export interface DecisionState {
   comparisonOption: Option | null;
   step: 'entry' | 'context' | 'input' | 'input-comparison' | 'result' | 'close';
 }
+
+export const contextQuestions: Record<UserContext, string> = {
+  evaluate: '¿Cómo te sentís laboralmente?',
+  compare: '¿Qué sensación te da esta opción?',
+  clarity: '¿Qué te gustaría que pase?',
+};

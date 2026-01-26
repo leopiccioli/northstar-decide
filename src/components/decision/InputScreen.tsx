@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Scores } from '@/types/decision';
+import { Scores, UserContext, contextQuestions } from '@/types/decision';
 import { DimensionSlider } from './DimensionSlider';
 
 interface InputScreenProps {
+  context: UserContext;
   isComparison?: boolean;
   optionName?: string;
-  onComplete: (name: string, scores: Scores) => void;
+  onComplete: (name: string, scores: Scores, comment?: string) => void;
   onBack: () => void;
 }
 
-export function InputScreen({ isComparison, optionName, onComplete, onBack }: InputScreenProps) {
+export function InputScreen({ context, isComparison, optionName, onComplete, onBack }: InputScreenProps) {
   const [name, setName] = useState(optionName || (isComparison ? '' : 'Situación actual'));
+  const [comment, setComment] = useState('');
   const [scores, setScores] = useState<Scores>({
     dinero: 5,
     desarrollo: 5,
@@ -19,15 +21,17 @@ export function InputScreen({ isComparison, optionName, onComplete, onBack }: In
 
   const handleSubmit = () => {
     if (isComparison && !name.trim()) return;
-    onComplete(name || 'Situación actual', scores);
+    onComplete(name || 'Situación actual', scores, comment || undefined);
   };
 
   const updateScore = (key: keyof Scores) => (value: number) => {
     setScores(prev => ({ ...prev, [key]: value }));
   };
 
+  const questionText = contextQuestions[context];
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 pb-16">
       <div className="max-w-md w-full space-y-10">
         {/* Header for comparison */}
         {isComparison && (
@@ -80,6 +84,20 @@ export function InputScreen({ isComparison, optionName, onComplete, onBack }: In
           Respondé intuitivo. No lo pienses mucho.
         </p>
 
+        {/* Optional comment */}
+        <div className="space-y-2 animate-fade-up opacity-0 stagger-4">
+          <label className="text-subtle block">{questionText} (opcional)</label>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="..."
+            rows={2}
+            className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
+                       text-foreground placeholder:text-muted-foreground resize-none
+                       focus:outline-none focus:ring-1 focus:ring-foreground"
+          />
+        </div>
+
         {/* Actions */}
         <div className="flex gap-4 animate-fade-up opacity-0 stagger-4">
           <button onClick={onBack} className="btn-ghost">
@@ -94,6 +112,11 @@ export function InputScreen({ isComparison, optionName, onComplete, onBack }: In
           </button>
         </div>
       </div>
+
+      {/* Copyright */}
+      <footer className="absolute bottom-6 text-subtle">
+        © {new Date().getFullYear()} @leopiccioli
+      </footer>
     </div>
   );
 }
