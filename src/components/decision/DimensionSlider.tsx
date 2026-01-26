@@ -40,10 +40,12 @@ export function DimensionSlider({ label, value, onChange, colorClass, tooltip }:
                   </button>
                 </TooltipTrigger>
                 <TooltipContent 
-                  side="top" 
-                  className="max-w-[220px] p-3 bg-card border border-border shadow-lg"
+                  side="top"
+                  sideOffset={8}
+                  className="max-w-[220px] p-3 border border-border shadow-lg z-50"
+                  style={{ backgroundColor: 'hsl(var(--card))' }}
                 >
-                  <p className="text-sm font-medium mb-2">{tooltip.title}</p>
+                  <p className="text-sm font-medium mb-2 text-foreground">{tooltip.title}</p>
                   <ul className="space-y-1">
                     {tooltip.bullets.map((bullet, i) => (
                       <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
