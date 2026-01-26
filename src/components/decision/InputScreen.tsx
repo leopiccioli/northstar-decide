@@ -90,19 +90,21 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
           Respondé intuitivo. No lo pienses mucho.
         </p>
 
-        {/* Optional comment */}
-        <div className="space-y-2 animate-fade-up opacity-0 stagger-4">
-          <label className="text-subtle block">{questionText} (opcional)</label>
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="..."
-            rows={2}
-            className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
-                       text-foreground placeholder:text-muted-foreground resize-none
-                       focus:outline-none focus:ring-1 focus:ring-foreground"
-          />
-        </div>
+        {/* Optional comment - only show if context has a question */}
+        {questionText && (
+          <div className="space-y-2 animate-fade-up opacity-0 stagger-4">
+            <label className="text-subtle block">{questionText} (opcional)</label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="..."
+              rows={2}
+              className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
+                         text-foreground placeholder:text-muted-foreground resize-none
+                         focus:outline-none focus:ring-1 focus:ring-foreground"
+            />
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-4 animate-fade-up opacity-0 stagger-4">

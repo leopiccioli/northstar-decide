@@ -1,7 +1,9 @@
 export type UserContext = 
-  | 'evaluate' 
-  | 'compare' 
-  | 'clarity';
+  | 'improve'    // Mejorar trabajo actual
+  | 'change'     // Cambiar de trabajo
+  | 'compare'    // Comparar opciones
+  | 'burnout'    // Estancado/agotado
+  | 'check';     // Solo chequear
 
 export interface Scores {
   dinero: number;
@@ -22,8 +24,11 @@ export interface DecisionState {
   step: 'entry' | 'context' | 'input' | 'input-comparison' | 'result' | 'close';
 }
 
-export const contextQuestions: Record<UserContext, string> = {
-  evaluate: '¿Cómo te sentís laboralmente?',
-  compare: '¿Qué sensación te da esta opción?',
-  clarity: '¿Qué te gustaría que pase?',
+// Prompts for optional comments (null = no comment field)
+export const contextQuestions: Record<UserContext, string | null> = {
+  improve: '¿Qué querés mejorar primero?',
+  change: '¿Qué cambio buscás?',
+  compare: null,  // Solo nombres de opciones
+  burnout: '¿Qué te pesa hoy?',
+  check: null,    // Sin comentarios
 };
