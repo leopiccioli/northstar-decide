@@ -1,125 +1,264 @@
 
-# Plan: Corregir flujo de comparacion y mostrar comentarios
+# Plan: Sistema de guardado con emails tipo recibo
 
 ## Resumen
 
-Este plan corrige dos problemas identificados en la herramienta 3D:
-
-1. **Flujo de comparacion**: Actualmente la primera opcion se guarda como "Opcion A" hardcodeado. Vamos a pedir el nombre de ambas opciones.
-
-2. **Comentarios en resultados**: Los comentarios opcionales se guardan pero no se muestran. Vamos a mostrarlos en la pantalla de resultados.
-
----
-
-## Cambios propuestos
-
-### 1. Corregir el flujo de comparacion
-
-**Problema actual:**
-- Cuando el usuario elige "Comparar dos opciones", la primera pantalla de input no pide el nombre de la opcion
-- En `DecisionFlow.tsx` linea 32, se hardcodea `name: 'Opcion A'`
-- Esto hace que en la tabla de resultados aparezca "Opcion A" en lugar del nombre real
-
-**Solucion:**
-
-En `InputScreen.tsx`:
-- Mostrar el campo de nombre tambien para la **primera opcion** del flujo de comparacion
-- Cambiar la logica: si es comparacion (primera o segunda), siempre pedir nombre
-- Agregar una nueva prop `isFirstComparison` para diferenciar primera vs segunda opcion
-- Ajustar el placeholder y texto segun corresponda
-
-En `DecisionFlow.tsx`:
-- Usar el nombre real que viene del `InputScreen` en lugar de hardcodear "Opcion A"
-- Pasar la prop `isFirstComparison={true}` a la primera pantalla de comparacion
-
-### 2. Mostrar comentarios en resultados
-
-**Problema actual:**
-- Los comentarios se guardan en `currentOption.comment` y `comparisonOption.comment`
-- Pero `ResultScreen.tsx` no los muestra en ningun lugar
-
-**Solucion:**
-
-En `ResultScreen.tsx`:
-- Para evaluacion simple: mostrar el comentario debajo de las barras de score (si existe)
-- Para comparacion: mostrar los comentarios de ambas opciones debajo de la tabla (si existen)
-- Usar un estilo sutil (texto gris, italica) para que no compita con los insights
+Implementar el sistema completo de guardado de mediciones con:
+- Base de datos con tracking completo (UTMs, gclid, fbclid, IP)
+- Campo JSON para comparaciones (1 registro = 1 medicion completa)
+- Edge function que envia emails tipo "recibo del banco"
+- Scores de 1 a 10 (sin cero)
 
 ---
 
-## Detalles tecnicos
+## 1. Habilitar Lovable Cloud
 
-### Archivo: `src/components/decision/InputScreen.tsx`
+Necesitamos Cloud activo para la base de datos y edge functions.
 
-```text
+---
+
+## 2. Base de datos
+
+### Tabla: `measurements`
+
+```sql
+CREATE TABLE measurements (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL,
+  
+  -- Opcion evaluada (situacion actual)
+  option_name text NOT NULL,
+  dinero integer NOT NULL CHECK (dinero >= 1 AND dinero <= 10),
+  desarrollo integer NOT NULL CHECK (desarrollo >= 1 AND desarrollo <= 10),
+  diversion integer NOT NULL CHECK (diversion >= 1 AND diversion <= 10),
+  comment text,
+  
+  -- Comparacion (opcional) - contiene la segunda opcion
+  comparison jsonb,
+  
+  -- Recordatorio
+  reminder_period text CHECK (reminder_period IN ('1m', '3m')),
+  reminder_date timestamptz,
+  
+  -- UTMs
+  utm_source text,
+  utm_medium text,
+  utm_campaign text,
+  utm_content text,
+  utm_term text,
+  
+  -- Click IDs
+  gclid text,
+  fbclid text,
+  
+  -- Tracking adicional
+  referrer text,
+  ip_address text,
+  user_agent text,
+  
+  created_at timestamptz DEFAULT now()
+);
+
+-- Indices
+CREATE INDEX idx_measurements_email ON measurements(email);
+CREATE INDEX idx_measurements_ip ON measurements(ip_address);
+CREATE INDEX idx_measurements_reminder ON measurements(reminder_date) 
+  WHERE reminder_date IS NOT NULL;
+```
+
+### Estructura del campo `comparison`
+
+Cuando es una comparacion, el campo contiene:
+```json
+{
+  "name": "Startup",
+  "dinero": 8,
+  "desarrollo": 7,
+  "diversion": 9,
+  "comment": "Mas autonomia"
+}
+```
+
+Cuando es evaluacion simple: `comparison = null`
+
+---
+
+## 3. Edge Function: `save-result`
+
+### Request body esperado
+
+```typescript
+interface SaveResultRequest {
+  email: string;
+  optionName: string;
+  scores: { dinero: number; desarrollo: number; diversion: number };
+  comment?: string;
+  comparison?: {
+    name: string;
+    dinero: number;
+    desarrollo: number;
+    diversion: number;
+    comment?: string;
+  };
+  reminderPeriod?: '1m' | '3m';
+  tracking: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_content?: string;
+    utm_term?: string;
+    gclid?: string;
+    fbclid?: string;
+    referrer?: string;
+  };
+}
+```
+
+### Logica
+
+1. Validar email y scores (1-10)
+2. Capturar IP y user-agent del request
+3. Rate limiting: max 10 guardados/hora por IP
+4. Calcular `reminder_date` si hay `reminderPeriod`
+5. Buscar medicion anterior del mismo email
+6. Insertar en DB
+7. Enviar email via Resend segun caso
+
+### Emails
+
+**Asunto:** `Tu medicion 3D`
+
+**Caso A - Primera vez (sin historial):**
+```
+Tu medicion de hoy:
+
+Dinero: 8
+Desarrollo: 2
+Diversion: 8
+
+Listo. Lo guarde para que puedas volver cuando quieras.
+
+Leo
+```
+
+**Caso A con comparacion:**
+```
+Tu medicion de hoy:
+
+Mi trabajo actual:
+Dinero: 6
+Desarrollo: 4
+Diversion: 5
+
+Startup:
+Dinero: 5
+Desarrollo: 8
+Diversion: 7
+
+Listo. Lo guarde para que puedas volver cuando quieras.
+
+Leo
+```
+
+**Caso B - Con historial:**
+```
+Tu medicion de hoy:
+
+Dinero: 8
+Desarrollo: 2
+Diversion: 8
+
+Anterior:
+Dinero: 7
+Desarrollo: 3
+Diversion: 6
+
 Cambios:
-1. Agregar prop `isFirstComparison?: boolean`
-2. Modificar la condicion del header para mostrar input de nombre:
-   - Antes: solo si `isComparison`
-   - Ahora: si `isComparison` O si `isFirstComparison`
-3. Cambiar textos segun el caso:
-   - Primera opcion: "Carga la primera opcion"
-   - Segunda opcion: "Ahora carga la otra opcion"
-4. Ajustar el valor inicial de `name`: string vacio para ambos casos de comparacion
-```
+Dinero +1
+Desarrollo -1
+Diversion +2
 
-### Archivo: `src/components/decision/DecisionFlow.tsx`
+Listo. Sigo guardando tu historial para que puedas compararte mas adelante.
 
-```text
-Cambios:
-1. Linea 32: cambiar `name: 'Opcion A'` por `name` (el valor real del input)
-2. Linea 79-84: agregar prop `isFirstComparison={state.context === 'compare'}` 
-   al InputScreen del step 'input'
-```
-
-### Archivo: `src/components/decision/ResultScreen.tsx`
-
-```text
-Cambios:
-1. En la seccion de resultado simple (lineas 151-171):
-   - Agregar debajo de las barras un bloque condicional
-   - Si `currentOption.comment` existe, mostrar el comentario
-
-2. En la seccion de comparacion (lineas 173-178):
-   - Agregar debajo de la tabla un bloque para comentarios
-   - Mostrar comentario de opcion A si existe
-   - Mostrar comentario de opcion B si existe
-
-Estructura del comentario:
-<blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
-  "{comment}"
-</blockquote>
+Leo
 ```
 
 ---
 
-## Flujo corregido
+## 4. Frontend
 
-```text
-COMPARACION (nuevo flujo):
-1. Usuario elige "Comparar dos opciones"
-2. Pantalla input con:
-   - Texto: "Carga la primera opcion"
-   - Campo nombre (obligatorio)
-   - Sliders 3D
-   - Comentario opcional
-3. Pantalla input con:
-   - Texto: "Ahora carga la otra opcion"  
-   - Campo nombre (obligatorio)
-   - Sliders 3D
-   - Comentario opcional
-4. Resultado con:
-   - Tabla mostrando nombres reales
-   - Comentarios de ambas opciones (si existen)
-   - Insights de comparacion
+### Hook: `useTrackingData.ts`
+
+Captura UTMs, gclid, fbclid y referrer al cargar la app:
+
+```typescript
+export function useTrackingData() {
+  const params = new URLSearchParams(window.location.search);
+  
+  return {
+    utm_source: params.get('utm_source'),
+    utm_medium: params.get('utm_medium'),
+    utm_campaign: params.get('utm_campaign'),
+    utm_content: params.get('utm_content'),
+    utm_term: params.get('utm_term'),
+    gclid: params.get('gclid'),
+    fbclid: params.get('fbclid'),
+    referrer: document.referrer || null,
+  };
+}
 ```
+
+### Actualizar `ResultScreen.tsx`
+
+- Importar hook de tracking
+- Validar formato de email con regex
+- Llamar a edge function en `handleSave`
+- Manejar estados: guardando, exito, error
+
+### Actualizar `DimensionSlider.tsx`
+
+- Cambiar rango de 0-10 a 1-10
+- Valor inicial: 5
 
 ---
 
-## Archivos a modificar
+## 5. Configuracion Resend
 
-| Archivo | Tipo de cambio |
-|---------|----------------|
-| `src/components/decision/InputScreen.tsx` | Agregar prop, ajustar logica de UI |
-| `src/components/decision/DecisionFlow.tsx` | Usar nombre real, pasar nueva prop |
-| `src/components/decision/ResultScreen.tsx` | Agregar seccion de comentarios |
+Necesitas:
+1. API Key de https://resend.com/api-keys
+2. Dominio verificado en https://resend.com/domains
+
+El API key se guardara como secret `RESEND_API_KEY`.
+
+---
+
+## Archivos a crear/modificar
+
+| Archivo | Accion |
+|---------|--------|
+| Migracion SQL | Crear tabla measurements |
+| `supabase/functions/save-result/index.ts` | Crear edge function |
+| `supabase/config.toml` | Configurar verify_jwt = false |
+| `src/hooks/useTrackingData.ts` | Nuevo hook |
+| `src/components/decision/ResultScreen.tsx` | Conectar con edge function |
+| `src/components/decision/DimensionSlider.tsx` | Cambiar min a 1 |
+
+---
+
+## Secuencia de implementacion
+
+1. Habilitar Lovable Cloud
+2. Crear migracion SQL
+3. Pedir API key de Resend
+4. Crear edge function
+5. Crear hook de tracking
+6. Actualizar frontend
+7. Probar flujo completo
+
+---
+
+## Proximos pasos inmediatos
+
+1. Habilita Lovable Cloud (boton en el chat)
+2. Comparti tu API key de Resend
+3. Decime que dominio vas a usar para el "from" del email (ej: `noreply@tudominio.com`)
