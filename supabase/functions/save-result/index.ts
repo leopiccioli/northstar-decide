@@ -261,17 +261,35 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Rate limiting: max 10 saves per hour per IP
+    // Rate limiting: stricter limits to prevent abuse
     const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
-    const { count: recentCount } = await supabase
+    const fifteenMinutesAgo = new Date(Date.now() - 900000).toISOString();
+    const normalizedEmail = body.email.toLowerCase();
+
+    // Check per-IP rate limit: max 3 submissions per hour
+    const { count: ipCount } = await supabase
       .from('records_3d')
       .select('*', { count: 'exact', head: true })
       .eq('ip_address', ipAddress)
       .gte('created_at', oneHourAgo);
 
-    if (recentCount && recentCount >= 10) {
+    if (ipCount && ipCount >= 3) {
       return new Response(
-        JSON.stringify({ error: "Demasiadas solicitudes. Intenta mas tarde." }),
+        JSON.stringify({ error: "Demasiadas solicitudes desde esta conexion. Intenta mas tarde." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check per-email rate limit: max 1 submission per 15 minutes
+    const { count: emailCount } = await supabase
+      .from('records_3d')
+      .select('*', { count: 'exact', head: true })
+      .eq('email', normalizedEmail)
+      .gte('created_at', fifteenMinutesAgo);
+
+    if (emailCount && emailCount >= 1) {
+      return new Response(
+        JSON.stringify({ error: "Ya guardaste una medicion recientemente. Espera 15 minutos." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
