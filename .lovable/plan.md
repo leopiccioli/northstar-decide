@@ -1,91 +1,108 @@
 
-# Pre-llenado de Email desde URL
+# Agregar Campo de País al Formulario de Guardado
 
 ## Objetivo
-Cuando un usuario llegue con `?email=xx@xx.com` en la URL, el campo de email en la sección de guardado se pre-llenará automáticamente. Esto mejora la experiencia para usuarios que vienen desde emails de recordatorio o campañas.
+Agregar un selector de país obligatorio junto al campo de email en la sección de guardado de resultados. Esto permitirá segmentar usuarios por ubicación geográfica para análisis y posibles campañas futuras.
 
 ## Cambios Propuestos
 
-### 1. Extender el hook `useTrackingData`
-**Archivo:** `src/hooks/useTrackingData.ts`
+### 1. Agregar columna `country` a la base de datos
+**Tabla:** `records_3d`
 
-Agregar `email` al interface y al return del hook:
-
-```typescript
-export interface TrackingData {
-  // ... campos existentes ...
-  email: string | null;  // NUEVO
-}
-
-export function useTrackingData(): TrackingData {
-  return useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    
-    return {
-      // ... campos existentes ...
-      email: params.get('email'),  // NUEVO
-    };
-  }, []);
-}
+Crear una migración para agregar:
+```sql
+ALTER TABLE records_3d ADD COLUMN country TEXT;
 ```
 
-### 2. Usar el email pre-llenado en `SaveSection`
+Nota: Por ahora será nullable para no romper registros existentes. Podemos hacerla required más adelante si queremos.
+
+### 2. Actualizar el formulario en ResultScreen
 **Archivo:** `src/components/decision/ResultScreen.tsx`
 
-Modificar el componente `SaveSection` para:
-- Inicializar el estado `email` con el valor de la URL si existe
-- Auto-expandir el formulario si viene email en la URL (opcional, pero mejora UX)
+Agregar un selector de país usando el componente Select de shadcn/ui:
 
 ```typescript
-function SaveSection({ currentOption, comparisonOption }: {...}) {
-  const trackingData = useTrackingData();
-  
-  // Pre-llenar email si viene en URL
-  const [email, setEmail] = useState(trackingData.email || '');
-  
-  // Auto-expandir si viene con email
-  const [isExpanded, setIsExpanded] = useState(!!trackingData.email);
-  
-  // ... resto igual ...
+const COUNTRIES = [
+  { code: 'AR', name: 'Argentina' },
+  { code: 'BO', name: 'Bolivia' },
+  { code: 'PY', name: 'Paraguay' },
+  { code: 'CL', name: 'Chile' },
+  { code: 'UY', name: 'Uruguay' },
+  { code: 'US', name: 'Estados Unidos' },
+  { code: 'ES', name: 'España' },
+  { code: 'CO', name: 'Colombia' },
+  { code: 'VE', name: 'Venezuela' },
+  { code: 'PE', name: 'Perú' },
+  { code: 'HN', name: 'Honduras' },
+  { code: 'CR', name: 'Costa Rica' },
+  { code: 'MX', name: 'México' },
+  { code: 'IT', name: 'Italia' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'NI', name: 'Nicaragua' },
+  { code: 'EC', name: 'Ecuador' },
+];
+
+// Nuevo estado
+const [country, setCountry] = useState('');
+
+// Validación adicional en handleSave
+if (!country) {
+  setCountryError('Seleccioná tu país');
+  return;
 }
 ```
 
-## Flujo de Usuario
+### 3. Actualizar el Edge Function
+**Archivo:** `supabase/functions/save-result/index.ts`
+
+Modificar la interfaz y el insert para incluir el país:
+
+```typescript
+interface SaveResultRequest {
+  email: string;
+  country: string;  // NUEVO
+  // ... resto igual
+}
+
+// En el insert:
+country: body.country || null,
+```
+
+### 4. Actualizar types de Supabase
+Se actualizará automáticamente cuando se ejecute la migración.
+
+## Flujo de Usuario Actualizado
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│  Email de recordatorio                                      │
-│  ────────────────────                                       │
-│  "Hace 1 mes evaluaste tu trabajo..."                       │
-│                                                             │
-│  [Volver a evaluar] ──────────────────────────────────────► │
-│   Link: app.com/?email=usuario@email.com                    │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Pantalla de Resultados                                     │
+│  Guardá tu resultado                                        │
 │  ─────────────────────                                      │
 │                                                             │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  Guardá tu resultado                                │    │
-│  │  ┌─────────────────────────────────────────────┐    │    │
-│  │  │ usuario@email.com              (pre-llenado)│    │    │
-│  │  └─────────────────────────────────────────────┘    │    │
-│  │  [ Guardar y avisarme ]                             │    │
-│  └─────────────────────────────────────────────────────┘    │
+│  ┌─────────────────────────────────────────────┐            │
+│  │ email@ejemplo.com                           │            │
+│  └─────────────────────────────────────────────┘            │
+│                                                             │
+│  ┌─────────────────────────────────────────────┐            │
+│  │ Selecciona tu país               ▼          │            │
+│  └─────────────────────────────────────────────┘            │
+│                                                             │
+│  Recordatorio: [1 mes] [3 meses] [Sin recordatorio]         │
+│                                                             │
+│  [Cancelar]              [ Guardar y avisarme ]             │
 └─────────────────────────────────────────────────────────────┘
 ```
-
-## Consideraciones de Seguridad
-
-- El email solo se usa para pre-llenar el input, no se envía automáticamente
-- La validación de email existente sigue aplicando antes de guardar
-- No hay exposición de datos sensibles (el email viene del propio usuario vía URL)
 
 ## Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/hooks/useTrackingData.ts` | Agregar campo `email` al interface y hook |
-| `src/components/decision/ResultScreen.tsx` | Usar email de URL como valor inicial + auto-expandir |
+| Nueva migración SQL | Agregar columna `country` a `records_3d` |
+| `src/components/decision/ResultScreen.tsx` | Agregar selector de país con validación |
+| `supabase/functions/save-result/index.ts` | Aceptar y guardar campo `country` |
+
+## Consideraciones
+
+- **Orden alfabético**: Los países están en el orden que proporcionaste, pero podemos ordenarlos alfabéticamente si preferís
+- **Extensibilidad**: La lista está en una constante, fácil de agregar más países después
+- **Validación**: El país será requerido en el frontend pero nullable en la DB para no romper registros históricos
+- **Código ISO**: Guardamos el código de 2 letras (AR, US, ES) para estandarización
