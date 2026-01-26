@@ -94,13 +94,10 @@ export function DecisionFlow() {
         />
       )}
       
-      {state.step === 'result' && state.currentOption && state.context && (
+      {state.step === 'result' && state.currentOption && (
         <ResultScreen
-          context={state.context}
           currentOption={state.currentOption}
           comparisonOption={state.comparisonOption}
-          onContinue={handleContinueToClose}
-          onRestart={handleRestart}
         />
       )}
       
