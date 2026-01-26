@@ -1,5 +1,6 @@
 import { Option, UserContext } from '@/types/decision';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 interface ResultScreenProps {
   context: UserContext;
@@ -8,6 +9,15 @@ interface ResultScreenProps {
   onContinue: () => void;
   onRestart: () => void;
 }
+
+type ReminderPeriod = '1m' | '3m' | '6m' | '1y';
+
+const reminderOptions: { id: ReminderPeriod; label: string }[] = [
+  { id: '1m', label: '1 mes' },
+  { id: '3m', label: '3 meses' },
+  { id: '6m', label: '6 meses' },
+  { id: '1y', label: '1 año' },
+];
 
 function ScoreBar({ label, value, maxValue = 10 }: { 
   label: string; 
@@ -20,7 +30,7 @@ function ScoreBar({ label, value, maxValue = 10 }: {
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
         <span className="text-sm font-medium">{label}</span>
-        <span className="font-mono text-lg">{value}</span>
+        <span className="text-sm text-muted-foreground tabular-nums">{value}/10</span>
       </div>
       <div className="h-3 bg-secondary rounded-sm overflow-hidden">
         <div 
@@ -70,6 +80,103 @@ function ComparisonTable({ a, b }: { a: Option; b: Option }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function SaveSection({ 
+  currentOption, 
+  comparisonOption 
+}: { 
+  currentOption: Option; 
+  comparisonOption: Option | null;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [email, setEmail] = useState('');
+  const [reminder, setReminder] = useState<ReminderPeriod | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!email.trim()) return;
+
+    setIsSaving(true);
+    
+    // Simulate save - in production this would call an edge function
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    toast({
+      title: "Resultado guardado",
+      description: reminder 
+        ? `Te enviaremos un recordatorio en ${reminderOptions.find(r => r.id === reminder)?.label}.`
+        : "Revisá tu email.",
+    });
+    
+    setIsSaving(false);
+    setIsExpanded(false);
+    setEmail('');
+    setReminder(null);
+  };
+
+  if (!isExpanded) {
+    return (
+      <button 
+        onClick={() => setIsExpanded(true)}
+        className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+      >
+        Guardar para después →
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-4 p-4 bg-secondary rounded-sm border border-border animate-fade-up">
+      <div className="space-y-2">
+        <label className="text-sm text-muted-foreground">Tu email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="email@ejemplo.com"
+          className="w-full px-4 py-3 bg-background border border-border rounded-sm
+                     text-foreground placeholder:text-muted-foreground
+                     focus:outline-none focus:ring-1 focus:ring-foreground"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm text-muted-foreground">Recordatorio (opcional)</label>
+        <div className="flex flex-wrap gap-2">
+          {reminderOptions.map((option) => (
+            <button
+              key={option.id}
+              onClick={() => setReminder(reminder === option.id ? null : option.id)}
+              className={`px-3 py-1.5 text-sm rounded-sm border transition-all
+                ${reminder === option.id 
+                  ? 'bg-foreground text-background border-foreground' 
+                  : 'bg-background border-border hover:border-foreground/50'
+                }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <button 
+          onClick={() => setIsExpanded(false)} 
+          className="btn-ghost text-sm"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={!email.trim() || isSaving}
+          className="btn-primary flex-1 text-sm py-2 disabled:opacity-40"
+        >
+          {isSaving ? 'Guardando...' : 'Enviar'}
+        </button>
+      </div>
     </div>
   );
 }
@@ -209,13 +316,18 @@ export function ResultScreen({
           )}
         </div>
 
+        {/* Save section - inline */}
+        <div className="animate-fade-up opacity-0 stagger-3">
+          <SaveSection 
+            currentOption={currentOption} 
+            comparisonOption={comparisonOption} 
+          />
+        </div>
+
         {/* Actions */}
-        <div className="flex gap-4 pt-6 animate-fade-up opacity-0 stagger-3">
+        <div className="flex justify-center pt-2 animate-fade-up opacity-0 stagger-4">
           <button onClick={onRestart} className="btn-ghost">
             ← Empezar de nuevo
-          </button>
-          <button onClick={onContinue} className="btn-primary flex-1">
-            Guardar resultado
           </button>
         </div>
       </div>
