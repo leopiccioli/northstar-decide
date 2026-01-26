@@ -29,7 +29,7 @@ export function DecisionFlow() {
       // First option in comparison flow
       setState(prev => ({
         ...prev,
-        currentOption: { name: 'Opción A', scores, comment },
+        currentOption: { name, scores, comment },
         step: 'input-comparison',
       }));
     } else if (state.step === 'input-comparison') {
@@ -79,6 +79,7 @@ export function DecisionFlow() {
         <InputScreen
           context={state.context}
           isComparison={false}
+          isFirstComparison={state.context === 'compare'}
           onComplete={handleInputComplete}
           onBack={handleBack}
         />

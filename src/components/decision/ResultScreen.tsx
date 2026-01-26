@@ -167,6 +167,12 @@ export function ResultScreen({
                 value={currentOption.scores.diversion}
               />
             </div>
+
+            {currentOption.comment && (
+              <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                "{currentOption.comment}"
+              </blockquote>
+            )}
           </div>
         )}
 
@@ -174,6 +180,21 @@ export function ResultScreen({
         {comparisonOption && (
           <div className="space-y-6 animate-fade-up">
             <ComparisonTable a={currentOption} b={comparisonOption} />
+            
+            {(currentOption.comment || comparisonOption.comment) && (
+              <div className="space-y-3">
+                {currentOption.comment && (
+                  <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                    <span className="font-medium not-italic">{currentOption.name}:</span> "{currentOption.comment}"
+                  </blockquote>
+                )}
+                {comparisonOption.comment && (
+                  <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                    <span className="font-medium not-italic">{comparisonOption.name}:</span> "{comparisonOption.comment}"
+                  </blockquote>
+                )}
+              </div>
+            )}
           </div>
         )}
 
