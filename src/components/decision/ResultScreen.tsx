@@ -1,12 +1,11 @@
-import { Option } from '@/types/decision';
+import { Option, UserContext } from '@/types/decision';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
-import { ShareSection } from './ShareSection';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { generateShareImage, getShareText } from './ShareImageGenerator';
 import {
   Select,
   SelectContent,
@@ -14,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+const SHARE_URL = 'https://3d.ceoencamiseta.com';
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina' },
@@ -38,6 +39,7 @@ const COUNTRIES = [
 interface ResultScreenProps {
   currentOption: Option;
   comparisonOption: Option | null;
+  userContext: UserContext;
 }
 
 type ReminderPeriod = '1m' | '3m' | 'none';
@@ -333,9 +335,75 @@ function SaveSection({
 
 export function ResultScreen({ 
   currentOption, 
-  comparisonOption, 
+  comparisonOption,
+  userContext,
 }: ResultScreenProps) {
   const [showSave, setShowSave] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+
+  const handleShare = async () => {
+    setIsSharing(true);
+    
+    try {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const shareText = getShareText(userContext, currentOption, comparisonOption);
+      const fullText = `${shareText}\n${SHARE_URL}`;
+
+      // Check if we can share files on mobile
+      if (isMobile && navigator.share && navigator.canShare) {
+        try {
+          // Generate image
+          const isDark = document.documentElement.classList.contains('dark');
+          const imageBlob = await generateShareImage({
+            currentOption,
+            comparisonOption,
+            userContext,
+            isDark,
+          });
+          const file = new File([imageBlob], 'mi-3d.png', { type: 'image/png' });
+
+          // Check if we can share the file
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              text: shareText,
+              url: SHARE_URL,
+            });
+            return;
+          }
+        } catch (err) {
+          // User cancelled or failed - try text share
+          if ((err as Error).name === 'AbortError') return;
+        }
+      }
+
+      // Try native share with text only
+      if (navigator.share) {
+        try {
+          await navigator.share({ text: fullText });
+          return;
+        } catch (err) {
+          if ((err as Error).name === 'AbortError') return;
+        }
+      }
+
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(fullText);
+      toast({
+        title: "Copiado",
+        description: "Pegalo en WhatsApp o donde quieras",
+      });
+    } catch (error) {
+      console.error('Share error:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo compartir",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -400,31 +468,36 @@ export function ResultScreen({
           </div>
         )}
 
-        {/* Share section - primary */}
-        <div className="animate-fade-up opacity-0 stagger-1">
-          <ShareSection 
-            currentOption={currentOption} 
-            comparisonOption={comparisonOption} 
-          />
-        </div>
+        {/* Action buttons - parallel */}
+        <div className="space-y-3 animate-fade-up opacity-0 stagger-1">
+          {/* Share - Primary */}
+          <button
+            onClick={handleShare}
+            disabled={isSharing}
+            className="btn-primary w-full disabled:opacity-50"
+          >
+            {isSharing ? 'Compartiendo...' : 'Pedir una segunda opinión'}
+          </button>
 
-        {/* Save section - secondary, collapsible */}
-        <div className="animate-fade-up opacity-0 stagger-2">
+          {/* Save - Secondary (outline) */}
           <button
             onClick={() => setShowSave(!showSave)}
-            className="w-full flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="w-full py-3 text-sm border border-border rounded-sm
+                       hover:border-foreground/50 transition-colors"
           >
-            {showSave ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            {showSave ? 'Ocultar' : 'Guardar historial'}
+            Guardar historial
           </button>
-          
-          {showSave && (
+        </div>
+
+        {/* Save section - expandable */}
+        {showSave && (
+          <div className="animate-fade-up">
             <SaveSection 
               currentOption={currentOption} 
               comparisonOption={comparisonOption} 
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
