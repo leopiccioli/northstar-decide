@@ -1,137 +1,67 @@
 
+# Plan: Fix del "Guardando..." Colgado + Favicon
 
-# Optimizar Pantalla de Resultados para Mayor Conversión
+## Problema Identificado
 
-## Objetivo
-Aumentar la tasa de guardado eliminando fricción y simplificando la interfaz.
+El botón se quedó en "Guardando..." porque:
+1. **Rate limiting**: El edge function rechazó la solicitud con 429 (solo 1 envío cada 15 minutos por email)
+2. **El error se manejó**, pero el toast de error probablemente no fue visible o el mensaje genérico no fue claro
+
+El código actual SÍ tiene `finally { setIsSaving(false) }`, así que debería resetear. Sin embargo, hay mejoras que hacer.
 
 ## Cambios Propuestos
 
-### 1. Eliminar paso intermedio del formulario de guardado
+### 1. Mejorar manejo de errores en ResultScreen.tsx
 
-**Archivo:** `src/components/decision/ResultScreen.tsx`
-
-Actualmente el formulario está colapsado detrás de un botón "Guardar para después". El usuario tiene que hacer clic para expandirlo.
-
-**Cambio:** Eliminar la lógica de `isExpanded` y mostrar el formulario siempre visible.
+Importar `FunctionsHttpError` de Supabase y extraer el mensaje real del error 429:
 
 ```typescript
-// ANTES (líneas 137, 240-252)
-const [isExpanded, setIsExpanded] = useState(!!trackingData.email);
+import { FunctionsHttpError } from '@supabase/supabase-js';
 
-if (!isExpanded) {
-  return (
-    <button onClick={() => setIsExpanded(true)}>
-      Guardar para después
-    </button>
-  );
+// En el catch:
+} catch (error) {
+  console.error('Save error:', error);
+  
+  let errorMessage = "No pudimos guardar tu resultado. Intentá de nuevo.";
+  
+  // Extract actual error message from edge function
+  if (error instanceof FunctionsHttpError) {
+    try {
+      const errorData = await error.context.json();
+      if (errorData?.error) {
+        errorMessage = errorData.error;
+      }
+    } catch {}
+  }
+  
+  toast({
+    title: "Error",
+    description: errorMessage,
+    variant: "destructive",
+  });
 }
-
-// DESPUÉS
-// Eliminar estado isExpanded
-// Eliminar el condicional if (!isExpanded)
-// Eliminar el botón Cancelar (ya no tiene sentido)
-// Mostrar el formulario directamente
 ```
 
-También eliminar:
-- El import de `Bookmark` (ya no se usa)
-- El botón "Cancelar" del formulario
+Así el usuario verá el mensaje real: **"Ya guardaste una medición recientemente. Espera 15 minutos."**
 
-### 2. Reemplazar mensajes de opinión por "Promedio"
+### 2. Agregar el favicon
 
-**Archivo:** `src/components/decision/GlobalScore.tsx`
+Copiar el archivo subido `favicon3d.png` a `public/favicon.png` y actualizar `index.html` para referenciarlo.
 
-Actualmente muestra mensajes como "Muy buen balance", "Vas por buen camino", "Hay trabajo por hacer" según el nivel.
-
-**Cambio:** Mostrar simplemente "Promedio" sin importar el puntaje.
-
-```typescript
-// ANTES (líneas 18-22)
-const levelLabels = {
-  low: 'Hay trabajo por hacer',
-  medium: 'Vas por buen camino',
-  high: 'Muy buen balance',
-};
-
-// DESPUÉS
-// Eliminar levelLabels y simplemente mostrar "Promedio"
-<p className="text-sm font-medium">Promedio</p>
-```
-
-Los dots visuales (1-3 puntos) se mantienen porque son una representación visual neutra, no una opinión.
-
-### 3. Botones de recordatorio en una sola línea
-
-**Archivo:** `src/components/decision/ResultScreen.tsx`
-
-Actualmente usa `flex-wrap gap-2` que puede hacer que "Sin recordatorio" salte a una segunda línea en pantallas pequeñas (como se ve en el screenshot).
-
-**Cambio:** Usar `flex-nowrap` y reducir padding para que quepan los tres botones.
-
-```typescript
-// ANTES (línea 305)
-<div className="flex flex-wrap gap-2">
-
-// DESPUÉS
-<div className="flex gap-1.5">
-  <button className="px-2.5 py-1.5 text-sm whitespace-nowrap ...">
-```
-
-Ajustes:
-- Cambiar `flex-wrap` a `flex` sin wrap
-- Reducir `gap-2` a `gap-1.5`
-- Reducir `px-3` a `px-2.5` en los botones
-- Agregar `whitespace-nowrap` para evitar quiebres internos
-
-## Flujo Visual Actualizado
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  Dinero                                              5/10   │
-│  ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
-│                                                             │
-│  Desarrollo                                          5/10   │
-│  ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
-│                                                             │
-│  Diversión                                           9/10   │
-│  █████████████████████████████████████████████████░░░░░░░   │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ Promedio                              ●●● 6.3       │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ Quienes repiten el 3D suelen mejorar...             │   │
-│  │                                                     │   │
-│  │ Guardá tu resultado y comparalo después             │   │
-│  │ ┌─────────────────────────────────────────────┐     │   │
-│  │ │ email@ejemplo.com                           │     │   │
-│  │ └─────────────────────────────────────────────┘     │   │
-│  │                                                     │   │
-│  │ País                                                │   │
-│  │ ┌─────────────────────────────────────────────┐     │   │
-│  │ │ Seleccioná tu país                    ▼     │     │   │
-│  │ └─────────────────────────────────────────────┘     │   │
-│  │                                                     │   │
-│  │ Recordatorio                                        │   │
-│  │ [En 1 mes] [En 3 meses] [Sin recordatorio]  ← UNA LÍNEA│
-│  │                                                     │   │
-│  │        [ Guardar y avisarme ]                       │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+```html
+<link rel="icon" href="/favicon.png" type="image/png">
 ```
 
 ## Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/components/decision/ResultScreen.tsx` | Eliminar lógica de expansión, ajustar botones de recordatorio |
-| `src/components/decision/GlobalScore.tsx` | Reemplazar mensajes de opinión por "Promedio" |
+| `src/components/decision/ResultScreen.tsx` | Mejorar error handling para mostrar mensaje real del edge function |
+| `public/favicon.png` | Copiar el archivo subido |
+| `index.html` | Actualizar referencia al favicon |
 
-## Impacto Esperado
+## Resultado Esperado
 
-- **Menos fricción**: El usuario ve el formulario inmediatamente, sin necesidad de hacer clic adicional
-- **Más neutro**: Sin juicios de valor sobre el puntaje, solo datos
-- **Mejor UX mobile**: Los tres botones de recordatorio siempre visibles en una línea
-
+- El usuario verá mensajes de error claros cuando hay rate limiting u otros errores
+- El botón siempre volverá a su estado normal después de un intento
+- Nuevo favicon 3D visible en la pestaña del navegador
