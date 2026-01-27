@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Scores, UserContext, contextQuestions } from '@/types/decision';
 import { DimensionSlider } from './DimensionSlider';
+import { usePrefetchResultScreen } from '@/hooks/usePrefetch';
 
 interface InputScreenProps {
   context: UserContext;
@@ -12,6 +13,9 @@ interface InputScreenProps {
 }
 
 export function InputScreen({ context, isComparison, isFirstComparison, optionName, onComplete, onBack }: InputScreenProps) {
+  // Prefetch ResultScreen while user fills sliders
+  usePrefetchResultScreen();
+  
   const showNameInput = isComparison || isFirstComparison;
   const [name, setName] = useState(optionName || (showNameInput ? '' : 'Situación actual'));
   const [comment, setComment] = useState('');

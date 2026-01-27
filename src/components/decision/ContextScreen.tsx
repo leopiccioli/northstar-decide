@@ -1,4 +1,5 @@
 import { UserContext } from '@/types/decision';
+import { usePrefetchInputScreen } from '@/hooks/usePrefetch';
 
 interface ContextScreenProps {
   onSelect: (context: UserContext) => void;
@@ -13,6 +14,8 @@ const options: { id: UserContext; label: string }[] = [
 ];
 
 export function ContextScreen({ onSelect }: ContextScreenProps) {
+  // Prefetch next screen while user chooses context
+  usePrefetchInputScreen();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="max-w-md w-full space-y-3">

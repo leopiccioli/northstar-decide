@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileQRCard } from './MobileQRCard';
+import { usePrefetchContextScreen } from '@/hooks/usePrefetch';
 
 interface EntryScreenProps {
   onStart: () => void;
@@ -9,6 +10,9 @@ interface EntryScreenProps {
 export function EntryScreen({ onStart }: EntryScreenProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const isMobile = useIsMobile();
+  
+  // Prefetch next screen while user reads entry
+  usePrefetchContextScreen();
 
   useEffect(() => {
     // Start animation cycle every 4 seconds
