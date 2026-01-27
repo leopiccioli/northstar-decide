@@ -1,149 +1,165 @@
 
-
-# Plan: Share con Contexto + Botones Paralelos
+# Plan: Mejoras de Share Text + Correcciones UX
 
 ## Resumen
 
-1. **Usar el contexto inicial** del usuario para generar el texto de share automáticamente
-2. **Mobile: compartir imagen** / **Web: copiar texto**
-3. **Botones paralelos**: "Pedir una segunda opinión" y "Guardar historial" al mismo nivel
+1. **Corregir textos de share**: Usar "Mis 3D laborales" (plural + contexto de trabajo)
+2. **Validación email on-blur**: Feedback inmediato al dejar el campo
+3. **Selector de país con búsqueda**: Reemplazar Select por Combobox con filtrado
+4. **Pantalla de éxito post-guardado**: Redirección a cierre con CTA de comunidad
 
 ---
 
-## Layout Final
+## 1. Corrección de Textos de Share
 
-```text
-┌─────────────────────────────────────┐
-│  [Resultado con scores]             │
-│  [Promedio: X.X]                    │
-│                                     │
-├─────────────────────────────────────┤
-│                                     │
-│  ┌─────────────────────────────┐    │
-│  │  Pedir una segunda opinión  │    │  ← Primario (negro)
-│  └─────────────────────────────┘    │
-│                                     │
-│  ┌─────────────────────────────┐    │
-│  │     Guardar historial       │    │  ← Secundario (outline)
-│  └─────────────────────────────┘    │
-│                                     │
-│  [SaveSection expandido si click]   │
-└─────────────────────────────────────┘
-```
+### Problema
+Los textos actuales dicen "Mi 3D" (singular) y no aclaran que es laboral. La persona que recibe el mensaje no entiende el contexto.
 
-Ambos botones visibles, sin jerarquía oculta.
+### Solución
+
+**Archivo**: `src/components/decision/ShareImageGenerator.ts`
+
+Cambios en templates (líneas 166-172):
+
+| Contexto | Antes | Después |
+|----------|-------|---------|
+| improve | "Mi 3D: Dinero {d}..." | "Mis 3D laborales: Dinero {d}..." |
+| change | "Mi 3D: Dinero {d}..." | "Mis 3D laborales: Dinero {d}..." |
+| burnout | "Mi 3D: Dinero {d}..." | "Mis 3D laborales: Dinero {d}..." |
+| check | "Mi 3D hoy: Dinero..." | "Mis 3D laborales hoy: Dinero..." |
+
+Cambios en imagen canvas (línea 128):
+
+| Antes | Después |
+|-------|---------|
+| "Mi 3D" | "Mis 3D laborales" |
 
 ---
 
-## Cambios Principales
+## 2. Validación de Email On-Blur
 
-### 1. Pasar userContext desde DecisionFlow
+### Problema
+El reporte es parcialmente correcto: la validación solo ocurre al hacer click en Guardar, no al dejar el campo.
+
+### Solución
+
+**Archivo**: `src/components/decision/ResultScreen.tsx`
+
+Agregar handler `onBlur` al input de email:
 
 ```typescript
-// DecisionFlow.tsx
-<ResultScreen
-  currentOption={state.currentOption}
-  comparisonOption={state.comparisonOption}
-  userContext={state.context}  // NUEVO
+<input
+  type="email"
+  value={email}
+  onChange={...}
+  onBlur={() => {
+    const trimmed = email.trim();
+    if (trimmed && !validateEmail(trimmed)) {
+      setEmailError('Email inválido');
+    }
+  }}
+  ...
 />
 ```
 
-### 2. Textos Basados en Contexto Inicial
+---
 
-En vez de etiquetas manuales, usar el contexto que el usuario ya eligió:
+## 3. Selector de País con Búsqueda
 
-| Contexto | Texto de Share |
-|----------|---------------|
-| `improve` | "Quiero mejorar mi trabajo. Mi 3D: {d}/{dev}/{div}. ¿Qué mejorarías primero?" |
-| `change` | "Estoy pensando en cambiar. Mi 3D: {d}/{dev}/{div}. ¿Vos cambiarías?" |
-| `burnout` | "Me siento estancado. Mi 3D: {d}/{dev}/{div}. ¿Qué harías en mi lugar?" |
-| `check` | "Mi 3D hoy: {d}/{dev}/{div}. ¿Cómo lo ves?" |
-| `compare` | "Comparé \"{a}\" vs \"{b}\". {tradeoff}. ¿Qué harías vos?" |
+### Problema
+17 países en lista sin filtrado = fricción en mobile.
 
-### 3. Mobile: Imagen / Web: Texto
+### Solución
 
-```typescript
-const handleShare = async () => {
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const shareText = getShareTextByContext(userContext, scores);
+**Archivo**: `src/components/decision/ResultScreen.tsx`
 
-  if (isMobile && navigator.share) {
-    // Generar imagen PNG y compartirla
-    const imageBlob = await generateShareImage();
-    const file = new File([imageBlob], 'mi-3d.png', { type: 'image/png' });
-    
-    try {
-      await navigator.share({
-        files: [file],
-        text: shareText,
-        url: SHARE_URL,
-      });
-      return;
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') return;
-    }
-  }
+Reemplazar `<Select>` por un componente Combobox que permita type-to-filter:
 
-  // Web: copiar texto
-  await navigator.clipboard.writeText(`${shareText}\n${SHARE_URL}`);
-  toast({ title: "Copiado", description: "Pegalo en WhatsApp o donde quieras" });
-};
+```text
+┌─────────────────────────────────────┐
+│  🔍 Buscar país...                  │
+├─────────────────────────────────────┤
+│  Argentina                          │
+│  Bolivia                            │
+│  Chile                              │
+│  ...                                │
+└─────────────────────────────────────┘
 ```
 
-### 4. Botones Paralelos en ResultScreen
+Usando el componente `Command` (cmdk) que ya está instalado:
 
 ```typescript
-// ResultScreen.tsx - Sección de acciones
-<div className="space-y-3">
-  {/* Share - Primario */}
-  <button
-    onClick={handleShare}
-    className="btn-primary w-full"
-  >
-    Pedir una segunda opinión
-  </button>
-
-  {/* Guardar - Secundario (outline) */}
-  <button
-    onClick={() => setShowSave(!showSave)}
-    className="w-full py-3 text-sm border border-border rounded-sm
-               hover:border-foreground/50 transition-colors"
-  >
-    Guardar historial
-  </button>
-</div>
-
-{showSave && <SaveSection ... />}
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 ```
 
 ---
 
-## Imagen para Mobile (Canvas)
+## 4. Pantalla de Éxito Post-Guardado
 
-Diseño simple:
-- Fondo blanco/negro (dark mode)
-- Barras visuales por dimensión
-- URL: 3d.ceoencamiseta.com
+### Problema
+Después de guardar solo aparece un toast. El usuario no tiene siguiente paso claro.
+
+### Solución
+
+Después de guardar exitosamente, mostrar una sección de "Éxito" inline (no toast) con:
+- Confirmación visual
+- CTA a la comunidad CEO en Camiseta
+- Opción de compartir resultado
+
+**Archivo**: `src/components/decision/ResultScreen.tsx`
+
+Agregar estado `saved: boolean` y mostrar sección de éxito:
 
 ```typescript
-const generateShareImage = async (): Promise<Blob> => {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1080;
-  canvas.height = 1350; // Feed format
-  const ctx = canvas.getContext('2d')!;
+const [saved, setSaved] = useState(false);
 
-  // Fondo
-  ctx.fillStyle = isDark ? '#0f0f0f' : '#fafafa';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Barras + scores + URL
-  // ... renderizado
-
-  return new Promise(resolve => {
-    canvas.toBlob(blob => resolve(blob!), 'image/png');
-  });
-};
+// En handleSave, después del éxito:
+setSaved(true);
 ```
+
+```text
+┌─────────────────────────────────────┐
+│  ✓ Resultado guardado               │
+│                                     │
+│  Te mandamos un email con tu 3D.    │
+│  Revisá tu bandeja de entrada.      │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │  Unirme a CEO en Camiseta   │    │
+│  └─────────────────────────────┘    │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │  Pedir una segunda opinión  │    │
+│  └─────────────────────────────┘    │
+└─────────────────────────────────────┘
+```
+
+---
+
+## Puntos del Reporte Descartados
+
+Estos puntos del reporte ya están implementados correctamente:
+
+| Punto | Por qué se descarta |
+|-------|---------------------|
+| B-01 (Falta confirmación) | Toast "Resultado guardado" ya existe |
+| B-02 (Campos no se limpian) | `setEmail('')`, `setCountry('')` ya ejecutan en éxito |
+| UX Sliders (sin valor) | Ya muestra `{value}/10` junto al label |
+| UX Tooltips (requiere click) | Ya usa hover con `delayDuration={100}` |
+
+---
+
+## Sobre Placeholders Dinámicos (Comparación)
+
+Este punto es válido pero de menor prioridad. Los placeholders podrían adaptarse según el contexto, pero el impacto es menor que los otros cambios. Lo dejo como opcional.
 
 ---
 
@@ -151,24 +167,14 @@ const generateShareImage = async (): Promise<Blob> => {
 
 | Archivo | Cambios |
 |---------|---------|
-| `src/components/decision/DecisionFlow.tsx` | Pasar `userContext` a ResultScreen |
-| `src/components/decision/ResultScreen.tsx` | Recibir `userContext`, mover lógica de share, botones paralelos |
-| `src/components/decision/ShareSection.tsx` | Eliminar (lógica se mueve a ResultScreen) o simplificar a solo el handler |
+| `src/components/decision/ShareImageGenerator.ts` | Cambiar "Mi 3D" por "Mis 3D laborales" en templates e imagen |
+| `src/components/decision/ResultScreen.tsx` | 1) Validación email on-blur 2) Combobox para países 3) Sección de éxito post-guardado |
 
 ---
 
-## Lo que se Elimina
+## Orden de Implementación
 
-- Título "Pedí una segunda opinión" (redundante con el botón)
-- Etiquetas de identidad seleccionables
-- Toggle colapsado "Guardar historial" (ahora es botón visible)
-
----
-
-## Beneficios
-
-- **Cero decisiones extra**: El contexto ya está, no hay que elegir etiqueta
-- **Mismo nivel visual**: Share y Guardar tienen igual importancia
-- **Mobile optimizado**: Imagen lista para compartir
-- **Web simple**: Texto copiado automáticamente
-
+1. **Textos de share** (fix rápido, alto impacto en claridad)
+2. **Validación email on-blur** (mejora UX inmediata)
+3. **Selector país con búsqueda** (mejora UX mobile)
+4. **Pantalla de éxito** (cierre de flujo + viralidad)
