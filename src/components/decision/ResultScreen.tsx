@@ -6,10 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
 import { generateShareImage, getShareText } from './ShareImageGenerator';
-import { MobileQRCard } from './MobileQRCard';
-import { Check, ChevronsUpDown, ExternalLink } from 'lucide-react';
+import { Check, ChevronsUpDown, ExternalLink, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Command,
   CommandEmpty,
@@ -140,12 +140,18 @@ function ComparisonTable({ a, b }: { a: Option; b: Option }) {
   );
 }
 
-// Success screen shown after saving
-function SuccessSection({ onShare, isMobile, userContext }: { 
-  onShare?: () => void; 
+// Success screen shown after saving - now with share capabilities
+function SuccessWithShare({ 
+  recordId,
+  isMobile, 
+  onShare,
+}: { 
+  recordId: string;
   isMobile: boolean;
-  userContext: string;
+  onShare: () => void;
 }) {
+  const shareUrl = `${SHARE_URL}/r/${recordId}`;
+
   return (
     <div className="space-y-6 p-6 bg-secondary rounded-sm border border-border animate-fade-up text-center">
       <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-foreground text-background">
@@ -161,31 +167,45 @@ function SuccessSection({ onShare, isMobile, userContext }: {
       </div>
 
       <div className="space-y-3 pt-2">
-        <a
-          href={CEO_COMMUNITY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary w-full flex items-center justify-center gap-2"
-        >
-          Unirme a CEO en Camiseta
-          <ExternalLink className="w-4 h-4" />
-        </a>
-        
         {isMobile ? (
           <button
             onClick={onShare}
-            className="w-full py-3 text-sm border border-border rounded-sm
-                       hover:border-foreground/50 transition-colors"
+            className="btn-primary w-full"
           >
             Pedir una segunda opinión
           </button>
         ) : (
-          <MobileQRCard 
-            compact 
-            context={userContext}
-            medium="desktop_result_saved"
-          />
+          <div className="p-4 bg-background rounded-sm border border-border space-y-3">
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <Smartphone className="w-4 h-4" />
+              <span>Compartí desde tu celular</span>
+            </div>
+            <div className="p-2 bg-white rounded-lg inline-block">
+              <QRCodeSVG
+                value={shareUrl}
+                size={100}
+                level="M"
+                bgColor="white"
+                fgColor="black"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Escaneá para abrir y compartir
+            </p>
+          </div>
         )}
+        
+        <a
+          href={CEO_COMMUNITY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-3 text-sm border border-border rounded-sm
+                     hover:border-foreground/50 transition-colors
+                     flex items-center justify-center gap-2"
+        >
+          Unirme a CEO en Camiseta
+          <ExternalLink className="w-4 h-4" />
+        </a>
       </div>
     </div>
   );
@@ -266,7 +286,7 @@ function SaveSection({
 }: { 
   currentOption: Option; 
   comparisonOption: Option | null;
-  onSaveSuccess: () => void;
+  onSaveSuccess: (recordId: string) => void;
 }) {
   const trackingData = useTrackingData();
   
@@ -341,7 +361,7 @@ function SaveSection({
         },
       };
 
-      const { error } = await supabase.functions.invoke('save-result', {
+      const { data, error } = await supabase.functions.invoke('save-result', {
         body: payload,
       });
 
@@ -349,8 +369,12 @@ function SaveSection({
         throw new Error(error.message || 'Error al guardar');
       }
 
-      // Success - transition to success state
-      onSaveSuccess();
+      // Success - pass the record ID to parent
+      if (data?.id) {
+        onSaveSuccess(data.id);
+      } else {
+        throw new Error('No se recibió el ID del resultado');
+      }
     } catch (error) {
       console.error('Save error:', error);
       
@@ -452,18 +476,19 @@ export function ResultScreen({
   comparisonOption,
   userContext,
 }: ResultScreenProps) {
-  const [showSave, setShowSave] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
   const isMobile = useIsMobile();
 
   const handleShare = async () => {
+    if (!savedRecordId) return;
+    
     setIsSharing(true);
     
     try {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const shareText = getShareText(userContext, currentOption, comparisonOption);
-      const fullText = `${shareText}\n${SHARE_URL}`;
+      const shareUrl = `${SHARE_URL}/r/${savedRecordId}`;
+      const fullText = `${shareText}\n${shareUrl}`;
 
       // Check if we can share files on mobile
       if (isMobile && navigator.share && navigator.canShare) {
@@ -483,7 +508,7 @@ export function ResultScreen({
             await navigator.share({
               files: [file],
               text: shareText,
-              url: SHARE_URL,
+              url: shareUrl,
             });
             return;
           }
@@ -584,55 +609,22 @@ export function ResultScreen({
           </div>
         )}
 
-        {/* Success state after saving */}
-        {saved ? (
-          <SuccessSection 
-            onShare={handleShare} 
+        {/* Post-save: show success with share options */}
+        {savedRecordId ? (
+          <SuccessWithShare 
+            recordId={savedRecordId}
             isMobile={isMobile}
-            userContext={userContext}
+            onShare={handleShare}
           />
         ) : (
-          <>
-            {/* Action buttons - parallel */}
-            <div className="space-y-3 animate-fade-up opacity-0 stagger-1">
-              {/* Share - Primary (mobile only) or QR (desktop) */}
-              {isMobile ? (
-                <button
-                  onClick={handleShare}
-                  disabled={isSharing}
-                  className="btn-primary w-full disabled:opacity-50"
-                >
-                  {isSharing ? 'Compartiendo...' : 'Pedir una segunda opinión'}
-                </button>
-              ) : (
-                <MobileQRCard 
-                  compact 
-                  context={userContext}
-                  medium="desktop_result"
-                />
-              )}
-
-              {/* Save - Secondary (outline) */}
-              <button
-                onClick={() => setShowSave(!showSave)}
-                className="w-full py-3 text-sm border border-border rounded-sm
-                           hover:border-foreground/50 transition-colors"
-              >
-                Guardar historial
-              </button>
-            </div>
-
-            {/* Save section - expandable */}
-            {showSave && (
-              <div className="animate-fade-up">
-                <SaveSection 
-                  currentOption={currentOption} 
-                  comparisonOption={comparisonOption}
-                  onSaveSuccess={() => setSaved(true)}
-                />
-              </div>
-            )}
-          </>
+          /* Pre-save: show save form as primary CTA */
+          <div className="animate-fade-up opacity-0 stagger-1">
+            <SaveSection 
+              currentOption={currentOption} 
+              comparisonOption={comparisonOption}
+              onSaveSuccess={(id) => setSavedRecordId(id)}
+            />
+          </div>
         )}
       </div>
     </div>

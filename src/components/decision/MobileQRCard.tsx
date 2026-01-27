@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 const BASE_URL = 'https://3d.ceoencamiseta.com';
 
 interface MobileQRCardProps {
+  /** Direct URL to encode (overrides default URL building) */
+  url?: string;
   /** Additional UTM context for tracking */
   context?: string;
   /** Source identifier (default: 'qr') */
@@ -16,18 +18,27 @@ interface MobileQRCardProps {
 }
 
 export function MobileQRCard({ 
+  url,
   context,
   source = 'qr',
   medium = 'desktop',
   compact = false,
 }: MobileQRCardProps) {
-  // Build URL with UTM params
-  const qrUrl = new URL(BASE_URL);
-  qrUrl.searchParams.set('utm_source', source);
-  qrUrl.searchParams.set('utm_medium', medium);
-  qrUrl.searchParams.set('utm_campaign', 'mobile_redirect');
-  if (context) {
-    qrUrl.searchParams.set('context', context);
+  // If a direct URL is provided, use it (make it absolute if needed)
+  let qrUrl: string;
+  
+  if (url) {
+    qrUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`;
+  } else {
+    // Build URL with UTM params (default behavior)
+    const urlObj = new URL(BASE_URL);
+    urlObj.searchParams.set('utm_source', source);
+    urlObj.searchParams.set('utm_medium', medium);
+    urlObj.searchParams.set('utm_campaign', 'mobile_redirect');
+    if (context) {
+      urlObj.searchParams.set('context', context);
+    }
+    qrUrl = urlObj.toString();
   }
   
   if (compact) {
@@ -39,7 +50,7 @@ export function MobileQRCard({
         </div>
         <div className="p-2 bg-white rounded-lg inline-block">
           <QRCodeSVG
-            value={qrUrl.toString()}
+            value={qrUrl}
             size={80}
             level="M"
             bgColor="white"
@@ -64,7 +75,7 @@ export function MobileQRCard({
         
         <div className="p-3 bg-white rounded-lg">
           <QRCodeSVG
-            value={qrUrl.toString()}
+            value={qrUrl}
             size={120}
             level="M"
             bgColor="white"

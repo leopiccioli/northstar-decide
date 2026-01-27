@@ -396,10 +396,11 @@ const handler = async (req: Request): Promise<Response> => {
       emailPromise.catch(err => console.error('Background email error:', err));
     }
 
-    // Respond immediately with success
+    // Respond immediately with success, including the record ID for sharing
     return new Response(
       JSON.stringify({ 
         success: true, 
+        id: insertedRecord.id,
         hasHistory: !!previousMeasurement,
         emailPending: true // Frontend knows email is being sent in background
       }),
