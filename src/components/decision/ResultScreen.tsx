@@ -282,21 +282,27 @@ function CountryCombobox({
   );
 }
 
+// Generate a temporary optimistic ID for immediate UI feedback
+function generateOptimisticId(): string {
+  return `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
 function SaveSection({ 
   currentOption, 
   comparisonOption,
   onSaveSuccess,
+  onOptimisticSave,
 }: { 
   currentOption: Option; 
   comparisonOption: Option | null;
   onSaveSuccess: (recordId: string, email: string) => void;
+  onOptimisticSave: (email: string) => void;
 }) {
   const trackingData = useTrackingData();
   
   const [email, setEmail] = useState(trackingData.email || '');
   const [country, setCountry] = useState('');
   const [reminder, setReminder] = useState<ReminderPeriod>('1m');
-  const [isSaving, setIsSaving] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [countryError, setCountryError] = useState('');
 
@@ -335,74 +341,69 @@ function SaveSection({
 
     if (hasError) return;
 
-    setIsSaving(true);
+    // OPTIMISTIC UI: Show success immediately
+    onOptimisticSave(trimmedEmail);
 
-    try {
-      const payload = {
-        email: trimmedEmail,
-        country,
-        optionName: currentOption.name,
-        scores: currentOption.scores,
-        comment: currentOption.comment,
-        comparison: comparisonOption ? {
-          name: comparisonOption.name,
-          dinero: comparisonOption.scores.dinero,
-          desarrollo: comparisonOption.scores.desarrollo,
-          diversion: comparisonOption.scores.diversion,
-          comment: comparisonOption.comment,
-        } : undefined,
-        reminderPeriod: reminder !== 'none' ? reminder : undefined,
-        tracking: {
-          utm_source: trackingData.utm_source,
-          utm_medium: trackingData.utm_medium,
-          utm_campaign: trackingData.utm_campaign,
-          utm_content: trackingData.utm_content,
-          utm_term: trackingData.utm_term,
-          gclid: trackingData.gclid,
-          fbclid: trackingData.fbclid,
-          referrer: trackingData.referrer,
-        },
-      };
+    // Fire save in background (don't await blocking the UI)
+    const payload = {
+      email: trimmedEmail,
+      country,
+      optionName: currentOption.name,
+      scores: currentOption.scores,
+      comment: currentOption.comment,
+      comparison: comparisonOption ? {
+        name: comparisonOption.name,
+        dinero: comparisonOption.scores.dinero,
+        desarrollo: comparisonOption.scores.desarrollo,
+        diversion: comparisonOption.scores.diversion,
+        comment: comparisonOption.comment,
+      } : undefined,
+      reminderPeriod: reminder !== 'none' ? reminder : undefined,
+      tracking: {
+        utm_source: trackingData.utm_source,
+        utm_medium: trackingData.utm_medium,
+        utm_campaign: trackingData.utm_campaign,
+        utm_content: trackingData.utm_content,
+        utm_term: trackingData.utm_term,
+        gclid: trackingData.gclid,
+        fbclid: trackingData.fbclid,
+        referrer: trackingData.referrer,
+      },
+    };
 
-      const { data, error } = await supabase.functions.invoke('save-result', {
-        body: payload,
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Error al guardar');
-      }
-
-      // Success - pass the record ID and email to parent
-      if (data?.id) {
-        onSaveSuccess(data.id, trimmedEmail);
-      } else {
-        throw new Error('No se recibió el ID del resultado');
-      }
-    } catch (error) {
-      console.error('Save error:', error);
-      
-      let errorMessage = "No pudimos guardar tu resultado. Intentá de nuevo.";
-      
-      // Extract actual error message from edge function
-      if (error instanceof FunctionsHttpError) {
-        try {
-          const errorData = await error.context.json();
-          if (errorData?.error) {
-            errorMessage = errorData.error;
-          }
-        } catch {
-          // If we can't parse the error, use default message
+    // Background save - updates the real ID when done
+    supabase.functions.invoke('save-result', { body: payload })
+      .then(async ({ data, error }) => {
+        if (error) {
+          throw new Error(error.message || 'Error al guardar');
         }
-      }
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
+        if (data?.id) {
+          // Update with real record ID for sharing
+          onSaveSuccess(data.id, trimmedEmail);
+        }
+      })
+      .catch(async (error) => {
+        console.error('Background save error:', error);
+        
+        let errorMessage = "No pudimos guardar tu resultado, pero podés seguir compartiendo.";
+        
+        if (error instanceof FunctionsHttpError) {
+          try {
+            const errorData = await error.context.json();
+            if (errorData?.error) {
+              errorMessage = errorData.error;
+            }
+          } catch {
+            // Use default message
+          }
+        }
+        
+        // Show non-blocking toast - user already sees success UI
+        toast({
+          title: "Aviso",
+          description: errorMessage,
+        });
       });
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   return (
@@ -464,10 +465,10 @@ function SaveSection({
       <div className="flex gap-3 pt-2">
         <button
           onClick={handleSave}
-          disabled={!email.trim() || isSaving}
+          disabled={!email.trim()}
           className="btn-primary flex-1 text-sm py-2 disabled:opacity-40"
         >
-          {isSaving ? 'Guardando...' : reminder === 'none' ? 'Guardar' : 'Guardar y avisarme'}
+          {reminder === 'none' ? 'Guardar' : 'Guardar y avisarme'}
         </button>
       </div>
     </div>
@@ -479,19 +480,36 @@ export function ResultScreen({
   comparisonOption,
   userContext,
 }: ResultScreenProps) {
+  // Use optimistic ID initially, then replace with real ID when save completes
   const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
   const [savedEmail, setSavedEmail] = useState<string>('');
+  const [showSuccess, setShowSuccess] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const isMobile = useIsMobile();
 
+  // Optimistic save: show success UI immediately
+  const handleOptimisticSave = (email: string) => {
+    const optimisticId = generateOptimisticId();
+    setSavedRecordId(optimisticId);
+    setSavedEmail(email);
+    setShowSuccess(true);
+  };
+
+  // Real save completed: update with actual record ID
+  const handleSaveSuccess = (realId: string, email: string) => {
+    setSavedRecordId(realId);
+    setSavedEmail(email);
+  };
+
   const handleShare = async () => {
-    if (!savedRecordId) return;
+    // Allow sharing even with optimistic ID (will use fallback text share)
+    const isOptimistic = savedRecordId?.startsWith('optimistic-');
     
     setIsSharing(true);
     
     try {
       const shareText = getShareText(userContext, currentOption, comparisonOption);
-      const shareUrl = `${SHARE_URL}/r/${savedRecordId}`;
+      const shareUrl = isOptimistic ? SHARE_URL : `${SHARE_URL}/r/${savedRecordId}`;
       const fullText = `${shareText}\n${shareUrl}`;
 
       // Check if we can share files on mobile
@@ -613,8 +631,8 @@ export function ResultScreen({
           </div>
         )}
 
-        {/* Post-save: show success with share options */}
-        {savedRecordId ? (
+        {/* Post-save: show success with share options (optimistic UI) */}
+        {showSuccess && savedRecordId ? (
           <SuccessWithShare 
             recordId={savedRecordId}
             isMobile={isMobile}
@@ -627,10 +645,8 @@ export function ResultScreen({
             <SaveSection 
               currentOption={currentOption} 
               comparisonOption={comparisonOption}
-              onSaveSuccess={(id, email) => {
-                setSavedRecordId(id);
-                setSavedEmail(email);
-              }}
+              onSaveSuccess={handleSaveSuccess}
+              onOptimisticSave={handleOptimisticSave}
             />
           </div>
         )}
