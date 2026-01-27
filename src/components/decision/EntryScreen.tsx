@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileQRCard } from './MobileQRCard';
 
 interface EntryScreenProps {
   onStart: () => void;
@@ -6,6 +8,7 @@ interface EntryScreenProps {
 
 export function EntryScreen({ onStart }: EntryScreenProps) {
   const [isAnimating, setIsAnimating] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Start animation cycle every 4 seconds
@@ -28,7 +31,7 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 pb-16">
-      <div className="max-w-lg w-full text-center space-y-12 animate-fade-up">
+      <div className="max-w-lg w-full text-center space-y-10 animate-fade-up">
         {/* Main title with compass animation */}
         <div className="space-y-2">
           <h1 className="heading-display">
@@ -51,6 +54,9 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
         <p className="text-subtle">
           En 20 segundos vas a poder tomar una mejor decisión laboral.
         </p>
+
+        {/* QR Card - only on desktop */}
+        {!isMobile && <MobileQRCard />}
 
         {/* Single CTA */}
         <button
