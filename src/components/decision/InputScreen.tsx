@@ -122,6 +122,11 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
               type="text"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !(showNameInput && !name.trim())) {
+                  handleSubmit();
+                }
+              }}
               placeholder="ej: exceso de trabajo, poco sueldo, falta de desafíos"
               className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
                          text-foreground placeholder:text-muted-foreground
