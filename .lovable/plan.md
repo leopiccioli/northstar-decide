@@ -1,219 +1,402 @@
 
 
-# Plan: QR en Home + Compartir Solo desde Mobile
+# Plan: Guardar Primero + Compartir Después (Mobile y Desktop)
 
 ## Resumen
 
-1. **QR en EntryScreen (Home)**: Card elegante above the fold con QR dinámico que incluye UTMs
-2. **Compartir solo en mobile**: En desktop, reemplazar botón de share por mensaje que invita a usar el celular
+Unificar el flujo: **guardar es obligatorio antes de compartir**, independiente del dispositivo. El botón de compartir solo aparece después de guardar exitosamente.
 
 ---
 
-## 1. QR Code en Home (Desktop Only)
-
-### Diseño Visual
+## Flujo Actual vs Nuevo
 
 ```text
+ACTUAL:
 ┌─────────────────────────────────────────────────────────┐
-│                                                         │
-│                   3D para decidir                       │
-│                     tu trabajo                          │
-│                                                         │
-│     En 20 segundos vas a poder tomar una mejor          │
-│                  decisión laboral.                      │
-│                                                         │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  📱                                               │  │
-│  │  Versión más potente en tu teléfono               │  │
-│  │                                                   │  │
-│  │  Compartí resultados, pedí segundas               │  │
-│  │  opiniones y guardá tu historial al instante.     │  │
-│  │                                                   │  │
-│  │           ┌─────────────┐                         │  │
-│  │           │  [QR CODE]  │                         │  │
-│  │           │             │                         │  │
-│  │           └─────────────┘                         │  │
-│  └───────────────────────────────────────────────────┘  │
-│                                                         │
-│                    [ Empezar ]                          │
-│                                                         │
+│ Mobile:  Resultados → [Compartir] ← directo            │
+│                     → [Guardar historial] ← opcional   │
+├─────────────────────────────────────────────────────────┤
+│ Desktop: Resultados → [QR para compartir]              │
+│                     → [Guardar historial] ← opcional   │
+└─────────────────────────────────────────────────────────┘
+
+NUEVO (ambos):
+┌─────────────────────────────────────────────────────────┐
+│ Resultados                                              │
+│     ↓                                                   │
+│ [Guardar para compartir] ← CTA principal               │
+│     ↓                                                   │
+│ (form email/país/recordatorio)                         │
+│     ↓                                                   │
+│ Success + [Compartir]  ← ahora sí, con ID guardado     │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Comportamiento
+---
 
-- **Solo visible en desktop** (usando `useIsMobile()`)
-- El QR incluye UTMs dinámicos para trackear conversiones
-- URL del QR: `https://3d.ceoencamiseta.com?utm_source=qr&utm_medium=desktop&utm_campaign=mobile_redirect`
+## Cambios Técnicos
 
-### Implementación
+### 1. Edge Function: Devolver ID en respuesta
 
-**Nueva dependencia**: `qrcode.react`
-
-```bash
-npm install qrcode.react
-```
-
-**Nuevo componente**: `src/components/decision/MobileQRCard.tsx`
+**Archivo**: `supabase/functions/save-result/index.ts`
 
 ```typescript
-import { QRCodeSVG } from 'qrcode.react';
-import { Smartphone } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+// Línea ~300 - agregar id en el response
+return new Response(
+  JSON.stringify({ 
+    success: true, 
+    id: insertedRecord.id,  // ← AGREGAR
+    hasHistory: !!previousMeasurement,
+    emailPending: true
+  }),
+  { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+);
+```
 
-const BASE_URL = 'https://3d.ceoencamiseta.com';
+### 2. Nuevo Edge Function: `get-result`
 
-export function MobileQRCard() {
-  // Build URL with UTM params
-  const qrUrl = new URL(BASE_URL);
-  qrUrl.searchParams.set('utm_source', 'qr');
-  qrUrl.searchParams.set('utm_medium', 'desktop');
-  qrUrl.searchParams.set('utm_campaign', 'mobile_redirect');
+**Archivo nuevo**: `supabase/functions/get-result/index.ts`
+
+Para cargar resultados desde la ruta `/r/:id` (necesario por RLS).
+
+```typescript
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const { id } = await req.json();
   
-  return (
-    <Card className="border-border bg-secondary/50">
-      <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <Smartphone className="w-5 h-5" />
-          <span>Versión más potente en tu teléfono</span>
-        </div>
-        
-        <p className="text-sm text-muted-foreground max-w-[280px]">
-          Compartí resultados, pedí segundas opiniones y guardá tu historial al instante.
-        </p>
-        
-        <div className="p-3 bg-white rounded-lg">
-          <QRCodeSVG
-            value={qrUrl.toString()}
-            size={120}
-            level="M"
-            bgColor="white"
-            fgColor="black"
-          />
-        </div>
-      </CardContent>
-    </Card>
+  // Validar UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!id || !uuidRegex.test(id)) {
+    return new Response(
+      JSON.stringify({ error: "ID inválido" }),
+      { status: 400, headers: corsHeaders }
+    );
+  }
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
+
+  const { data, error } = await supabase
+    .from('records_3d')
+    .select('option_name, dinero, desarrollo, diversion, comment, comparison')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error || !data) {
+    return new Response(
+      JSON.stringify({ error: "Resultado no encontrado" }),
+      { status: 404, headers: corsHeaders }
+    );
+  }
+
+  return new Response(
+    JSON.stringify({ 
+      success: true,
+      result: {
+        optionName: data.option_name,
+        scores: {
+          dinero: data.dinero,
+          desarrollo: data.desarrollo,
+          diversion: data.diversion,
+        },
+        comment: data.comment,
+        comparison: data.comparison,
+      }
+    }),
+    { status: 200, headers: corsHeaders }
+  );
+});
+```
+
+### 3. Nueva Ruta `/r/:id`
+
+**Archivo**: `src/App.tsx`
+
+```typescript
+import ResultPage from "./pages/ResultPage";
+
+<Routes>
+  <Route path="/" element={<Index />} />
+  <Route path="/r/:id" element={<ResultPage />} />
+  <Route path="*" element={<NotFound />} />
+</Routes>
+```
+
+### 4. Nueva Página de Resultado Compartido
+
+**Archivo nuevo**: `src/pages/ResultPage.tsx`
+
+Esta página:
+- Carga el resultado desde la DB usando el ID
+- Muestra scores en modo lectura
+- Tiene botón de compartir (mobile) o QR (desktop)
+
+```typescript
+export default function ResultPage() {
+  const { id } = useParams();
+  const isMobile = useIsMobile();
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadResult();
+  }, [id]);
+
+  const loadResult = async () => {
+    const { data, error } = await supabase.functions.invoke('get-result', {
+      body: { id }
+    });
+    if (data?.result) setResult(data.result);
+    else setError('No encontrado');
+    setLoading(false);
+  };
+
+  // ... render scores + share button
 }
 ```
 
-**Modificación**: `src/components/decision/EntryScreen.tsx`
+### 5. Modificar ResultScreen - Flujo Unificado
+
+**Archivo**: `src/components/decision/ResultScreen.tsx`
+
+**Cambios principales:**
+
+1. **Eliminar botón de share antes de guardar** (tanto mobile como desktop)
+2. **SaveSection visible por defecto** (no colapsable)
+3. **Capturar recordId** al guardar exitosamente
+4. **SuccessSection con botón de share** que funciona con el resultado guardado
+5. **En desktop, mostrar QR** que apunta a `/r/{id}` para compartir desde mobile
 
 ```typescript
-import { useIsMobile } from '@/hooks/use-mobile';
-import { MobileQRCard } from './MobileQRCard';
-
-export function EntryScreen({ onStart }: EntryScreenProps) {
+export function ResultScreen({ ... }) {
+  const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
   const isMobile = useIsMobile();
-  
+
+  // ...
+
   return (
-    <div className="...">
-      {/* ... título y promesa ... */}
+    <div>
+      {/* Resultados (scores, tabla, etc) */}
       
-      {/* QR Card - only on desktop */}
-      {!isMobile && <MobileQRCard />}
-      
-      {/* CTA */}
-      <button onClick={onStart} className="btn-primary ...">
-        Empezar
-      </button>
+      {savedRecordId ? (
+        // Post-guardado: mostrar success con opción de compartir
+        <SuccessWithShare 
+          recordId={savedRecordId}
+          isMobile={isMobile}
+          onShare={handleShare}
+          userContext={userContext}
+        />
+      ) : (
+        // Pre-guardado: mostrar form de guardado como CTA principal
+        <SaveSection 
+          currentOption={currentOption}
+          comparisonOption={comparisonOption}
+          onSaveSuccess={(id) => setSavedRecordId(id)}
+        />
+      )}
     </div>
   );
 }
 ```
 
----
-
-## 2. Compartir Solo desde Mobile
-
-### En Desktop: Mensaje en Lugar de Botón
-
-```text
-Resultados
-┌────────────────────────────┐
-│  [Scores + Promedio]       │
-├────────────────────────────┤
-│                            │
-│  ┌──────────────────────┐  │
-│  │ 📱 Para compartir,   │  │  ← Info card (en vez de botón)
-│  │    escaneá el QR     │  │
-│  │    desde tu celular  │  │
-│  │                      │  │
-│  │    [QR pequeño]      │  │
-│  └──────────────────────┘  │
-│                            │
-│  [ Guardar historial ]     │  ← Solo este botón activo
-│                            │
-└────────────────────────────┘
-```
-
-### En Mobile: Botón de Share Normal
-
-El flujo de share con imagen sigue funcionando igual.
-
-### Implementación
-
-**Modificación**: `src/components/decision/ResultScreen.tsx`
+### 6. Actualizar SaveSection para devolver ID
 
 ```typescript
-import { useIsMobile } from '@/hooks/use-mobile';
-import { MobileQRCard } from './MobileQRCard';
+function SaveSection({ 
+  currentOption, 
+  comparisonOption,
+  onSaveSuccess,  // Ahora recibe (id: string) => void
+}: { 
+  currentOption: Option; 
+  comparisonOption: Option | null;
+  onSaveSuccess: (recordId: string) => void;
+}) {
+  // ...
+  
+  const handleSave = async () => {
+    // ... validaciones ...
+    
+    const { data, error } = await supabase.functions.invoke('save-result', {
+      body: payload,
+    });
 
-export function ResultScreen({ ... }) {
-  const isMobile = useIsMobile();
+    if (error) throw new Error(error.message);
+    
+    // Pasar el ID al padre
+    if (data?.id) {
+      onSaveSuccess(data.id);
+    }
+  };
+}
+```
+
+### 7. Nuevo componente SuccessWithShare
+
+```typescript
+function SuccessWithShare({ 
+  recordId,
+  isMobile,
+  onShare,
+  userContext,
+}: { 
+  recordId: string;
+  isMobile: boolean;
+  onShare: () => void;
+  userContext: string;
+}) {
+  const shareUrl = `https://3d.ceoencamiseta.com/r/${recordId}`;
   
   return (
-    // ...resultados...
-    
-    {/* Action section */}
-    {saved ? (
-      <SuccessSection onShare={isMobile ? handleShare : undefined} />
-    ) : (
-      <div className="space-y-3">
-        {isMobile ? (
-          // Mobile: botón de share normal
-          <button onClick={handleShare} className="btn-primary w-full">
-            Pedir una segunda opinión
-          </button>
-        ) : (
-          // Desktop: card con QR
-          <div className="p-4 bg-secondary rounded-sm border border-border text-center space-y-3">
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <Smartphone className="w-4 h-4" />
-              <span>Para compartir, escaneá desde tu celular</span>
-            </div>
-            <div className="p-2 bg-white rounded inline-block">
-              <QRCodeSVG value={qrUrl} size={80} />
-            </div>
-          </div>
-        )}
-        
-        {/* Guardar historial - siempre visible */}
-        <button onClick={() => setShowSave(!showSave)} className="...">
-          Guardar historial
-        </button>
+    <div className="space-y-6 p-6 bg-secondary rounded-sm">
+      {/* Confirmación */}
+      <div className="text-center">
+        <Check className="w-12 h-12 mx-auto" />
+        <h3>Resultado guardado</h3>
+        <p>Te mandamos un email con tus 3D.</p>
       </div>
-    )}
+
+      {/* Share */}
+      {isMobile ? (
+        <button onClick={onShare} className="btn-primary w-full">
+          Pedir una segunda opinión
+        </button>
+      ) : (
+        <div className="text-center space-y-3">
+          <p className="text-sm">
+            📱 Escaneá para compartir desde tu celular
+          </p>
+          <QRCodeSVG value={shareUrl} size={100} />
+        </div>
+      )}
+
+      {/* CTA comunidad */}
+      <a href={CEO_COMMUNITY_URL} className="btn-secondary w-full">
+        Unirme a CEO en Camiseta
+      </a>
+    </div>
   );
+}
+```
+
+### 8. Actualizar MobileQRCard para URL custom
+
+**Archivo**: `src/components/decision/MobileQRCard.tsx`
+
+```typescript
+interface MobileQRCardProps {
+  url?: string;  // URL directa (overrides default)
+  // ... props existentes
+}
+
+export function MobileQRCard({ url, context, source, medium, compact }: MobileQRCardProps) {
+  // Si hay URL custom, usarla directamente
+  const qrUrl = url 
+    ? (url.startsWith('http') ? url : `https://3d.ceoencamiseta.com${url}`)
+    : buildDefaultUrl();
+  
+  // ... resto igual
 }
 ```
 
 ---
 
-## 3. URL del QR con Contexto
+## Nueva UI - Vista Previa
 
-El QR en ResultScreen puede incluir más contexto:
+### Antes de Guardar (igual en mobile y desktop)
 
-```typescript
-// En ResultScreen, el QR puede incluir el contexto del usuario
-const buildResultQRUrl = () => {
-  const url = new URL('https://3d.ceoencamiseta.com');
-  url.searchParams.set('utm_source', 'qr');
-  url.searchParams.set('utm_medium', 'desktop_result');
-  url.searchParams.set('utm_campaign', 'share_redirect');
-  url.searchParams.set('context', userContext); // improve, change, burnout, etc.
-  return url.toString();
-};
+```text
+┌─────────────────────────────────────┐
+│       [Nombre de la opción]         │
+│                                     │
+│  Dinero      ████████░░  8/10       │
+│  Desarrollo  ██████░░░░  6/10       │
+│  Diversión   ███████░░░  7/10       │
+│                                     │
+│       Promedio: 7.0                 │
+│                                     │
+├─────────────────────────────────────┤
+│                                     │
+│  Quienes repiten el 3D suelen       │
+│  mejorar sus puntajes con el tiempo │
+│                                     │
+│  Guardá tu resultado y seguí        │
+│  creciendo                          │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ email@ejemplo.com           │    │
+│  └─────────────────────────────┘    │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ Seleccioná tu país ▼        │    │
+│  └─────────────────────────────┘    │
+│                                     │
+│  Recordatorio:                      │
+│  [En 1 mes] [En 3 meses] [Sin]      │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │   Guardar y avisarme        │    │
+│  └─────────────────────────────┘    │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+### Después de Guardar - Mobile
+
+```text
+┌─────────────────────────────────────┐
+│                                     │
+│            ✓ (checkmark)            │
+│                                     │
+│       Resultado guardado            │
+│                                     │
+│  Te mandamos un email con tus 3D.   │
+│  Revisá tu bandeja de entrada.      │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ Pedir una segunda opinión   │    │  ← Share directo
+│  └─────────────────────────────┘    │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ Unirme a CEO en Camiseta →  │    │
+│  └─────────────────────────────┘    │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+### Después de Guardar - Desktop
+
+```text
+┌─────────────────────────────────────┐
+│                                     │
+│            ✓ (checkmark)            │
+│                                     │
+│       Resultado guardado            │
+│                                     │
+│  Te mandamos un email con tus 3D.   │
+│  Revisá tu bandeja de entrada.      │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ 📱 Compartí desde tu cel    │    │
+│  │                             │    │
+│  │    ┌──────────────┐         │    │
+│  │    │   [QR CODE]  │         │    │  ← QR a /r/{id}
+│  │    │  → /r/{id}   │         │    │
+│  │    └──────────────┘         │    │
+│  │                             │    │
+│  │  Escaneá para compartir     │    │
+│  └─────────────────────────────┘    │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │ Unirme a CEO en Camiseta →  │    │
+│  └─────────────────────────────┘    │
+│                                     │
+└─────────────────────────────────────┘
 ```
 
 ---
@@ -222,46 +405,22 @@ const buildResultQRUrl = () => {
 
 | Archivo | Cambios |
 |---------|---------|
-| `package.json` | Agregar dependencia `qrcode.react` |
-| `src/components/decision/MobileQRCard.tsx` | **NUEVO** - Componente reutilizable de QR con mensaje |
-| `src/components/decision/EntryScreen.tsx` | Importar `useIsMobile`, mostrar QR card en desktop |
-| `src/components/decision/ResultScreen.tsx` | Condicionar botón share vs QR según dispositivo |
-
----
-
-## Flujo Completo
-
-```text
-Usuario en Desktop
-       │
-       ▼
- ┌──────────────┐
- │  EntryScreen │
- │  + QR Card   │──── Escanea QR ───▶ Abre en mobile
- └──────────────┘
-       │
-       ▼ (sigue en desktop)
- ┌──────────────┐
- │  Completa 3D │
- └──────────────┘
-       │
-       ▼
- ┌──────────────┐
- │ ResultScreen │
- │  + QR Card   │──── Escanea QR ───▶ Abre en mobile (con context)
- │ (no share)   │
- └──────────────┘
-       │
-       ▼
- Puede guardar historial normalmente
-```
+| `supabase/functions/save-result/index.ts` | Incluir `id` en response JSON |
+| `supabase/functions/get-result/index.ts` | **NUEVO** - Leer resultado por ID |
+| `supabase/functions/get-result/deno.json` | **NUEVO** - Config del function |
+| `supabase/config.toml` | Agregar config para `get-result` |
+| `src/App.tsx` | Agregar ruta `/r/:id` |
+| `src/pages/ResultPage.tsx` | **NUEVO** - Página de resultado compartido |
+| `src/components/decision/ResultScreen.tsx` | Flujo unificado: guardar primero, luego share |
+| `src/components/decision/MobileQRCard.tsx` | Soportar URL custom |
 
 ---
 
 ## Beneficios
 
-- **Elegante**: Card minimalista con el mismo look & feel
-- **Trackeable**: UTMs en el QR para medir conversiones desktop→mobile
-- **Sin fricción**: El usuario entiende que mobile es mejor sin frustración
-- **Guardar sigue funcionando**: La retención en desktop no se pierde
+- **Consistencia**: Mismo flujo en mobile y desktop
+- **Datos garantizados**: Siempre se guarda antes de compartir
+- **Links únicos**: Cada resultado tiene su URL persistente (`/r/{id}`)
+- **Sin fricción en mobile**: El destinatario abre el link y ve el resultado directo
+- **Trackeable**: Podemos medir quién abrió cada link compartido
 
