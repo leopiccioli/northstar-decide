@@ -120,10 +120,11 @@ export function DecisionFlow() {
         />
       )}
       
-      {state.step === 'result' && state.currentOption && (
+      {state.step === 'result' && state.currentOption && state.context && (
         <ResultScreen
           currentOption={state.currentOption}
           comparisonOption={state.comparisonOption}
+          userContext={state.context}
         />
       )}
       
