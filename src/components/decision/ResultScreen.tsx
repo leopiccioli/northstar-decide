@@ -241,7 +241,7 @@ function SaveSection({
       </p>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Guardá tu resultado y comparalo después</label>
+        <label className="text-sm font-medium">Guardá tu resultado y seguí creciendo</label>
         <input
           type="email"
           value={email}
@@ -307,7 +307,7 @@ function SaveSection({
           disabled={!email.trim() || isSaving}
           className="btn-primary flex-1 text-sm py-2 disabled:opacity-40"
         >
-          {isSaving ? 'Guardando...' : 'Guardar y avisarme'}
+          {isSaving ? 'Guardando...' : reminder === 'none' ? 'Guardar' : 'Guardar y avisarme'}
         </button>
       </div>
     </div>
