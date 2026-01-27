@@ -47,6 +47,12 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && name.trim()) {
+                  handleSubmit();
+                }
+              }}
+              maxLength={100}
               placeholder="Seguir así / Ascenso / Nueva empresa..."
               className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
                          text-foreground placeholder:text-muted-foreground
@@ -127,6 +133,7 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
                   handleSubmit();
                 }
               }}
+              maxLength={500}
               placeholder="ej: exceso de trabajo, poco sueldo, falta de desafíos"
               className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
                          text-foreground placeholder:text-muted-foreground
