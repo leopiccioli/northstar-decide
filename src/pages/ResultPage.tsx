@@ -10,7 +10,7 @@ import { Smartphone, ExternalLink, Loader2 } from 'lucide-react';
 import { Option, Scores } from '@/types/decision';
 
 const SHARE_URL = 'https://3d.ceoencamiseta.com';
-const CEO_COMMUNITY_URL = 'https://ceoencamiseta.com/comunidad';
+const CEO_BEEHIIV_BASE = 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e';
 
 interface ResultData {
   optionName: string;
@@ -345,7 +345,7 @@ export default function ResultPage() {
           )}
 
           <a
-            href={CEO_COMMUNITY_URL}
+            href={CEO_BEEHIIV_BASE}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full py-3 text-sm border border-border rounded-sm

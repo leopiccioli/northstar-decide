@@ -31,21 +31,21 @@ const CEO_COMMUNITY_URL = 'https://ceoencamiseta.com/comunidad';
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina' },
   { code: 'BO', name: 'Bolivia' },
-  { code: 'PY', name: 'Paraguay' },
   { code: 'CL', name: 'Chile' },
-  { code: 'UY', name: 'Uruguay' },
-  { code: 'US', name: 'Estados Unidos' },
-  { code: 'ES', name: 'España' },
   { code: 'CO', name: 'Colombia' },
-  { code: 'VE', name: 'Venezuela' },
-  { code: 'PE', name: 'Perú' },
-  { code: 'HN', name: 'Honduras' },
   { code: 'CR', name: 'Costa Rica' },
-  { code: 'MX', name: 'México' },
-  { code: 'IT', name: 'Italia' },
-  { code: 'PT', name: 'Portugal' },
-  { code: 'NI', name: 'Nicaragua' },
   { code: 'EC', name: 'Ecuador' },
+  { code: 'ES', name: 'España' },
+  { code: 'US', name: 'Estados Unidos' },
+  { code: 'HN', name: 'Honduras' },
+  { code: 'IT', name: 'Italia' },
+  { code: 'MX', name: 'México' },
+  { code: 'NI', name: 'Nicaragua' },
+  { code: 'PY', name: 'Paraguay' },
+  { code: 'PE', name: 'Perú' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'UY', name: 'Uruguay' },
+  { code: 'VE', name: 'Venezuela' },
 ];
 
 interface ResultScreenProps {
@@ -145,12 +145,15 @@ function SuccessWithShare({
   recordId,
   isMobile, 
   onShare,
+  email,
 }: { 
   recordId: string;
   isMobile: boolean;
   onShare: () => void;
+  email: string;
 }) {
   const shareUrl = `${SHARE_URL}/r/${recordId}`;
+  const ceoUrl = `https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e?email=${encodeURIComponent(email)}`;
 
   return (
     <div className="space-y-6 p-6 bg-secondary rounded-sm border border-border animate-fade-up text-center">
@@ -196,7 +199,7 @@ function SuccessWithShare({
         )}
         
         <a
-          href={CEO_COMMUNITY_URL}
+          href={ceoUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full py-3 text-sm border border-border rounded-sm
@@ -286,7 +289,7 @@ function SaveSection({
 }: { 
   currentOption: Option; 
   comparisonOption: Option | null;
-  onSaveSuccess: (recordId: string) => void;
+  onSaveSuccess: (recordId: string, email: string) => void;
 }) {
   const trackingData = useTrackingData();
   
@@ -369,9 +372,9 @@ function SaveSection({
         throw new Error(error.message || 'Error al guardar');
       }
 
-      // Success - pass the record ID to parent
+      // Success - pass the record ID and email to parent
       if (data?.id) {
-        onSaveSuccess(data.id);
+        onSaveSuccess(data.id, trimmedEmail);
       } else {
         throw new Error('No se recibió el ID del resultado');
       }
@@ -477,6 +480,7 @@ export function ResultScreen({
   userContext,
 }: ResultScreenProps) {
   const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
+  const [savedEmail, setSavedEmail] = useState<string>('');
   const [isSharing, setIsSharing] = useState(false);
   const isMobile = useIsMobile();
 
@@ -615,6 +619,7 @@ export function ResultScreen({
             recordId={savedRecordId}
             isMobile={isMobile}
             onShare={handleShare}
+            email={savedEmail}
           />
         ) : (
           /* Pre-save: show save form as primary CTA */
@@ -622,7 +627,10 @@ export function ResultScreen({
             <SaveSection 
               currentOption={currentOption} 
               comparisonOption={comparisonOption}
-              onSaveSuccess={(id) => setSavedRecordId(id)}
+              onSaveSuccess={(id, email) => {
+                setSavedRecordId(id);
+                setSavedEmail(email);
+              }}
             />
           </div>
         )}
