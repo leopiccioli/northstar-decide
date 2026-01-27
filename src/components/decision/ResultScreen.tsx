@@ -6,15 +6,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
 import { generateShareImage, getShareText } from './ShareImageGenerator';
+import { Check, ChevronsUpDown, ExternalLink } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 
 const SHARE_URL = 'https://3d.ceoencamiseta.com';
+const CEO_COMMUNITY_URL = 'https://ceoencamiseta.com/comunidad';
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina' },
@@ -128,12 +138,121 @@ function ComparisonTable({ a, b }: { a: Option; b: Option }) {
   );
 }
 
+// Success screen shown after saving
+function SuccessSection({ onShare }: { onShare: () => void }) {
+  return (
+    <div className="space-y-6 p-6 bg-secondary rounded-sm border border-border animate-fade-up text-center">
+      <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-foreground text-background">
+        <Check className="w-6 h-6" />
+      </div>
+      
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">Resultado guardado</h3>
+        <p className="text-sm text-muted-foreground">
+          Te mandamos un email con tus 3D.<br />
+          Revisá tu bandeja de entrada.
+        </p>
+      </div>
+
+      <div className="space-y-3 pt-2">
+        <a
+          href={CEO_COMMUNITY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary w-full flex items-center justify-center gap-2"
+        >
+          Unirme a CEO en Camiseta
+          <ExternalLink className="w-4 h-4" />
+        </a>
+        
+        <button
+          onClick={onShare}
+          className="w-full py-3 text-sm border border-border rounded-sm
+                     hover:border-foreground/50 transition-colors"
+        >
+          Pedir una segunda opinión
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Country combobox with search
+function CountryCombobox({ 
+  value, 
+  onChange, 
+  error 
+}: { 
+  value: string; 
+  onChange: (value: string) => void;
+  error?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const selectedCountry = COUNTRIES.find((c) => c.code === value);
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">País</label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn(
+              "w-full justify-between font-normal",
+              !value && "text-muted-foreground",
+              error && "border-destructive"
+            )}
+          >
+            {selectedCountry?.name || "Seleccioná tu país"}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0 bg-popover" align="start">
+          <Command>
+            <CommandInput placeholder="Buscar país..." />
+            <CommandList>
+              <CommandEmpty>No se encontró el país.</CommandEmpty>
+              <CommandGroup>
+                {COUNTRIES.map((country) => (
+                  <CommandItem
+                    key={country.code}
+                    value={country.name}
+                    onSelect={() => {
+                      onChange(country.code);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === country.code ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {country.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
+    </div>
+  );
+}
+
 function SaveSection({ 
   currentOption, 
-  comparisonOption 
+  comparisonOption,
+  onSaveSuccess,
 }: { 
   currentOption: Option; 
   comparisonOption: Option | null;
+  onSaveSuccess: () => void;
 }) {
   const trackingData = useTrackingData();
   
@@ -147,6 +266,13 @@ function SaveSection({
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  const handleEmailBlur = () => {
+    const trimmed = email.trim();
+    if (trimmed && !validateEmail(trimmed)) {
+      setEmailError('Email inválido');
+    }
   };
 
   const handleSave = async () => {
@@ -201,7 +327,7 @@ function SaveSection({
         },
       };
 
-      const { data, error } = await supabase.functions.invoke('save-result', {
+      const { error } = await supabase.functions.invoke('save-result', {
         body: payload,
       });
 
@@ -209,22 +335,8 @@ function SaveSection({
         throw new Error(error.message || 'Error al guardar');
       }
 
-      // Success - show appropriate message
-      // emailPending means email is being sent in background
-      const emailPending = data?.emailPending;
-      
-      toast({
-        title: "Resultado guardado",
-        description: reminder !== 'none'
-          ? `Te avisaremos ${reminderOptions.find(r => r.id === reminder)?.label.toLowerCase()}. Revisá tu email.`
-          : emailPending 
-            ? "Revisá tu email en unos segundos."
-            : "Tus datos quedaron guardados.",
-      });
-
-      setEmail('');
-      setCountry('');
-      setReminder('1m');
+      // Success - transition to success state
+      onSaveSuccess();
     } catch (error) {
       console.error('Save error:', error);
       
@@ -268,6 +380,7 @@ function SaveSection({
             setEmail(e.target.value);
             if (emailError) setEmailError('');
           }}
+          onBlur={handleEmailBlur}
           placeholder="email@ejemplo.com"
           className={`w-full px-4 py-3 bg-background border rounded-sm
                      text-foreground placeholder:text-muted-foreground
@@ -279,27 +392,14 @@ function SaveSection({
         )}
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">País</label>
-        <Select value={country} onValueChange={(val) => {
+      <CountryCombobox
+        value={country}
+        onChange={(val) => {
           setCountry(val);
           if (countryError) setCountryError('');
-        }}>
-          <SelectTrigger className={`w-full ${countryError ? 'border-destructive' : ''}`}>
-            <SelectValue placeholder="Seleccioná tu país" />
-          </SelectTrigger>
-          <SelectContent>
-            {COUNTRIES.map((c) => (
-              <SelectItem key={c.code} value={c.code}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {countryError && (
-          <p className="text-sm text-destructive">{countryError}</p>
-        )}
-      </div>
+        }}
+        error={countryError}
+      />
 
       <div className="space-y-2">
         <label className="text-sm text-muted-foreground">Recordatorio</label>
@@ -339,6 +439,7 @@ export function ResultScreen({
   userContext,
 }: ResultScreenProps) {
   const [showSave, setShowSave] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async () => {
@@ -360,7 +461,7 @@ export function ResultScreen({
             userContext,
             isDark,
           });
-          const file = new File([imageBlob], 'mi-3d.png', { type: 'image/png' });
+          const file = new File([imageBlob], 'mis-3d-laborales.png', { type: 'image/png' });
 
           // Check if we can share the file
           if (navigator.canShare({ files: [file] })) {
@@ -468,35 +569,43 @@ export function ResultScreen({
           </div>
         )}
 
-        {/* Action buttons - parallel */}
-        <div className="space-y-3 animate-fade-up opacity-0 stagger-1">
-          {/* Share - Primary */}
-          <button
-            onClick={handleShare}
-            disabled={isSharing}
-            className="btn-primary w-full disabled:opacity-50"
-          >
-            {isSharing ? 'Compartiendo...' : 'Pedir una segunda opinión'}
-          </button>
+        {/* Success state after saving */}
+        {saved ? (
+          <SuccessSection onShare={handleShare} />
+        ) : (
+          <>
+            {/* Action buttons - parallel */}
+            <div className="space-y-3 animate-fade-up opacity-0 stagger-1">
+              {/* Share - Primary */}
+              <button
+                onClick={handleShare}
+                disabled={isSharing}
+                className="btn-primary w-full disabled:opacity-50"
+              >
+                {isSharing ? 'Compartiendo...' : 'Pedir una segunda opinión'}
+              </button>
 
-          {/* Save - Secondary (outline) */}
-          <button
-            onClick={() => setShowSave(!showSave)}
-            className="w-full py-3 text-sm border border-border rounded-sm
-                       hover:border-foreground/50 transition-colors"
-          >
-            Guardar historial
-          </button>
-        </div>
+              {/* Save - Secondary (outline) */}
+              <button
+                onClick={() => setShowSave(!showSave)}
+                className="w-full py-3 text-sm border border-border rounded-sm
+                           hover:border-foreground/50 transition-colors"
+              >
+                Guardar historial
+              </button>
+            </div>
 
-        {/* Save section - expandable */}
-        {showSave && (
-          <div className="animate-fade-up">
-            <SaveSection 
-              currentOption={currentOption} 
-              comparisonOption={comparisonOption} 
-            />
-          </div>
+            {/* Save section - expandable */}
+            {showSave && (
+              <div className="animate-fade-up">
+                <SaveSection 
+                  currentOption={currentOption} 
+                  comparisonOption={comparisonOption}
+                  onSaveSuccess={() => setSaved(true)}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

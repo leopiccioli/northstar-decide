@@ -125,7 +125,7 @@ export async function generateShareImage({
     ctx.fillStyle = isDark ? '#fafafa' : '#0f0f0f';
     ctx.font = 'bold 56px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Mi 3D', canvas.width / 2, 180);
+    ctx.fillText('Mis 3D laborales', canvas.width / 2, 180);
     ctx.textAlign = 'left';
     
     startY = 380;
@@ -164,11 +164,11 @@ export async function generateShareImage({
 
 // Share text templates based on user context
 const shareTemplates: Record<UserContext, string> = {
-  improve: 'Quiero mejorar mi trabajo.\nMi 3D: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Qué mejorarías primero?',
-  change: 'Estoy pensando en cambiar.\nMi 3D: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Vos cambiarías?',
-  burnout: 'Me siento estancado.\nMi 3D: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Qué harías en mi lugar?',
-  check: 'Mi 3D hoy: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Cómo lo ves?',
-  compare: 'Comparé "{a}" vs "{b}".\n{tradeoff}\n¿Qué harías vos?',
+  improve: 'Quiero mejorar mi trabajo.\nMis 3D laborales: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Qué mejorarías primero?',
+  change: 'Estoy pensando en cambiar.\nMis 3D laborales: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Vos cambiarías?',
+  burnout: 'Me siento estancado.\nMis 3D laborales: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Qué harías en mi lugar?',
+  check: 'Mis 3D laborales hoy: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Cómo lo ves?',
+  compare: 'Comparé "{a}" vs "{b}" en mis 3D laborales.\n{tradeoff}\n¿Qué harías vos?',
 };
 
 export function getShareText(
