@@ -1,181 +1,148 @@
 
-# Plan: Sharing Ultra-Minimalista
+
+# Plan: Share con Contexto + Botones Paralelos
 
 ## Resumen
 
-Simplificar `ShareSection.tsx` a un solo botón que:
-- En mobile: usa Web Share API nativo
-- En desktop: copia automáticamente al clipboard + muestra toast
-
-Sin "Más opciones", sin botones secundarios, sin selector de formato.
+1. **Usar el contexto inicial** del usuario para generar el texto de share automáticamente
+2. **Mobile: compartir imagen** / **Web: copiar texto**
+3. **Botones paralelos**: "Pedir una segunda opinión" y "Guardar historial" al mismo nivel
 
 ---
 
-## Flujo Único
-
-```text
-Usuario toca "Pedir una segunda opinión"
-         │
-         ▼
-    ¿Soporta navigator.share?
-         │
-    ┌────┴────┐
-    Sí        No
-    │         │
-    ▼         ▼
-  Share     Copiar al
-  nativo    clipboard
-    │         │
-    ▼         ▼
-  (iOS/     Toast:
-  Android   "Copiado.
-  picker)   Pegalo donde
-            quieras"
-```
-
----
-
-## Cambios en ShareSection.tsx
-
-### Lo que se elimina
-
-- Botones WhatsApp, Twitter, Copiar link
-- Selector Feed/Story
-- Botón "Descargar imagen"
-- Toggle "Más opciones"
-- Estado `showFallback`
-- Microcopy "Mandáselo a alguien..."
-
-### Lo que queda
+## Layout Final
 
 ```text
 ┌─────────────────────────────────────┐
-│  Pedí una segunda opinión           │  ← Título
+│  [Resultado con scores]             │
+│  [Promedio: X.X]                    │
 │                                     │
-│  [ Estoy para cambiar ]             │
-│  [ Estoy estancado    ] ●           │  ← Etiquetas (1 selección)
-│  [ Estoy creciendo    ]             │
-│  [ Estoy cómodo       ]             │
-│  [ Estoy quemado      ]             │
+├─────────────────────────────────────┤
 │                                     │
 │  ┌─────────────────────────────┐    │
-│  │  Pedir una segunda opinión  │    │  ← UNICO BOTON
+│  │  Pedir una segunda opinión  │    │  ← Primario (negro)
 │  └─────────────────────────────┘    │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │     Guardar historial       │    │  ← Secundario (outline)
+│  └─────────────────────────────┘    │
+│                                     │
+│  [SaveSection expandido si click]   │
 └─────────────────────────────────────┘
 ```
 
+Ambos botones visibles, sin jerarquía oculta.
+
 ---
 
-## Lógica del Botón
+## Cambios Principales
+
+### 1. Pasar userContext desde DecisionFlow
+
+```typescript
+// DecisionFlow.tsx
+<ResultScreen
+  currentOption={state.currentOption}
+  comparisonOption={state.comparisonOption}
+  userContext={state.context}  // NUEVO
+/>
+```
+
+### 2. Textos Basados en Contexto Inicial
+
+En vez de etiquetas manuales, usar el contexto que el usuario ya eligió:
+
+| Contexto | Texto de Share |
+|----------|---------------|
+| `improve` | "Quiero mejorar mi trabajo. Mi 3D: {d}/{dev}/{div}. ¿Qué mejorarías primero?" |
+| `change` | "Estoy pensando en cambiar. Mi 3D: {d}/{dev}/{div}. ¿Vos cambiarías?" |
+| `burnout` | "Me siento estancado. Mi 3D: {d}/{dev}/{div}. ¿Qué harías en mi lugar?" |
+| `check` | "Mi 3D hoy: {d}/{dev}/{div}. ¿Cómo lo ves?" |
+| `compare` | "Comparé \"{a}\" vs \"{b}\". {tradeoff}. ¿Qué harías vos?" |
+
+### 3. Mobile: Imagen / Web: Texto
 
 ```typescript
 const handleShare = async () => {
-  const text = getShareTextByLabel(selectedLabel, currentOption.scores);
-  const url = 'https://3d.ceoencamiseta.com';
-  const fullText = `${text}\n${url}`;
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const shareText = getShareTextByContext(userContext, scores);
 
-  // Intentar share nativo primero
-  if (navigator.share) {
+  if (isMobile && navigator.share) {
+    // Generar imagen PNG y compartirla
+    const imageBlob = await generateShareImage();
+    const file = new File([imageBlob], 'mi-3d.png', { type: 'image/png' });
+    
     try {
-      await navigator.share({ text: fullText });
+      await navigator.share({
+        files: [file],
+        text: shareText,
+        url: SHARE_URL,
+      });
       return;
     } catch (err) {
-      // Usuario canceló o falló - continuar a clipboard
-      if (err.name === 'AbortError') return;
+      if ((err as Error).name === 'AbortError') return;
     }
   }
 
-  // Fallback: copiar al clipboard
-  await navigator.clipboard.writeText(fullText);
-  toast({
-    title: "Copiado",
-    description: "Pegalo en WhatsApp o donde quieras",
+  // Web: copiar texto
+  await navigator.clipboard.writeText(`${shareText}\n${SHARE_URL}`);
+  toast({ title: "Copiado", description: "Pegalo en WhatsApp o donde quieras" });
+};
+```
+
+### 4. Botones Paralelos en ResultScreen
+
+```typescript
+// ResultScreen.tsx - Sección de acciones
+<div className="space-y-3">
+  {/* Share - Primario */}
+  <button
+    onClick={handleShare}
+    className="btn-primary w-full"
+  >
+    Pedir una segunda opinión
+  </button>
+
+  {/* Guardar - Secundario (outline) */}
+  <button
+    onClick={() => setShowSave(!showSave)}
+    className="w-full py-3 text-sm border border-border rounded-sm
+               hover:border-foreground/50 transition-colors"
+  >
+    Guardar historial
+  </button>
+</div>
+
+{showSave && <SaveSection ... />}
+```
+
+---
+
+## Imagen para Mobile (Canvas)
+
+Diseño simple:
+- Fondo blanco/negro (dark mode)
+- Barras visuales por dimensión
+- URL: 3d.ceoencamiseta.com
+
+```typescript
+const generateShareImage = async (): Promise<Blob> => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1350; // Feed format
+  const ctx = canvas.getContext('2d')!;
+
+  // Fondo
+  ctx.fillStyle = isDark ? '#0f0f0f' : '#fafafa';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Barras + scores + URL
+  // ... renderizado
+
+  return new Promise(resolve => {
+    canvas.toBlob(blob => resolve(blob!), 'image/png');
   });
 };
-```
-
----
-
-## Textos por Etiqueta
-
-```typescript
-const shareTemplates: Record<IdentityLabel, string> = {
-  'Estoy para cambiar': 
-    `Estoy para cambiar.\nMi 3D: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Vos cambiarías?`,
-  
-  'Estoy estancado': 
-    `Me siento estancado.\nMi 3D: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Qué harías en mi lugar?`,
-  
-  'Estoy creciendo': 
-    `Creo que voy creciendo.\nMi 3D: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Te cierra o estoy flasheando?`,
-  
-  'Estoy cómodo': 
-    `Estoy cómodo donde estoy.\nMi 3D: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Moverías algo?`,
-  
-  'Estoy quemado': 
-    `Creo que estoy quemado.\nMi 3D: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Hora de cambiar?`,
-};
-```
-
----
-
-## Comparación (A vs B)
-
-Para modo comparación, template especial:
-
-```typescript
-const comparisonTemplate = 
-  `Comparé "{a}" vs "{b}".\n{tradeoff}\n¿Qué harías vos?`;
-
-// Ejemplo output:
-// "Comparé "quedarme" vs "cambiar".
-// +Dinero / –Diversión
-// ¿Qué harías vos?
-// https://3d.ceoencamiseta.com"
-```
-
----
-
-## Estructura Final del Componente
-
-```typescript
-// Estado mínimo
-const [selectedLabel, setSelectedLabel] = useState<IdentityLabel>('Estoy estancado');
-
-// Render ultra-simple
-return (
-  <div className="space-y-6">
-    {/* Título */}
-    <h3 className="text-lg font-semibold text-center">
-      Pedí una segunda opinión
-    </h3>
-
-    {/* Etiquetas */}
-    <div className="flex flex-wrap gap-2 justify-center">
-      {IDENTITY_LABELS.map((label) => (
-        <button
-          key={label}
-          onClick={() => setSelectedLabel(label)}
-          className={`px-3 py-1.5 text-sm rounded-sm border transition-all
-            ${selectedLabel === label 
-              ? 'bg-foreground text-background border-foreground' 
-              : 'bg-background border-border hover:border-foreground/50'
-            }`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-
-    {/* CTA único */}
-    <button
-      onClick={handleShare}
-      className="btn-primary w-full"
-    >
-      Pedir una segunda opinión
-    </button>
-  </div>
-);
 ```
 
 ---
@@ -184,22 +151,24 @@ return (
 
 | Archivo | Cambios |
 |---------|---------|
-| `src/components/decision/ShareSection.tsx` | Simplificar a un solo botón, eliminar opciones secundarias, implementar clipboard fallback |
+| `src/components/decision/DecisionFlow.tsx` | Pasar `userContext` a ResultScreen |
+| `src/components/decision/ResultScreen.tsx` | Recibir `userContext`, mover lógica de share, botones paralelos |
+| `src/components/decision/ShareSection.tsx` | Eliminar (lógica se mueve a ResultScreen) o simplificar a solo el handler |
 
 ---
 
-## Lo que se mantiene igual
+## Lo que se Elimina
 
-- Etiquetas de identidad (5 opciones)
-- Lógica de textos conversacionales
-- Integración en ResultScreen
-- SaveSection colapsable (ya implementado)
+- Título "Pedí una segunda opinión" (redundante con el botón)
+- Etiquetas de identidad seleccionables
+- Toggle colapsado "Guardar historial" (ahora es botón visible)
 
 ---
 
 ## Beneficios
 
-- **Cero decisiones**: 1 botón, 1 acción
-- **Mismo UX en mobile y desktop**: Share nativo o clipboard
-- **Toast informativo**: Usuario sabe qué pasó
-- **Código más simple**: ~50% menos líneas
+- **Cero decisiones extra**: El contexto ya está, no hay que elegir etiqueta
+- **Mismo nivel visual**: Share y Guardar tienen igual importancia
+- **Mobile optimizado**: Imagen lista para compartir
+- **Web simple**: Texto copiado automáticamente
+
