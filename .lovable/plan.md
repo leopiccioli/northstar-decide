@@ -1,94 +1,124 @@
 
-# Agregar Campo de País al Formulario de Guardado
+
+# Optimizar Pantalla de Resultados para Mayor Conversión
 
 ## Objetivo
-Agregar un selector de país obligatorio junto al campo de email en la sección de guardado de resultados. Esto permitirá segmentar usuarios por ubicación geográfica para análisis y posibles campañas futuras.
+Aumentar la tasa de guardado eliminando fricción y simplificando la interfaz.
 
 ## Cambios Propuestos
 
-### 1. Agregar columna `country` a la base de datos
-**Tabla:** `records_3d`
+### 1. Eliminar paso intermedio del formulario de guardado
 
-Crear una migración para agregar:
-```sql
-ALTER TABLE records_3d ADD COLUMN country TEXT;
-```
-
-Nota: Por ahora será nullable para no romper registros existentes. Podemos hacerla required más adelante si queremos.
-
-### 2. Actualizar el formulario en ResultScreen
 **Archivo:** `src/components/decision/ResultScreen.tsx`
 
-Agregar un selector de país usando el componente Select de shadcn/ui:
+Actualmente el formulario está colapsado detrás de un botón "Guardar para después". El usuario tiene que hacer clic para expandirlo.
+
+**Cambio:** Eliminar la lógica de `isExpanded` y mostrar el formulario siempre visible.
 
 ```typescript
-const COUNTRIES = [
-  { code: 'AR', name: 'Argentina' },
-  { code: 'BO', name: 'Bolivia' },
-  { code: 'PY', name: 'Paraguay' },
-  { code: 'CL', name: 'Chile' },
-  { code: 'UY', name: 'Uruguay' },
-  { code: 'US', name: 'Estados Unidos' },
-  { code: 'ES', name: 'España' },
-  { code: 'CO', name: 'Colombia' },
-  { code: 'VE', name: 'Venezuela' },
-  { code: 'PE', name: 'Perú' },
-  { code: 'HN', name: 'Honduras' },
-  { code: 'CR', name: 'Costa Rica' },
-  { code: 'MX', name: 'México' },
-  { code: 'IT', name: 'Italia' },
-  { code: 'PT', name: 'Portugal' },
-  { code: 'NI', name: 'Nicaragua' },
-  { code: 'EC', name: 'Ecuador' },
-];
+// ANTES (líneas 137, 240-252)
+const [isExpanded, setIsExpanded] = useState(!!trackingData.email);
 
-// Nuevo estado
-const [country, setCountry] = useState('');
-
-// Validación adicional en handleSave
-if (!country) {
-  setCountryError('Seleccioná tu país');
-  return;
+if (!isExpanded) {
+  return (
+    <button onClick={() => setIsExpanded(true)}>
+      Guardar para después
+    </button>
+  );
 }
+
+// DESPUÉS
+// Eliminar estado isExpanded
+// Eliminar el condicional if (!isExpanded)
+// Eliminar el botón Cancelar (ya no tiene sentido)
+// Mostrar el formulario directamente
 ```
 
-### 3. Actualizar el Edge Function
-**Archivo:** `supabase/functions/save-result/index.ts`
+También eliminar:
+- El import de `Bookmark` (ya no se usa)
+- El botón "Cancelar" del formulario
 
-Modificar la interfaz y el insert para incluir el país:
+### 2. Reemplazar mensajes de opinión por "Promedio"
+
+**Archivo:** `src/components/decision/GlobalScore.tsx`
+
+Actualmente muestra mensajes como "Muy buen balance", "Vas por buen camino", "Hay trabajo por hacer" según el nivel.
+
+**Cambio:** Mostrar simplemente "Promedio" sin importar el puntaje.
 
 ```typescript
-interface SaveResultRequest {
-  email: string;
-  country: string;  // NUEVO
-  // ... resto igual
-}
+// ANTES (líneas 18-22)
+const levelLabels = {
+  low: 'Hay trabajo por hacer',
+  medium: 'Vas por buen camino',
+  high: 'Muy buen balance',
+};
 
-// En el insert:
-country: body.country || null,
+// DESPUÉS
+// Eliminar levelLabels y simplemente mostrar "Promedio"
+<p className="text-sm font-medium">Promedio</p>
 ```
 
-### 4. Actualizar types de Supabase
-Se actualizará automáticamente cuando se ejecute la migración.
+Los dots visuales (1-3 puntos) se mantienen porque son una representación visual neutra, no una opinión.
 
-## Flujo de Usuario Actualizado
+### 3. Botones de recordatorio en una sola línea
+
+**Archivo:** `src/components/decision/ResultScreen.tsx`
+
+Actualmente usa `flex-wrap gap-2` que puede hacer que "Sin recordatorio" salte a una segunda línea en pantallas pequeñas (como se ve en el screenshot).
+
+**Cambio:** Usar `flex-nowrap` y reducir padding para que quepan los tres botones.
+
+```typescript
+// ANTES (línea 305)
+<div className="flex flex-wrap gap-2">
+
+// DESPUÉS
+<div className="flex gap-1.5">
+  <button className="px-2.5 py-1.5 text-sm whitespace-nowrap ...">
+```
+
+Ajustes:
+- Cambiar `flex-wrap` a `flex` sin wrap
+- Reducir `gap-2` a `gap-1.5`
+- Reducir `px-3` a `px-2.5` en los botones
+- Agregar `whitespace-nowrap` para evitar quiebres internos
+
+## Flujo Visual Actualizado
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│  Guardá tu resultado                                        │
-│  ─────────────────────                                      │
+│  Dinero                                              5/10   │
+│  ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
 │                                                             │
-│  ┌─────────────────────────────────────────────┐            │
-│  │ email@ejemplo.com                           │            │
-│  └─────────────────────────────────────────────┘            │
+│  Desarrollo                                          5/10   │
+│  ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │
 │                                                             │
-│  ┌─────────────────────────────────────────────┐            │
-│  │ Selecciona tu país               ▼          │            │
-│  └─────────────────────────────────────────────┘            │
+│  Diversión                                           9/10   │
+│  █████████████████████████████████████████████████░░░░░░░   │
 │                                                             │
-│  Recordatorio: [1 mes] [3 meses] [Sin recordatorio]         │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Promedio                              ●●● 6.3       │   │
+│  └─────────────────────────────────────────────────────┘   │
 │                                                             │
-│  [Cancelar]              [ Guardar y avisarme ]             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Quienes repiten el 3D suelen mejorar...             │   │
+│  │                                                     │   │
+│  │ Guardá tu resultado y comparalo después             │   │
+│  │ ┌─────────────────────────────────────────────┐     │   │
+│  │ │ email@ejemplo.com                           │     │   │
+│  │ └─────────────────────────────────────────────┘     │   │
+│  │                                                     │   │
+│  │ País                                                │   │
+│  │ ┌─────────────────────────────────────────────┐     │   │
+│  │ │ Seleccioná tu país                    ▼     │     │   │
+│  │ └─────────────────────────────────────────────┘     │   │
+│  │                                                     │   │
+│  │ Recordatorio                                        │   │
+│  │ [En 1 mes] [En 3 meses] [Sin recordatorio]  ← UNA LÍNEA│
+│  │                                                     │   │
+│  │        [ Guardar y avisarme ]                       │   │
+│  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -96,13 +126,12 @@ Se actualizará automáticamente cuando se ejecute la migración.
 
 | Archivo | Cambio |
 |---------|--------|
-| Nueva migración SQL | Agregar columna `country` a `records_3d` |
-| `src/components/decision/ResultScreen.tsx` | Agregar selector de país con validación |
-| `supabase/functions/save-result/index.ts` | Aceptar y guardar campo `country` |
+| `src/components/decision/ResultScreen.tsx` | Eliminar lógica de expansión, ajustar botones de recordatorio |
+| `src/components/decision/GlobalScore.tsx` | Reemplazar mensajes de opinión por "Promedio" |
 
-## Consideraciones
+## Impacto Esperado
 
-- **Orden alfabético**: Los países están en el orden que proporcionaste, pero podemos ordenarlos alfabéticamente si preferís
-- **Extensibilidad**: La lista está en una constante, fácil de agregar más países después
-- **Validación**: El país será requerido en el frontend pero nullable en la DB para no romper registros históricos
-- **Código ISO**: Guardamos el código de 2 letras (AR, US, ES) para estandarización
+- **Menos fricción**: El usuario ve el formulario inmediatamente, sin necesidad de hacer clic adicional
+- **Más neutro**: Sin juicios de valor sobre el puntaje, solo datos
+- **Mejor UX mobile**: Los tres botones de recordatorio siempre visibles en una línea
+
