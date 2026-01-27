@@ -285,46 +285,48 @@ const handler = async (req: Request): Promise<Response> => {
     const fifteenMinutesAgo = new Date(Date.now() - 900000).toISOString();
     const normalizedEmail = body.email.toLowerCase();
 
-    // Check per-IP rate limit: max 3 submissions per hour
-    const { count: ipCount } = await supabase
-      .from('records_3d')
-      .select('*', { count: 'exact', head: true })
-      .eq('ip_address', ipAddress)
-      .gte('created_at', oneHourAgo);
+    // Run rate limit checks and history query in parallel for faster response
+    const [ipResult, emailResult, historyResult] = await Promise.all([
+      // Check per-IP rate limit: max 3 submissions per hour
+      supabase
+        .from('records_3d')
+        .select('*', { count: 'exact', head: true })
+        .eq('ip_address', ipAddress)
+        .gte('created_at', oneHourAgo),
+      
+      // Check per-email rate limit: max 1 submission per 15 minutes
+      supabase
+        .from('records_3d')
+        .select('*', { count: 'exact', head: true })
+        .eq('email', normalizedEmail)
+        .gte('created_at', fifteenMinutesAgo),
+      
+      // Find previous measurement for this email (only non-comparison ones for history)
+      supabase
+        .from('records_3d')
+        .select('dinero, desarrollo, diversion, created_at')
+        .eq('email', body.email.toLowerCase())
+        .is('comparison', null)
+        .order('created_at', { ascending: false })
+        .limit(1),
+    ]);
 
-    if (ipCount && ipCount >= 3) {
+    // Validate rate limits after parallel queries complete
+    if (ipResult.count && ipResult.count >= 3) {
       return new Response(
         JSON.stringify({ error: "Demasiadas solicitudes desde esta conexion. Intenta mas tarde." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Check per-email rate limit: max 1 submission per 15 minutes
-    const { count: emailCount } = await supabase
-      .from('records_3d')
-      .select('*', { count: 'exact', head: true })
-      .eq('email', normalizedEmail)
-      .gte('created_at', fifteenMinutesAgo);
-
-    if (emailCount && emailCount >= 1) {
+    if (emailResult.count && emailResult.count >= 1) {
       return new Response(
         JSON.stringify({ error: "Ya guardaste una medicion recientemente. Espera 15 minutos." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Find previous measurement for this email (only non-comparison ones for history)
-    const { data: previousMeasurements } = await supabase
-      .from('records_3d')
-      .select('dinero, desarrollo, diversion, created_at')
-      .eq('email', body.email.toLowerCase())
-      .is('comparison', null)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    const previousMeasurement = previousMeasurements && previousMeasurements.length > 0 
-      ? previousMeasurements[0] 
-      : null;
+    const previousMeasurement = historyResult.data?.[0] || null;
 
     // Calculate reminder date if needed
     const reminderDate = body.reminderPeriod 

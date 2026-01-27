@@ -66,7 +66,7 @@ export function MobileQRCard({
       <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
         <div className="flex items-center gap-2 text-lg font-semibold">
           <Smartphone className="w-5 h-5" />
-          <span>Versión más potente en tu teléfono</span>
+          <span>Más potente en tu celular</span>
         </div>
         
         <p className="text-sm text-muted-foreground max-w-[280px]">
