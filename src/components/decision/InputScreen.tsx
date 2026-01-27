@@ -33,7 +33,7 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
   const questionText = contextQuestions[context];
 
   const headerText = isFirstComparison 
-    ? 'Cargá la primera opción' 
+    ? 'Primera opción' 
     : 'Ahora cargá la otra opción';
 
   return (
@@ -47,7 +47,7 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ascenso / Nueva empresa / Freelance..."
+              placeholder="Seguir así / Ascenso / Nueva empresa..."
               className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
                          text-foreground placeholder:text-muted-foreground
                          focus:outline-none focus:ring-1 focus:ring-foreground"
