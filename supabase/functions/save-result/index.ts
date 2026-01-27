@@ -73,6 +73,7 @@ function formatDiff(current: number, previous: number): string {
 function buildEmailContent(
   currentName: string,
   currentScores: Scores,
+  currentComment: string | undefined,
   comparison: Comparison | null,
   previousMeasurement: { dinero: number; desarrollo: number; diversion: number } | null
 ): string {
@@ -82,18 +83,30 @@ function buildEmailContent(
     content += `${currentName}:\n`;
     content += `Dinero: ${currentScores.dinero}\n`;
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
-    content += `Diversion: ${currentScores.diversion}\n\n`;
+    content += `Diversion: ${currentScores.diversion}\n`;
+    if (currentComment) {
+      content += `"${currentComment}"\n`;
+    }
+    content += `\n`;
 
     content += `${comparison.name}:\n`;
     content += `Dinero: ${comparison.dinero}\n`;
     content += `Desarrollo: ${comparison.desarrollo}\n`;
-    content += `Diversion: ${comparison.diversion}\n\n`;
+    content += `Diversion: ${comparison.diversion}\n`;
+    if (comparison.comment) {
+      content += `"${comparison.comment}"\n`;
+    }
+    content += `\n`;
 
     content += `Listo. Lo guarde para que puedas volver cuando quieras.\n\nLeo`;
   } else if (previousMeasurement) {
     content += `Dinero: ${currentScores.dinero}\n`;
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
-    content += `Diversion: ${currentScores.diversion}\n\n`;
+    content += `Diversion: ${currentScores.diversion}\n`;
+    if (currentComment) {
+      content += `"${currentComment}"\n`;
+    }
+    content += `\n`;
 
     content += `Anterior:\n`;
     content += `Dinero: ${previousMeasurement.dinero}\n`;
@@ -109,7 +122,11 @@ function buildEmailContent(
   } else {
     content += `Dinero: ${currentScores.dinero}\n`;
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
-    content += `Diversion: ${currentScores.diversion}\n\n`;
+    content += `Diversion: ${currentScores.diversion}\n`;
+    if (currentComment) {
+      content += `"${currentComment}"\n`;
+    }
+    content += `\n`;
 
     content += `Listo. Lo guarde para que puedas volver cuando quieras.\n\nLeo`;
   }
@@ -354,6 +371,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailContent = buildEmailContent(
       body.optionName,
       body.scores,
+      body.comment,
       body.comparison || null,
       previousMeasurement
     );
