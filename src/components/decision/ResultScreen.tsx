@@ -6,8 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
 import { generateShareImage, getShareText } from './ShareImageGenerator';
+import { MobileQRCard } from './MobileQRCard';
 import { Check, ChevronsUpDown, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Command,
   CommandEmpty,
@@ -139,7 +141,11 @@ function ComparisonTable({ a, b }: { a: Option; b: Option }) {
 }
 
 // Success screen shown after saving
-function SuccessSection({ onShare }: { onShare: () => void }) {
+function SuccessSection({ onShare, isMobile, userContext }: { 
+  onShare?: () => void; 
+  isMobile: boolean;
+  userContext: string;
+}) {
   return (
     <div className="space-y-6 p-6 bg-secondary rounded-sm border border-border animate-fade-up text-center">
       <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-foreground text-background">
@@ -165,13 +171,21 @@ function SuccessSection({ onShare }: { onShare: () => void }) {
           <ExternalLink className="w-4 h-4" />
         </a>
         
-        <button
-          onClick={onShare}
-          className="w-full py-3 text-sm border border-border rounded-sm
-                     hover:border-foreground/50 transition-colors"
-        >
-          Pedir una segunda opinión
-        </button>
+        {isMobile ? (
+          <button
+            onClick={onShare}
+            className="w-full py-3 text-sm border border-border rounded-sm
+                       hover:border-foreground/50 transition-colors"
+          >
+            Pedir una segunda opinión
+          </button>
+        ) : (
+          <MobileQRCard 
+            compact 
+            context={userContext}
+            medium="desktop_result_saved"
+          />
+        )}
       </div>
     </div>
   );
@@ -441,6 +455,7 @@ export function ResultScreen({
   const [showSave, setShowSave] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleShare = async () => {
     setIsSharing(true);
@@ -571,19 +586,31 @@ export function ResultScreen({
 
         {/* Success state after saving */}
         {saved ? (
-          <SuccessSection onShare={handleShare} />
+          <SuccessSection 
+            onShare={handleShare} 
+            isMobile={isMobile}
+            userContext={userContext}
+          />
         ) : (
           <>
             {/* Action buttons - parallel */}
             <div className="space-y-3 animate-fade-up opacity-0 stagger-1">
-              {/* Share - Primary */}
-              <button
-                onClick={handleShare}
-                disabled={isSharing}
-                className="btn-primary w-full disabled:opacity-50"
-              >
-                {isSharing ? 'Compartiendo...' : 'Pedir una segunda opinión'}
-              </button>
+              {/* Share - Primary (mobile only) or QR (desktop) */}
+              {isMobile ? (
+                <button
+                  onClick={handleShare}
+                  disabled={isSharing}
+                  className="btn-primary w-full disabled:opacity-50"
+                >
+                  {isSharing ? 'Compartiendo...' : 'Pedir una segunda opinión'}
+                </button>
+              ) : (
+                <MobileQRCard 
+                  compact 
+                  context={userContext}
+                  medium="desktop_result"
+                />
+              )}
 
               {/* Save - Secondary (outline) */}
               <button
