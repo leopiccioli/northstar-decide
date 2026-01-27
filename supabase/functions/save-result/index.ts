@@ -179,8 +179,9 @@ async function sendEmailAsync(
 
     // Try to send email via Resend
     const emailResponse = await resend.emails.send({
-      from: "3D <3d@3d.ceoencamiseta.com>",
+      from: "3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>",
       to: [email],
+      reply_to: "leopiccioli@gmail.com",
       subject: subject,
       text: emailContent,
     });
