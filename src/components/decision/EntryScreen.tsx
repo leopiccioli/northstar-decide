@@ -45,7 +45,7 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
             >
               D
             </span>
-            {" "}para decidir
+            {" "}para Decidir
           </h1>
           <p className="text-2xl font-medium text-muted-foreground">tu trabajo</p>
         </div>
