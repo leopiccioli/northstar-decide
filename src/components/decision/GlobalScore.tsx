@@ -15,17 +15,11 @@ export function GlobalScore({ scores, label }: GlobalScoreProps) {
   const average = Math.round(((scores.dinero + scores.desarrollo + scores.diversion) / 3) * 10) / 10;
   const { level, color } = getScoreLevel(average);
 
-  const levelLabels = {
-    low: 'Hay trabajo por hacer',
-    medium: 'Vas por buen camino',
-    high: 'Muy buen balance',
-  };
-
   return (
     <div className="flex items-center justify-between p-4 bg-secondary rounded-sm border border-border">
       <div className="space-y-1">
         {label && <p className="text-sm text-muted-foreground">{label}</p>}
-        <p className="text-sm font-medium">{levelLabels[level]}</p>
+        <p className="text-sm font-medium">Promedio</p>
       </div>
       <div className="flex items-center gap-3">
         <div className="flex gap-1">

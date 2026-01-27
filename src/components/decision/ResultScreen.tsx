@@ -4,7 +4,6 @@ import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
 import { GlobalScore } from './GlobalScore';
-import { Bookmark } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -133,8 +132,6 @@ function SaveSection({
 }) {
   const trackingData = useTrackingData();
   
-  // Pre-llenar email si viene en URL y auto-expandir
-  const [isExpanded, setIsExpanded] = useState(!!trackingData.email);
   const [email, setEmail] = useState(trackingData.email || '');
   const [country, setCountry] = useState('');
   const [reminder, setReminder] = useState<ReminderPeriod>('1m');
@@ -220,7 +217,6 @@ function SaveSection({
             : "Tus datos quedaron guardados.",
       });
 
-      setIsExpanded(false);
       setEmail('');
       setCountry('');
       setReminder('1m');
@@ -236,20 +232,6 @@ function SaveSection({
       setIsSaving(false);
     }
   };
-
-  if (!isExpanded) {
-    return (
-      <button 
-        onClick={() => setIsExpanded(true)}
-        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 
-                   text-sm font-medium bg-secondary text-foreground border border-border 
-                   rounded-sm transition-all hover:bg-muted hover:border-foreground/30"
-      >
-        <Bookmark className="w-4 h-4" />
-        Guardar para después
-      </button>
-    );
-  }
 
   return (
     <div className="space-y-5 p-4 bg-secondary rounded-sm border border-border animate-fade-up">
@@ -302,12 +284,12 @@ function SaveSection({
 
       <div className="space-y-2">
         <label className="text-sm text-muted-foreground">Recordatorio</label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-1.5">
           {reminderOptions.map((option) => (
             <button
               key={option.id}
               onClick={() => setReminder(option.id)}
-              className={`px-3 py-1.5 text-sm rounded-sm border transition-all
+              className={`px-2.5 py-1.5 text-sm rounded-sm border transition-all whitespace-nowrap
                 ${reminder === option.id 
                   ? 'bg-foreground text-background border-foreground' 
                   : 'bg-background border-border hover:border-foreground/50'
@@ -320,12 +302,6 @@ function SaveSection({
       </div>
 
       <div className="flex gap-3 pt-2">
-        <button 
-          onClick={() => setIsExpanded(false)} 
-          className="btn-ghost text-sm"
-        >
-          Cancelar
-        </button>
         <button
           onClick={handleSave}
           disabled={!email.trim() || isSaving}
