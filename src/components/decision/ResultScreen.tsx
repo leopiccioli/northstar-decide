@@ -5,6 +5,8 @@ import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
+import { ShareSection } from './ShareSection';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -333,6 +335,7 @@ export function ResultScreen({
   currentOption, 
   comparisonOption, 
 }: ResultScreenProps) {
+  const [showSave, setShowSave] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -397,12 +400,30 @@ export function ResultScreen({
           </div>
         )}
 
-        {/* Save section - inline */}
-        <div className="animate-fade-up opacity-0 stagger-2">
-          <SaveSection 
+        {/* Share section - primary */}
+        <div className="animate-fade-up opacity-0 stagger-1">
+          <ShareSection 
             currentOption={currentOption} 
             comparisonOption={comparisonOption} 
           />
+        </div>
+
+        {/* Save section - secondary, collapsible */}
+        <div className="animate-fade-up opacity-0 stagger-2">
+          <button
+            onClick={() => setShowSave(!showSave)}
+            className="w-full flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showSave ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {showSave ? 'Ocultar' : 'Guardar historial'}
+          </button>
+          
+          {showSave && (
+            <SaveSection 
+              currentOption={currentOption} 
+              comparisonOption={comparisonOption} 
+            />
+          )}
         </div>
       </div>
     </div>
