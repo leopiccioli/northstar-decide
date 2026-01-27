@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
 import {
   Select,
@@ -222,10 +223,24 @@ function SaveSection({
       setReminder('1m');
     } catch (error) {
       console.error('Save error:', error);
-      // Keep email on error - don't clear it
+      
+      let errorMessage = "No pudimos guardar tu resultado. Intentá de nuevo.";
+      
+      // Extract actual error message from edge function
+      if (error instanceof FunctionsHttpError) {
+        try {
+          const errorData = await error.context.json();
+          if (errorData?.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // If we can't parse the error, use default message
+        }
+      }
+      
       toast({
         title: "Error",
-        description: "No pudimos guardar tu resultado. Intentá de nuevo.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
