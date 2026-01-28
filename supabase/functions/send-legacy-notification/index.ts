@@ -182,7 +182,7 @@ const handler = async (req: Request): Promise<Response> => {
         });
 
         // Record in outbound_emails
-        await supabase.from('outbound_emails').insert({
+        const { error: insertError } = await supabase.from('outbound_emails').insert({
           to_email: user.email,
           subject,
           email_type: 'legacy_notification',
@@ -190,6 +190,11 @@ const handler = async (req: Request): Promise<Response> => {
           sent_at: new Date().toISOString(),
           provider_id: emailResponse.data?.id || null,
         });
+
+        if (insertError) {
+          console.error(`Failed to record email for ${user.email}:`, insertError.message);
+          results.errors.push(`${user.email}: DB insert failed - ${insertError.message}`);
+        }
 
         results.sent++;
         console.log(`Sent notification to: ${user.email}`);
@@ -201,13 +206,17 @@ const handler = async (req: Request): Promise<Response> => {
         console.error(`Failed to send to ${user.email}:`, emailError.message);
 
         // Record failure in outbound_emails
-        await supabase.from('outbound_emails').insert({
+        const { error: insertError } = await supabase.from('outbound_emails').insert({
           to_email: user.email,
           subject,
           email_type: 'legacy_notification',
           status: 'failed',
           error_message: emailError.message,
         });
+
+        if (insertError) {
+          console.error(`Failed to record failure for ${user.email}:`, insertError.message);
+        }
       }
 
       // Delay between emails (except for last one)
