@@ -2,6 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
 
+// URL configuration (Edge Functions can't import from src/)
+const SITE_CONFIG = {
+  emailFrom: '3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>',
+  emailReplyTo: 'leopiccioli@gmail.com',
+} as const;
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
@@ -179,9 +185,9 @@ async function sendEmailAsync(
 
     // Try to send email via Resend
     const emailResponse = await resend.emails.send({
-      from: "3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>",
+      from: SITE_CONFIG.emailFrom,
       to: [email],
-      reply_to: "leopiccioli@gmail.com",
+      reply_to: SITE_CONFIG.emailReplyTo,
       subject: subject,
       text: emailContent,
     });

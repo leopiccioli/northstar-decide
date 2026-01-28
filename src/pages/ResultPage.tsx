@@ -8,9 +8,7 @@ import { generateShareImage, getShareText } from '@/components/decision/ShareIma
 import { QRCodeSVG } from 'qrcode.react';
 import { Smartphone, ExternalLink, Loader2 } from 'lucide-react';
 import { Option, Scores } from '@/types/decision';
-
-const SHARE_URL = 'https://3d.ceoencamiseta.com';
-const CEO_BEEHIIV_BASE = 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e';
+import { SITE_CONFIG } from '@/config/urls';
 
 interface ResultData {
   optionName: string;
@@ -160,7 +158,7 @@ export default function ResultPage() {
       } : null;
 
       const shareText = getShareText('check', currentOption, comparisonOption);
-      const shareUrl = `${SHARE_URL}/r/${id}`;
+      const shareUrl = `${SITE_CONFIG.baseUrl}/r/${id}`;
       const fullText = `${shareText}\n${shareUrl}`;
 
       // Check if we can share files on mobile
@@ -259,7 +257,7 @@ export default function ResultPage() {
     comment: result.comparison.comment,
   } : null;
 
-  const shareUrl = `${SHARE_URL}/r/${id}`;
+  const shareUrl = `${SITE_CONFIG.baseUrl}/r/${id}`;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -345,7 +343,7 @@ export default function ResultPage() {
           )}
 
           <a
-            href={CEO_BEEHIIV_BASE}
+            href={SITE_CONFIG.beehiivUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full py-3 text-sm border border-border rounded-sm

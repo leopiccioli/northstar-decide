@@ -1,6 +1,5 @@
 import { Scores, UserContext, Option } from '@/types/decision';
-
-const SHARE_URL = '3d.ceoencamiseta.com';
+import { SITE_CONFIG } from '@/config/urls';
 
 interface GenerateImageOptions {
   currentOption: Option;
@@ -149,7 +148,7 @@ export async function generateShareImage({
   ctx.textAlign = 'center';
   ctx.font = '28px system-ui, sans-serif';
   ctx.fillStyle = isDark ? '#525252' : '#a1a1a1';
-  ctx.fillText(SHARE_URL, canvas.width / 2, canvas.height - 60);
+  ctx.fillText(SITE_CONFIG.domain, canvas.width / 2, canvas.height - 60);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
