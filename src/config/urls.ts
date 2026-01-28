@@ -11,7 +11,22 @@ export const SITE_CONFIG = {
   emailReplyTo: 'leopiccioli@gmail.com',
   
   // Links externos
-  communityUrl: 'https://ceoencamiseta.com/comunidad',
   mainSiteUrl: 'https://ceoencamiseta.com',
-  beehiivUrl: 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e',
+  beehiivBaseUrl: 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e',
 } as const;
+
+// Helper para construir URL de Beehiiv con tracking
+export function buildBeehiivUrl(options: {
+  email?: string;
+  utmMedium: 'home' | 'result' | 'shared';
+}): string {
+  const params = new URLSearchParams();
+  
+  if (options.email) {
+    params.set('email', options.email);
+  }
+  params.set('utm_source', '3dapp');
+  params.set('utm_medium', options.utmMedium);
+  
+  return `${SITE_CONFIG.beehiivBaseUrl}?${params.toString()}`;
+}

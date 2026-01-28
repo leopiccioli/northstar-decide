@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { COUNTRIES } from '@/lib/countries';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QRCodeSVG } from 'qrcode.react';
-import { SITE_CONFIG } from '@/config/urls';
+import { SITE_CONFIG, buildBeehiivUrl } from '@/config/urls';
 import {
   Command,
   CommandEmpty,
@@ -132,7 +132,7 @@ function SuccessWithShare({
   email: string;
 }) {
   const shareUrl = `${SITE_CONFIG.baseUrl}/r/${recordId}`;
-  const ceoUrl = `${SITE_CONFIG.beehiivUrl}?email=${encodeURIComponent(email)}`;
+  const ceoUrl = buildBeehiivUrl({ email, utmMedium: 'result' });
 
   return (
     <div className="space-y-6 p-6 bg-secondary rounded-sm border border-border animate-fade-up text-center">
