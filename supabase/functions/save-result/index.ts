@@ -2,6 +2,24 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
 
+/**
+ * IMPORTANTE: Buenas prácticas para emails con links
+ * 
+ * 1. SIEMPRE incluir ?email= en los links
+ *    La app soporta pre-fill via URL params (?email=xxx@xxx.com).
+ *    Mejora UX: email pre-llenado y sección de guardado auto-expandida.
+ *    Usar: encodeURIComponent(user.email) para caracteres especiales.
+ * 
+ * 2. SIEMPRE incluir fechas en datos históricos
+ *    Cuando se muestran mediciones anteriores, incluir la fecha.
+ *    Formato: dd/mm/yyyy (es-AR)
+ * 
+ * 3. SIEMPRE incluir comentarios si existen
+ *    Los comentarios van entre comillas debajo de los scores.
+ * 
+ * Ver: src/config/urls.ts para la configuración centralizada de URLs
+ */
+
 // URL configuration (Edge Functions can't import from src/)
 const SITE_CONFIG = {
   emailFrom: '3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>',
@@ -75,13 +93,23 @@ function formatDiff(current: number, previous: number): string {
   return '=';
 }
 
+// Format date for display
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+}
+
 // Build email content
 function buildEmailContent(
   currentName: string,
   currentScores: Scores,
   currentComment: string | undefined,
   comparison: Comparison | null,
-  previousMeasurement: { dinero: number; desarrollo: number; diversion: number } | null
+  previousMeasurement: { dinero: number; desarrollo: number; diversion: number; created_at: string; comment?: string } | null
 ): string {
   let content = `Tu medicion de hoy:\n\n`;
 
@@ -114,10 +142,14 @@ function buildEmailContent(
     }
     content += `\n`;
 
-    content += `Anterior:\n`;
+    content += `Anterior (${formatDate(previousMeasurement.created_at)}):\n`;
     content += `Dinero: ${previousMeasurement.dinero}\n`;
     content += `Desarrollo: ${previousMeasurement.desarrollo}\n`;
-    content += `Diversion: ${previousMeasurement.diversion}\n\n`;
+    content += `Diversion: ${previousMeasurement.diversion}\n`;
+    if (previousMeasurement.comment) {
+      content += `"${previousMeasurement.comment}"\n`;
+    }
+    content += `\n`;
 
     content += `Cambios:\n`;
     content += `Dinero ${formatDiff(currentScores.dinero, previousMeasurement.dinero)}\n`;
@@ -310,7 +342,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Find previous measurement for this email (only non-comparison ones for history)
       supabase
         .from('records_3d')
-        .select('dinero, desarrollo, diversion, created_at')
+        .select('dinero, desarrollo, diversion, created_at, comment')
         .eq('email', body.email.toLowerCase())
         .is('comparison', null)
         .order('created_at', { ascending: false })
