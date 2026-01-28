@@ -1,317 +1,228 @@
 
-
-# Plan: Pagina de Estadisticas por Pais (/por-pais)
+# Plan: Agregar Filtro de Periodo (Ultimo Mes + Todo)
 
 ## Resumen
 
-Mapa mundial interactivo que muestra promedios de las 3D por pais, con filtros de periodo y dimension.
+Modificar la tabla de cache `country_stats_cache` para soportar dos periodos: "ultimo mes" y "todo el tiempo". El cron job calculara ambos periodos cada noche.
 
 ---
 
-## Archivos a crear
+## Cambios en la Base de Datos
+
+### 1. Nueva estructura de la tabla cache
+
+La clave primaria incluye el periodo:
+
+| Campo | Tipo | Descripcion |
+|-------|------|-------------|
+| country | text | Codigo ISO |
+| period | text | 'month' o 'all' |
+| dimension | text | dinero, desarrollo, diversion, promedio |
+| avg_value | numeric(4,1) | Promedio calculado |
+| count | integer | Cantidad de respuestas |
+| updated_at | timestamptz | Ultima actualizacion |
+
+**Clave primaria compuesta**: (country, period, dimension)
+
+### 2. Funcion de refresh actualizada
+
+La funcion `refresh_country_stats()` ahora calcula para ambos periodos:
+
+```text
+Para cada periodo (month, all):
+  Para cada dimension (dinero, desarrollo, diversion, promedio):
+    Agregar fila con el promedio y count correspondiente
+```
+
+---
+
+## Archivos a Crear
 
 | Archivo | Descripcion |
 |---------|-------------|
-| `src/lib/countries.ts` | Lista maestra de paises (ISO, espanol, ingles) + helpers |
-| `src/pages/StatsPage.tsx` | Pagina principal con layout y filtros |
-| `src/components/stats/CountryMap.tsx` | Mapa interactivo con react-simple-maps |
-| `src/components/stats/StatsLegend.tsx` | Leyenda de colores (quintiles) |
-| `supabase/functions/get-country-stats/index.ts` | Edge function para agregacion |
-| `public/maps/countries-110m.json` | TopoJSON del mundo (Natural Earth) |
+| Migracion SQL | Crear tabla cache con periodo + funcion refresh + cron job |
 
-## Archivos a modificar
+## Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/components/decision/ResultScreen.tsx` | Importar COUNTRIES desde lib/countries |
-| `src/App.tsx` | Agregar ruta lazy /por-pais |
-| `src/components/decision/EntryScreen.tsx` | Link discreto a /por-pais |
-
----
-
-## Dependencia nueva
-
-```
-react-simple-maps
-```
-
----
-
-## Flujo de usuario
-
-```text
-EntryScreen
-    |
-    +-- Link discreto: "Ver estadisticas por pais" --> /por-pais
-                                                          |
-                                                          v
-                                                    StatsPage
-                                                          |
-                                                    +-----+-----+
-                                                    |           |
-                                              Filtros      CountryMap
-                                              (periodo,    (hover = tooltip,
-                                              dimension)   click = detalle)
-```
-
----
-
-## Componentes
-
-### 1. src/lib/countries.ts
-
-Lista centralizada de paises con:
-- `code`: ISO alpha-2 (AR, MX, ES)
-- `name`: Nombre en espanol (para UI)
-- `nameEn`: Nombre en ingles (para mapear TopoJSON)
-
-Funciones helper:
-- `getCountryByCode(code)` - buscar por ISO
-- `getCountryByEnglishName(name)` - buscar por nombre TopoJSON
-- `getCountryName(code)` - obtener nombre espanol
-
-### 2. StatsPage.tsx
-
-Layout:
-- Header con titulo
-- Filtros inline (periodo + dimension)
-- Mapa ocupando el espacio principal
-- Leyenda debajo del mapa
-
-Filtros:
-- **Periodo**: Ultimo mes | Ultimos 3 meses | Todo el tiempo
-- **Dimension**: Dinero | Desarrollo | Diversion | Promedio
-
-### 3. CountryMap.tsx
-
-Usa `react-simple-maps` con TopoJSON:
-- Render de todos los paises
-- Color segun quintil del promedio
-- Tooltip al hover con: nombre, promedio, cantidad de respuestas
-- Paises con menos de 10 respuestas en amarillo
-
-### 4. StatsLegend.tsx
-
-Escala visual:
-- 5 niveles de gris (Q1 a Q5)
-- Indicador de "sin datos"
-- Indicador de "menos de 10 respuestas"
-
-### 5. Edge Function: get-country-stats
-
-Request:
-```typescript
-{
-  period: 'month' | '3months' | 'all',
-  dimension: 'dinero' | 'desarrollo' | 'diversion' | 'promedio'
-}
-```
-
-Response:
-```typescript
-{
-  stats: [
-    { country: 'AR', avg: 7.2, count: 1500 },
-    { country: 'MX', avg: 6.8, count: 850 },
-    ...
-  ]
-}
-```
-
-Query SQL (conceptual):
-- Agrupa por country
-- Filtra por created_at segun periodo
-- Calcula AVG de la dimension (o promedio de las 3)
-- Cuenta registros por pais
-
----
-
-## Escala de colores
-
-| Valor | Color | Significado |
-|-------|-------|-------------|
-| Sin datos | `#f5f5f5` | Pais sin registros |
-| < 10 respuestas | `#fcd34d` | Datos insuficientes |
-| Q1 (bajo) | `#e5e5e5` | Promedio mas bajo |
-| Q2 | `#b5b5b5` | - |
-| Q3 | `#858585` | - |
-| Q4 | `#555555` | - |
-| Q5 (alto) | `#252525` | Promedio mas alto |
+| `supabase/functions/get-country-stats/index.ts` | Leer de cache filtrando por period y dimension |
+| `src/pages/StatsPage.tsx` | Simplificar opciones de periodo a solo 2 (month, all) |
 
 ---
 
 ## Seccion Tecnica
 
-### Estructura de countries.ts
+### Migracion SQL
 
-```typescript
-export interface Country {
-  code: string;      // ISO 3166-1 alpha-2
-  name: string;      // Espanol
-  nameEn: string;    // Ingles (TopoJSON)
-}
+```sql
+-- 1. Crear tabla cache con periodo
+CREATE TABLE IF NOT EXISTS public.country_stats_cache (
+  country TEXT NOT NULL,
+  period TEXT NOT NULL,       -- 'month' o 'all'
+  dimension TEXT NOT NULL,    -- dinero, desarrollo, diversion, promedio
+  avg_value NUMERIC(4,1),
+  count INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (country, period, dimension)
+);
 
-export const COUNTRIES: Country[] = [
-  { code: 'AR', name: 'Argentina', nameEn: 'Argentina' },
-  { code: 'BO', name: 'Bolivia', nameEn: 'Bolivia' },
-  { code: 'BR', name: 'Brasil', nameEn: 'Brazil' },
-  { code: 'CA', name: 'Canada', nameEn: 'Canada' },
-  { code: 'CL', name: 'Chile', nameEn: 'Chile' },
-  { code: 'CO', name: 'Colombia', nameEn: 'Colombia' },
-  { code: 'CR', name: 'Costa Rica', nameEn: 'Costa Rica' },
-  { code: 'DE', name: 'Alemania', nameEn: 'Germany' },
-  { code: 'DO', name: 'Republica Dominicana', nameEn: 'Dominican Rep.' },
-  { code: 'EC', name: 'Ecuador', nameEn: 'Ecuador' },
-  { code: 'ES', name: 'Espana', nameEn: 'Spain' },
-  { code: 'GT', name: 'Guatemala', nameEn: 'Guatemala' },
-  { code: 'HN', name: 'Honduras', nameEn: 'Honduras' },
-  { code: 'IL', name: 'Israel', nameEn: 'Israel' },
-  { code: 'IT', name: 'Italia', nameEn: 'Italy' },
-  { code: 'JP', name: 'Japon', nameEn: 'Japan' },
-  { code: 'MX', name: 'Mexico', nameEn: 'Mexico' },
-  { code: 'NI', name: 'Nicaragua', nameEn: 'Nicaragua' },
-  { code: 'PA', name: 'Panama', nameEn: 'Panama' },
-  { code: 'PE', name: 'Peru', nameEn: 'Peru' },
-  { code: 'PR', name: 'Puerto Rico', nameEn: 'Puerto Rico' },
-  { code: 'PT', name: 'Portugal', nameEn: 'Portugal' },
-  { code: 'PY', name: 'Paraguay', nameEn: 'Paraguay' },
-  { code: 'SV', name: 'El Salvador', nameEn: 'El Salvador' },
-  { code: 'US', name: 'Estados Unidos', nameEn: 'United States of America' },
-  { code: 'UY', name: 'Uruguay', nameEn: 'Uruguay' },
-  { code: 'VE', name: 'Venezuela', nameEn: 'Venezuela' },
-];
+-- 2. RLS: lectura publica
+ALTER TABLE public.country_stats_cache ENABLE ROW LEVEL SECURITY;
 
-export function getCountryByCode(code: string): Country | undefined {
-  return COUNTRIES.find(c => c.code === code);
-}
+CREATE POLICY "Public read country_stats_cache"
+  ON public.country_stats_cache FOR SELECT
+  USING (true);
 
-export function getCountryByEnglishName(nameEn: string): Country | undefined {
-  return COUNTRIES.find(c => c.nameEn === nameEn);
-}
+-- 3. Funcion de refresh
+CREATE OR REPLACE FUNCTION public.refresh_country_stats()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  month_ago TIMESTAMPTZ := now() - interval '1 month';
+BEGIN
+  TRUNCATE public.country_stats_cache;
+  
+  -- ALL TIME: dinero
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'all', 'dinero', ROUND(AVG(dinero)::numeric, 1), COUNT(*)
+  FROM public.records_3d WHERE country IS NOT NULL
+  GROUP BY country;
+  
+  -- ALL TIME: desarrollo
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'all', 'desarrollo', ROUND(AVG(desarrollo)::numeric, 1), COUNT(*)
+  FROM public.records_3d WHERE country IS NOT NULL
+  GROUP BY country;
+  
+  -- ALL TIME: diversion
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'all', 'diversion', ROUND(AVG(diversion)::numeric, 1), COUNT(*)
+  FROM public.records_3d WHERE country IS NOT NULL
+  GROUP BY country;
+  
+  -- ALL TIME: promedio
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'all', 'promedio', 
+         ROUND(((AVG(dinero) + AVG(desarrollo) + AVG(diversion)) / 3)::numeric, 1), 
+         COUNT(*)
+  FROM public.records_3d WHERE country IS NOT NULL
+  GROUP BY country;
+  
+  -- MONTH: dinero
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'month', 'dinero', ROUND(AVG(dinero)::numeric, 1), COUNT(*)
+  FROM public.records_3d 
+  WHERE country IS NOT NULL AND created_at >= month_ago
+  GROUP BY country;
+  
+  -- MONTH: desarrollo
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'month', 'desarrollo', ROUND(AVG(desarrollo)::numeric, 1), COUNT(*)
+  FROM public.records_3d 
+  WHERE country IS NOT NULL AND created_at >= month_ago
+  GROUP BY country;
+  
+  -- MONTH: diversion
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'month', 'diversion', ROUND(AVG(diversion)::numeric, 1), COUNT(*)
+  FROM public.records_3d 
+  WHERE country IS NOT NULL AND created_at >= month_ago
+  GROUP BY country;
+  
+  -- MONTH: promedio
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'month', 'promedio', 
+         ROUND(((AVG(dinero) + AVG(desarrollo) + AVG(diversion)) / 3)::numeric, 1), 
+         COUNT(*)
+  FROM public.records_3d 
+  WHERE country IS NOT NULL AND created_at >= month_ago
+  GROUP BY country;
+  
+  -- Actualizar timestamp
+  UPDATE public.country_stats_cache SET updated_at = now();
+END;
+$$;
 
-export function getCountryName(code: string): string {
-  return getCountryByCode(code)?.name ?? code;
-}
+-- 4. Poblar inicialmente
+SELECT public.refresh_country_stats();
+
+-- 5. Cron diario a las 3am UTC
+SELECT cron.schedule(
+  'refresh-country-stats-daily',
+  '0 3 * * *',
+  'SELECT public.refresh_country_stats()'
+);
 ```
 
-### Edge Function: get-country-stats
+### Edge Function Actualizada
 
 ```typescript
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
-  const { period, dimension } = await req.json();
-  
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  );
+  try {
+    const { period, dimension }: StatsRequest = await req.json();
 
-  // Build date filter
-  let dateFilter = null;
-  if (period === 'month') {
-    dateFilter = new Date();
-    dateFilter.setMonth(dateFilter.getMonth() - 1);
-  } else if (period === '3months') {
-    dateFilter = new Date();
-    dateFilter.setMonth(dateFilter.getMonth() - 3);
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Leer de cache
+    const { data, error } = await supabase
+      .from('country_stats_cache')
+      .select('country, avg_value, count')
+      .eq('period', period)
+      .eq('dimension', dimension);
+
+    if (error) throw error;
+
+    const stats = (data || []).map(row => ({
+      country: row.country,
+      avg: row.avg_value,
+      count: row.count,
+    }));
+
+    return new Response(
+      JSON.stringify({ stats }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    // error handling...
   }
-
-  // Fetch all records with country
-  let query = supabase
-    .from('records_3d')
-    .select('country, dinero, desarrollo, diversion')
-    .not('country', 'is', null);
-  
-  if (dateFilter) {
-    query = query.gte('created_at', dateFilter.toISOString());
-  }
-
-  const { data, error } = await query;
-
-  if (error) throw error;
-
-  // Aggregate by country
-  const byCountry = {};
-  for (const row of data) {
-    if (!byCountry[row.country]) {
-      byCountry[row.country] = { sum: 0, count: 0 };
-    }
-    
-    let value;
-    if (dimension === 'promedio') {
-      value = (row.dinero + row.desarrollo + row.diversion) / 3;
-    } else {
-      value = row[dimension];
-    }
-    
-    byCountry[row.country].sum += value;
-    byCountry[row.country].count++;
-  }
-
-  const stats = Object.entries(byCountry).map(([country, data]) => ({
-    country,
-    avg: Math.round((data.sum / data.count) * 10) / 10,
-    count: data.count,
-  }));
-
-  return new Response(
-    JSON.stringify({ stats }),
-    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-  );
 });
 ```
 
-### Mapeo TopoJSON
+### StatsPage: Simplificar Periodos
 
-El archivo `countries-110m.json` de Natural Earth usa nombres en ingles. El mapeo:
-
-```typescript
-// En CountryMap.tsx
-const getCountryData = (geo) => {
-  const englishName = geo.properties.name;
-  const country = getCountryByEnglishName(englishName);
-  
-  if (!country) return null;
-  
-  return stats.find(s => s.country === country.code);
-};
-```
-
-### Calculo de quintiles
+Cambiar de 3 opciones a 2:
 
 ```typescript
-function getQuintileColor(value: number, allValues: number[]): string {
-  const sorted = [...allValues].sort((a, b) => a - b);
-  const q1 = sorted[Math.floor(sorted.length * 0.2)];
-  const q2 = sorted[Math.floor(sorted.length * 0.4)];
-  const q3 = sorted[Math.floor(sorted.length * 0.6)];
-  const q4 = sorted[Math.floor(sorted.length * 0.8)];
-  
-  if (value <= q1) return '#e5e5e5';
-  if (value <= q2) return '#b5b5b5';
-  if (value <= q3) return '#858585';
-  if (value <= q4) return '#555555';
-  return '#252525';
-}
+const PERIOD_OPTIONS: { id: Period; label: string }[] = [
+  { id: 'month', label: 'Ultimo mes' },
+  { id: 'all', label: 'Todo' },
+];
 ```
 
 ---
 
-## Orden de implementacion
+## Orden de Implementacion
 
-1. Crear `src/lib/countries.ts`
-2. Actualizar `ResultScreen.tsx` para importar desde lib
-3. Crear edge function `get-country-stats`
-4. Descargar TopoJSON a `public/maps/`
-5. Crear componentes de stats (page, map, legend)
-6. Agregar ruta en `App.tsx`
-7. Agregar link en `EntryScreen.tsx`
+1. Crear migracion SQL (tabla + funcion + cron)
+2. Actualizar edge function para leer de cache
+3. Simplificar opciones de periodo en StatsPage
 
+---
+
+## Notas
+
+- Se elimina la opcion "3 meses" para simplificar la cache
+- El cron corre a las 3am UTC (medianoche en Argentina)
+- La funcion puede ejecutarse manualmente: `SELECT public.refresh_country_stats()`
+- Si se necesita "3 meses" en el futuro, solo hay que agregar otro bloque de INSERTs
