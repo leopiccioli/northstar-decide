@@ -7,7 +7,7 @@ import {
 } from 'react-simple-maps';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getCountryByEnglishName, getCountryName, getCountryFlag } from '@/lib/countries';
-import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
+import { MIN_RESPONSES_THRESHOLD, QUARTILE_COLORS } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
 import type { QuartileBoundaries } from './StatsLegend';
 
@@ -36,16 +36,16 @@ function formatValue(value: number): string {
 }
 
 function getCountryColor(stat: CountryFullStat | undefined, quartiles: QuartileBoundaries | null): string {
-  if (!stat) return '#fcd34d'; // Sin datos -> AMARILLO
-  if (stat.count < MIN_RESPONSES_THRESHOLD) return '#e5e5e5'; // Pocos datos -> GRIS
+  if (!stat) return QUARTILE_COLORS.noData;
+  if (stat.count < MIN_RESPONSES_THRESHOLD) return QUARTILE_COLORS.insufficient;
   
-  if (!quartiles) return '#858585'; // Fallback
+  if (!quartiles) return QUARTILE_COLORS.q2; // Fallback
   
   const avg = stat.promedio;
-  if (avg >= quartiles.q3) return '#252525';  // Q4 (top quartile)
-  if (avg >= quartiles.q2) return '#555555';  // Q3
-  if (avg >= quartiles.q1) return '#858585';  // Q2
-  return '#b5b5b5';                           // Q1 (bottom quartile)
+  if (avg >= quartiles.q3) return QUARTILE_COLORS.q4;
+  if (avg >= quartiles.q2) return QUARTILE_COLORS.q3;
+  if (avg >= quartiles.q1) return QUARTILE_COLORS.q2;
+  return QUARTILE_COLORS.q1;
 }
 
 export function CountryMap({ stats, isLoading, quartileBoundaries }: CountryMapProps) {
@@ -118,7 +118,7 @@ export function CountryMap({ stats, isLoading, quartileBoundaries }: CountryMapP
                       default: { outline: 'none' },
                       hover: { 
                         outline: 'none',
-                        fill: fillColor === '#fcd34d' || fillColor === '#e5e5e5' ? fillColor : '#000',
+                        fill: fillColor === QUARTILE_COLORS.noData || fillColor === QUARTILE_COLORS.insufficient ? fillColor : '#000',
                         cursor: 'pointer',
                       },
                       pressed: { outline: 'none' },
