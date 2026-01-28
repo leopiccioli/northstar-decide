@@ -1,78 +1,118 @@
 
 
-# Plan: Migrar datos de staging a records_3d
+# Plan: Edge Function para Notificaciones Legacy (Corregido)
 
-## Datos Verificados
+## Correcciones Aplicadas
 
-| Verificación | Resultado |
-|--------------|-----------|
-| Total registros en staging | 12,106 |
-| Emails únicos | 9,186 |
-| Scores dinero | 1-10 (correcto) |
-| Scores desarrollo | 1-10 (correcto) |
-| Scores diversion | 1-10 (correcto) |
-| Registros con fecha | 12,075 (99.7%) |
-| Registros con pais | 6,501 (53.7%) |
-| Registros legacy previos en records_3d | 0 |
+| Corrección | Antes | Después |
+|------------|-------|---------|
+| URL | Hardcodeada | Usar `SITE_CONFIG.baseUrl` (https://3d.ceoencamiseta.com) |
+| From email | - | Usar `SITE_CONFIG.emailFrom` |
+| Reply-to | - | Usar `SITE_CONFIG.emailReplyTo` |
+| Velocidad | 1 segundo entre emails | 3 segundos entre emails |
+| Contenido | Solo última medición | Incluir cantidad de registros del usuario |
 
-## Estrategia de Migración
+## Contenido del Email Actualizado
 
-Insertar todos los registros de `staging_legacy_3d` a `records_3d` con:
-- `option_name = 'legacy'` para identificarlos
-- `created_at` parseado desde el campo `fecha`
-- Mapeo directo de scores y comentario
+```text
+Subject: 3D Reloaded: parece una peli pero es mejor
 
-## SQL de Migración
+Hola,
 
-```sql
-INSERT INTO records_3d (
-  email,
-  option_name,
-  dinero,
-  desarrollo,
-  diversion,
-  comment,
-  country,
-  created_at
-)
-SELECT 
-  email,
-  'legacy' as option_name,
-  dinero,
-  desarrollo,
-  diversion,
-  comentario as comment,
-  pais as country,
-  -- Parsear fecha "2026-01-27 19:53" a timestamp
-  CASE 
-    WHEN fecha IS NOT NULL AND fecha != '' 
-    THEN (fecha || ':00')::timestamp with time zone
-    ELSE NOW()
-  END as created_at
-FROM staging_legacy_3d
-WHERE dinero IS NOT NULL 
-  AND desarrollo IS NOT NULL 
-  AND diversion IS NOT NULL;
+Ya están tus datos anteriores en el nuevo 3D.
+
+Tenés 4 mediciones históricas. Tu más reciente (27/01/2026):
+Dinero: 7
+Desarrollo: 8
+Diversión: 6
+
+Entrá a https://3d.ceoencamiseta.com para ver tu historial completo.
+
+Leo
 ```
 
-## Resultado Esperado
+## Archivo a Crear
 
-- ~12,030 registros migrados (los que tienen scores completos)
-- Todos marcados con `option_name = 'legacy'`
-- Fechas preservadas del sistema original
+| Archivo | Descripción |
+|---------|-------------|
+| `supabase/functions/send-legacy-notification/index.ts` | Edge Function con config centralizada |
 
-## Post-Migración
+## Rate Limiting Conservador
 
-Después de confirmar la migración exitosa:
-1. Verificar conteo en `records_3d WHERE option_name = 'legacy'`
-2. La tabla `staging_legacy_3d` puede eliminarse o dejarse como backup
+- **3 segundos** de delay entre cada email
+- Batch size: 50 emails por invocación
+- ~150 segundos por batch completo
+- Para 9,112 usuarios: ~183 invocaciones
+
+## Query para Datos del Usuario
+
+```sql
+SELECT 
+  email,
+  COUNT(*) as record_count,
+  MAX(created_at) as latest_date,
+  -- scores del registro más reciente via window function
+FROM records_3d 
+WHERE option_name = 'legacy'
+GROUP BY email
+```
+
+## Parámetros de Invocación
+
+```json
+{
+  "batchSize": 50,      // emails por ejecución
+  "delayMs": 3000,      // 3 segundos entre emails
+  "dryRun": false       // true para simular
+}
+```
+
+## Respuesta de la Función
+
+```json
+{
+  "sent": 50,
+  "failed": 0,
+  "remaining": 9062,
+  "totalRecordsProcessed": 50,
+  "errors": []
+}
+```
+
+---
 
 ## Sección Técnica
 
-La migración usa un INSERT directo sin conflictos porque:
-- No hay constraint UNIQUE en email (un usuario puede tener múltiples registros)
-- Cada registro legacy es una "foto" histórica del 3D del usuario
-- Los duplicados de email representan múltiples completados a lo largo del tiempo
+La Edge Function:
 
-El parseo de fecha agrega `:00` para los segundos ya que el formato original es `YYYY-MM-DD HH:MM`.
+1. Define constantes de configuración inline (no puede importar de src/):
+   - `BASE_URL = 'https://3d.ceoencamiseta.com'`
+   - `EMAIL_FROM = '3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>'`
+   - `EMAIL_REPLY_TO = 'leopiccioli@gmail.com'`
+
+2. Consulta usuarios legacy con conteo de registros:
+```sql
+WITH user_records AS (
+  SELECT 
+    email,
+    COUNT(*) as record_count,
+    dinero, desarrollo, diversion, created_at,
+    ROW_NUMBER() OVER (PARTITION BY email ORDER BY created_at DESC) as rn
+  FROM records_3d 
+  WHERE option_name = 'legacy'
+)
+SELECT email, record_count, dinero, desarrollo, diversion, created_at
+FROM user_records WHERE rn = 1
+```
+
+3. Filtra usuarios ya notificados (LEFT JOIN con outbound_emails WHERE email_type = 'legacy_notification')
+
+4. Envía emails con delay de 3 segundos usando:
+```typescript
+await new Promise(resolve => setTimeout(resolve, delayMs));
+```
+
+5. Registra cada envío en `outbound_emails` con `email_type: 'legacy_notification'`
+
+6. Retorna estadísticas de envío
 
