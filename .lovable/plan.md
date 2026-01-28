@@ -1,145 +1,87 @@
 
-# Plan: Ajustes de Texto + Optimización de Guardado
+# Plan: Centralizar URL del Dominio en Variable de Configuración
 
-## Resumen
+## Problema Actual
 
-Tres cambios solicitados:
-1. Cambiar texto "Versión más potente en tu teléfono" → "Más potente en tu celular"
-2. Poner la "D" de "decidir" en mayúsculas → "3D para Decidir"
-3. Investigar y optimizar la demora del "Guardando..."
+Las URLs están hardcodeadas en múltiples archivos:
 
----
-
-## 1. Cambio de Texto en MobileQRCard
-
-**Archivo**: `src/components/decision/MobileQRCard.tsx`
-**Línea 69**
-
-```text
-ANTES: "Versión más potente en tu teléfono"
-DESPUÉS: "Más potente en tu celular"
-```
+| Archivo | URL Actual |
+|---------|------------|
+| `ResultScreen.tsx` | `https://3d.ceoencamiseta.com` |
+| `ResultPage.tsx` | `https://3d.ceoencamiseta.com` |
+| `MobileQRCard.tsx` | `https://3d.ceoencamiseta.com` |
+| `ShareImageGenerator.ts` | `3d.ceoencamiseta.com` (sin https) |
+| `save-result/index.ts` | `3d@3d.ceoencamiseta.com` (email) |
+| `index.html` | `https://lovable.dev/opengraph-image-p98pqg.png` (OG images) |
 
 ---
 
-## 2. "D" mayúscula en EntryScreen
+## Solución: Archivo de Configuración Centralizado
 
-**Archivo**: `src/components/decision/EntryScreen.tsx`
-**Línea 48**
-
-```text
-ANTES: {" "}para decidir
-DESPUÉS: {" "}para Decidir
-```
-
----
-
-## 3. Análisis de la Demora "Guardando..."
-
-### Causa Identificada
-
-La demora de ~4 segundos se debe a **múltiples queries secuenciales** en el edge function antes de responder:
-
-1. **Rate limit por IP** - Query a `records_3d` (líneas 289-293)
-2. **Rate limit por email** - Query a `records_3d` (líneas 303-307)
-3. **Historial previo** - Query a `records_3d` (líneas 317-323)
-4. **Insert del registro** - Insert a `records_3d`
-5. **Envío de email (async)** - Ya está en background, no bloquea
-
-El edge function está haciendo **4 operaciones de DB secuenciales** antes de responder. Cada query puede tomar ~500-1000ms dependiendo de la latencia.
-
-### Solución Propuesta
-
-Paralelizar las queries que no dependen entre sí:
+Crear un archivo `src/config/urls.ts` que exporte todas las URLs del proyecto:
 
 ```typescript
-// ANTES (secuencial):
-const { count: ipCount } = await checkIpRateLimit();
-const { count: emailCount } = await checkEmailRateLimit();
-const { data: previousMeasurements } = await getPreviousHistory();
+// src/config/urls.ts
 
-// DESPUÉS (paralelo):
-const [ipCheck, emailCheck, historyCheck] = await Promise.all([
-  checkIpRateLimit(),
-  checkEmailRateLimit(), 
-  getPreviousHistory(),
-]);
+export const SITE_CONFIG = {
+  // Dominio principal de la app
+  baseUrl: 'https://3d.ceoencamiseta.com',
+  domain: '3d.ceoencamiseta.com',
+  
+  // Email para notificaciones
+  emailFrom: '3d@3d.ceoencamiseta.com',
+  emailReplyTo: 'leopiccioli@gmail.com',
+  
+  // Links externos
+  communityUrl: 'https://ceoencamiseta.com/comunidad',
+  mainSiteUrl: 'https://ceoencamiseta.com',
+  beehiivUrl: 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e',
+} as const;
 ```
-
-**Reducción estimada**: De ~3-4s a ~1-1.5s (las 3 queries corren en paralelo en lugar de secuencialmente).
 
 ---
 
 ## Archivos a Modificar
 
+### Frontend (4 archivos)
+
 | Archivo | Cambio |
 |---------|--------|
-| `src/components/decision/MobileQRCard.tsx` | Cambiar texto a "Más potente en tu celular" |
-| `src/components/decision/EntryScreen.tsx` | Cambiar "decidir" → "Decidir" |
-| `supabase/functions/save-result/index.ts` | Paralelizar queries de rate limit + historial |
+| `src/config/urls.ts` | **CREAR** - Archivo de configuración centralizado |
+| `src/components/decision/ResultScreen.tsx` | Importar `SITE_CONFIG.baseUrl` en lugar de constante local |
+| `src/components/decision/MobileQRCard.tsx` | Importar `SITE_CONFIG.baseUrl` en lugar de `BASE_URL` |
+| `src/components/decision/ShareImageGenerator.ts` | Importar `SITE_CONFIG.domain` en lugar de constante local |
+| `src/pages/ResultPage.tsx` | Importar `SITE_CONFIG.baseUrl` y `SITE_CONFIG.beehiivUrl` |
+
+### Edge Function (1 archivo)
+
+| Archivo | Cambio |
+|---------|--------|
+| `supabase/functions/save-result/index.ts` | Crear constantes al inicio del archivo (no puede importar de `src/`) |
+
+### HTML (1 archivo)
+
+| Archivo | Cambio |
+|---------|--------|
+| `index.html` | Actualizar las meta tags de Open Graph con imagen propia |
 
 ---
 
-## Detalles Técnicos (Edge Function)
+## Detalle Técnico
 
-La optimización en `save-result/index.ts` cambia de:
+### Nota sobre Edge Functions
 
-```typescript
-// Secuencial (~3-4 segundos)
-const { count: ipCount } = await supabase
-  .from('records_3d')
-  .select('*', { count: 'exact', head: true })
-  .eq('ip_address', ipAddress)
-  .gte('created_at', oneHourAgo);
+Las Edge Functions corren en Deno y no pueden importar de `src/`. Por eso, para el backend crearemos las constantes directamente en el archivo. Una alternativa sería usar variables de entorno, pero para URLs estáticas no es necesario.
 
-if (ipCount && ipCount >= 3) { /* return error */ }
+### Open Graph Images
 
-const { count: emailCount } = await supabase
-  .from('records_3d')
-  .select('*', { count: 'exact', head: true })
-  .eq('email', normalizedEmail)
-  .gte('created_at', fifteenMinutesAgo);
+Actualmente apuntan a `lovable.dev`. Idealmente deberías subir una imagen de preview a tu dominio (por ejemplo `https://3d.ceoencamiseta.com/og-image.png`) y actualizar el HTML.
 
-if (emailCount && emailCount >= 1) { /* return error */ }
+---
 
-const { data: previousMeasurements } = await supabase
-  .from('records_3d')
-  .select('dinero, desarrollo, diversion, created_at')
-  .eq('email', body.email.toLowerCase())
-  .is('comparison', null)
-  .order('created_at', { ascending: false })
-  .limit(1);
-```
+## Beneficios
 
-A:
-
-```typescript
-// Paralelo (~1-1.5 segundos)
-const [ipResult, emailResult, historyResult] = await Promise.all([
-  supabase
-    .from('records_3d')
-    .select('*', { count: 'exact', head: true })
-    .eq('ip_address', ipAddress)
-    .gte('created_at', oneHourAgo),
-  
-  supabase
-    .from('records_3d')
-    .select('*', { count: 'exact', head: true })
-    .eq('email', normalizedEmail)
-    .gte('created_at', fifteenMinutesAgo),
-  
-  supabase
-    .from('records_3d')
-    .select('dinero, desarrollo, diversion, created_at')
-    .eq('email', body.email.toLowerCase())
-    .is('comparison', null)
-    .order('created_at', { ascending: false })
-    .limit(1),
-]);
-
-// Luego validar los rate limits
-if (ipResult.count && ipResult.count >= 3) { /* return error */ }
-if (emailResult.count && emailResult.count >= 1) { /* return error */ }
-
-const previousMeasurement = historyResult.data?.[0] || null;
-```
+1. **Un solo lugar para cambiar** - Si cambia el dominio, se modifica en un archivo
+2. **Consistencia** - Todas las URLs usan la misma fuente de verdad
+3. **TypeScript** - Autocompletado y errores si hay typos
+4. **Documentación implícita** - Queda claro qué URLs usa el proyecto
