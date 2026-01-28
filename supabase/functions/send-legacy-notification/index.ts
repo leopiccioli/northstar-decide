@@ -43,6 +43,10 @@ const buildEmailHtml = (user: LegacyUser): string => {
     ? '1 medición histórica' 
     : `${user.record_count} mediciones históricas`;
   
+  // URL con email pre-filled para mejor UX
+  const emailParam = encodeURIComponent(user.email);
+  const linkUrl = `${BASE_URL}?email=${emailParam}`;
+  
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <p>Hola,</p>
@@ -57,7 +61,7 @@ const buildEmailHtml = (user: LegacyUser): string => {
         <li><strong>Diversión:</strong> ${user.diversion}</li>
       </ul>
       
-      <p>Entrá a <a href="${BASE_URL}">${BASE_URL}</a> para ver tu historial completo.</p>
+      <p>Entrá a <a href="${linkUrl}">${BASE_URL}</a> para ver tu historial completo.</p>
       
       <p>Leo</p>
     </div>
