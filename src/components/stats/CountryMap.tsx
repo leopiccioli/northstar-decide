@@ -5,7 +5,7 @@ import {
   Geography,
   ZoomableGroup,
 } from 'react-simple-maps';
-import { getCountryByEnglishName, getCountryName } from '@/lib/countries';
+import { getCountryByEnglishName, getCountryName, getCountryFlag } from '@/lib/countries';
 
 const GEO_URL = '/maps/countries-110m.json';
 
@@ -18,6 +18,18 @@ export interface CountryStatData {
 interface CountryMapProps {
   stats: CountryStatData[];
   isLoading?: boolean;
+}
+
+function getTwitterUrl(countryName: string, flag: string): string {
+  const text = `Estoy armando el mapa de satisfacción laboral por país.
+
+Necesito más datos de ${countryName} ${flag}
+
+Solo toma 2 minutos: 3d.ceoencamiseta.com
+
+#3Dlaborales`;
+
+  return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
 
 function getQuintileColor(value: number, allValues: number[]): string {
@@ -54,6 +66,7 @@ function getCountryColor(
 export function CountryMap({ stats, isLoading }: CountryMapProps) {
   const [tooltipContent, setTooltipContent] = useState<{
     name: string;
+    flag: string;
     avg: number | null;
     count: number;
   } | null>(null);
@@ -77,6 +90,7 @@ export function CountryMap({ stats, isLoading }: CountryMapProps) {
     const stat = stats.find(s => s.country === country.code);
     setTooltipContent({
       name: getCountryName(country.code),
+      flag: getCountryFlag(country.code),
       avg: stat?.avg ?? null,
       count: stat?.count ?? 0,
     });
@@ -153,8 +167,12 @@ export function CountryMap({ stats, isLoading }: CountryMapProps) {
             top: tooltipPosition.y - 10,
           }}
         >
-          <div className="font-medium">{tooltipContent.name}</div>
-          {tooltipContent.avg !== null ? (
+          <div className="font-medium">
+            {tooltipContent.flag} {tooltipContent.name}
+          </div>
+          
+          {tooltipContent.count >= 10 ? (
+            // Sufficient data: show average
             <>
               <div className="text-muted-foreground">
                 Promedio: <span className="font-mono">{tooltipContent.avg}</span>
@@ -163,8 +181,36 @@ export function CountryMap({ stats, isLoading }: CountryMapProps) {
                 Respuestas: <span className="font-mono">{tooltipContent.count}</span>
               </div>
             </>
+          ) : tooltipContent.count > 0 ? (
+            // Insufficient data: don't show average
+            <>
+              <div className="text-amber-600">
+                Datos insuficientes ({tooltipContent.count} respuestas)
+              </div>
+              <a
+                href={getTwitterUrl(tooltipContent.name, tooltipContent.flag)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary underline pointer-events-auto mt-1 block"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Pedí ayuda en Twitter →
+              </a>
+            </>
           ) : (
-            <div className="text-muted-foreground">Sin datos</div>
+            // No data
+            <>
+              <div className="text-muted-foreground">Sin datos</div>
+              <a
+                href={getTwitterUrl(tooltipContent.name, tooltipContent.flag)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary underline pointer-events-auto mt-1 block"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Pedí ayuda en Twitter →
+              </a>
+            </>
           )}
         </div>
       )}
