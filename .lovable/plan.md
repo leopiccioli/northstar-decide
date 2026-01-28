@@ -1,118 +1,80 @@
 
 
-# Plan: Edge Function para Notificaciones Legacy (Corregido)
+# Plan: Agregar parámetro email al link de notificaciones legacy
 
-## Correcciones Aplicadas
+## Problema Actual
 
-| Corrección | Antes | Después |
-|------------|-------|---------|
-| URL | Hardcodeada | Usar `SITE_CONFIG.baseUrl` (https://3d.ceoencamiseta.com) |
-| From email | - | Usar `SITE_CONFIG.emailFrom` |
-| Reply-to | - | Usar `SITE_CONFIG.emailReplyTo` |
-| Velocidad | 1 segundo entre emails | 3 segundos entre emails |
-| Contenido | Solo última medición | Incluir cantidad de registros del usuario |
+El email de notificación legacy incluye el link `https://3d.ceoencamiseta.com` sin parámetros. La aplicación ya soporta `?email=xxx@xxx.com` para pre-llenar el formulario, pero no se está aprovechando.
 
-## Contenido del Email Actualizado
+## Beneficio
 
-```text
-Subject: 3D Reloaded: parece una peli pero es mejor
+Cuando el usuario hace clic en el link del email:
+- Su email ya estará pre-llenado en el formulario
+- La sección de guardado se auto-expandirá
+- Mejor experiencia para usuarios que regresan
 
-Hola,
+## Cambio Propuesto
 
-Ya están tus datos anteriores en el nuevo 3D.
+| Archivo | Cambio |
+|---------|--------|
+| `supabase/functions/send-legacy-notification/index.ts` | Modificar `buildEmailHtml` para incluir el email como query param |
 
-Tenés 4 mediciones históricas. Tu más reciente (27/01/2026):
-Dinero: 7
-Desarrollo: 8
-Diversión: 6
+## Código Actual (línea 60)
 
-Entrá a https://3d.ceoencamiseta.com para ver tu historial completo.
-
-Leo
+```html
+<p>Entrá a <a href="${BASE_URL}">${BASE_URL}</a> para ver tu historial completo.</p>
 ```
 
-## Archivo a Crear
+## Código Nuevo
 
-| Archivo | Descripción |
-|---------|-------------|
-| `supabase/functions/send-legacy-notification/index.ts` | Edge Function con config centralizada |
+```typescript
+const emailParam = encodeURIComponent(user.email);
+const linkUrl = `${BASE_URL}?email=${emailParam}`;
 
-## Rate Limiting Conservador
-
-- **3 segundos** de delay entre cada email
-- Batch size: 50 emails por invocación
-- ~150 segundos por batch completo
-- Para 9,112 usuarios: ~183 invocaciones
-
-## Query para Datos del Usuario
-
-```sql
-SELECT 
-  email,
-  COUNT(*) as record_count,
-  MAX(created_at) as latest_date,
-  -- scores del registro más reciente via window function
-FROM records_3d 
-WHERE option_name = 'legacy'
-GROUP BY email
+// En el HTML:
+<p>Entrá a <a href="${linkUrl}">${BASE_URL}</a> para ver tu historial completo.</p>
 ```
 
-## Parámetros de Invocación
+## Consideraciones
 
-```json
-{
-  "batchSize": 50,      // emails por ejecución
-  "delayMs": 3000,      // 3 segundos entre emails
-  "dryRun": false       // true para simular
-}
-```
-
-## Respuesta de la Función
-
-```json
-{
-  "sent": 50,
-  "failed": 0,
-  "remaining": 9062,
-  "totalRecordsProcessed": 50,
-  "errors": []
-}
-```
-
----
+- **URL Encoding**: Se usa `encodeURIComponent()` para manejar caracteres especiales en emails (ej: `+`, espacios)
+- **Display**: El texto visible sigue siendo `https://3d.ceoencamiseta.com` (limpio), pero el href incluye el parámetro
+- **Emails ya enviados**: Los ~40+ emails ya enviados no tendrán este parámetro. Los ~9,060 restantes sí lo tendrán
 
 ## Sección Técnica
 
-La Edge Function:
+La función `buildEmailHtml` se modificará agregando el encoding del email y construyendo la URL con el parámetro:
 
-1. Define constantes de configuración inline (no puede importar de src/):
-   - `BASE_URL = 'https://3d.ceoencamiseta.com'`
-   - `EMAIL_FROM = '3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>'`
-   - `EMAIL_REPLY_TO = 'leopiccioli@gmail.com'`
-
-2. Consulta usuarios legacy con conteo de registros:
-```sql
-WITH user_records AS (
-  SELECT 
-    email,
-    COUNT(*) as record_count,
-    dinero, desarrollo, diversion, created_at,
-    ROW_NUMBER() OVER (PARTITION BY email ORDER BY created_at DESC) as rn
-  FROM records_3d 
-  WHERE option_name = 'legacy'
-)
-SELECT email, record_count, dinero, desarrollo, diversion, created_at
-FROM user_records WHERE rn = 1
-```
-
-3. Filtra usuarios ya notificados (LEFT JOIN con outbound_emails WHERE email_type = 'legacy_notification')
-
-4. Envía emails con delay de 3 segundos usando:
 ```typescript
-await new Promise(resolve => setTimeout(resolve, delayMs));
+const buildEmailHtml = (user: LegacyUser): string => {
+  const formattedDate = formatDate(user.created_at);
+  const recordText = user.record_count === 1 
+    ? '1 medición histórica' 
+    : `${user.record_count} mediciones históricas`;
+  
+  // URL con email pre-filled
+  const emailParam = encodeURIComponent(user.email);
+  const linkUrl = `${BASE_URL}?email=${emailParam}`;
+  
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <p>Hola,</p>
+      
+      <p>Ya están tus datos anteriores en el nuevo 3D.</p>
+      
+      <p>Tenés <strong>${recordText}</strong>. Tu más reciente (${formattedDate}):</p>
+      
+      <ul style="list-style: none; padding: 0;">
+        <li><strong>Dinero:</strong> ${user.dinero}</li>
+        <li><strong>Desarrollo:</strong> ${user.desarrollo}</li>
+        <li><strong>Diversión:</strong> ${user.diversion}</li>
+      </ul>
+      
+      <p>Entrá a <a href="${linkUrl}">${BASE_URL}</a> para ver tu historial completo.</p>
+      
+      <p>Leo</p>
+    </div>
+  `;
+};
 ```
-
-5. Registra cada envío en `outbound_emails` con `email_type: 'legacy_notification'`
-
-6. Retorna estadísticas de envío
 
