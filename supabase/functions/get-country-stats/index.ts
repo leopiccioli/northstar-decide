@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface StatsRequest {
-  period: 'month' | 'all';
+  period: 'quarter' | 'all';
 }
 
 interface CountryFullStat {

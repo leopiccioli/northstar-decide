@@ -7,6 +7,7 @@ import {
 } from 'react-simple-maps';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getCountryByEnglishName, getCountryName, getCountryFlag } from '@/lib/countries';
+import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
 
 const GEO_URL = '/maps/countries-110m.json';
@@ -30,7 +31,7 @@ Solo toma 2 minutos: 3d.ceoencamiseta.com
 
 function getCountryColor(stat: CountryFullStat | undefined): string {
   if (!stat) return '#fcd34d'; // Sin datos -> AMARILLO
-  if (stat.count < 10) return '#e5e5e5'; // Pocos datos -> GRIS
+  if (stat.count < MIN_RESPONSES_THRESHOLD) return '#e5e5e5'; // Pocos datos -> GRIS
   
   // Rangos fijos de valores
   const avg = stat.promedio;
@@ -142,7 +143,7 @@ export function CountryMap({ stats, isLoading }: CountryMapProps) {
               {selectedFlag} {selectedName}
             </div>
             
-            {selectedStat && selectedStat.count >= 10 ? (
+            {selectedStat && selectedStat.count >= MIN_RESPONSES_THRESHOLD ? (
               <>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                   <span className="text-muted-foreground">Dinero:</span>

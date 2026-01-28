@@ -5,12 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { getCountryName, getCountryFlag } from '@/lib/countries';
 import { CountryMap } from '@/components/stats/CountryMap';
 import { StatsLegend } from '@/components/stats/StatsLegend';
+import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
 
-type Period = 'month' | 'all';
+type Period = 'quarter' | 'all';
 
 const PERIOD_OPTIONS: { id: Period; label: string }[] = [
-  { id: 'month', label: 'Último mes' },
+  { id: 'quarter', label: 'Último trimestre' },
   { id: 'all', label: 'Todo' },
 ];
 
@@ -47,9 +48,9 @@ export default function StatsPage() {
   // Calculate total responses
   const totalResponses = stats.reduce((sum, s) => sum + s.count, 0);
 
-  // Filter countries with 10+ responses for the table
+  // Filter countries with threshold+ responses for the table
   const tableStats = stats
-    .filter(s => s.count >= 10)
+    .filter(s => s.count >= MIN_RESPONSES_THRESHOLD)
     .sort((a, b) => b.promedio - a.promedio);
 
   return (
