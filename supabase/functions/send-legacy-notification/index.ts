@@ -2,22 +2,28 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
 
+/**
+ * IMPORTANTE: Buenas prácticas para emails con links
+ * 
+ * 1. SIEMPRE incluir ?email= en los links
+ *    La app soporta pre-fill via URL params (?email=xxx@xxx.com).
+ *    Mejora UX: email pre-llenado y sección de guardado auto-expandida.
+ *    Usar: encodeURIComponent(user.email) para caracteres especiales.
+ * 
+ * 2. SIEMPRE incluir fechas en datos históricos
+ *    Cuando se muestran mediciones anteriores, incluir la fecha.
+ *    Formato: dd/mm/yyyy (es-AR)
+ * 
+ * 3. SIEMPRE incluir comentarios si existen
+ *    Los comentarios van entre comillas debajo de los scores.
+ * 
+ * Ver: src/config/urls.ts para la configuración centralizada de URLs
+ */
+
 // Configuration constants (Edge Functions can't import from src/)
 const BASE_URL = 'https://3d.ceoencamiseta.com';
 const EMAIL_FROM = '3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>';
 const EMAIL_REPLY_TO = 'leopiccioli@gmail.com';
-
-/**
- * IMPORTANTE: Siempre incluir ?email= en los links de emails
- * 
- * La aplicación soporta pre-fill via URL params (?email=xxx@xxx.com).
- * Esto mejora la UX porque:
- * - El email ya está pre-llenado en el formulario
- * - La sección de guardado se auto-expande
- * 
- * Usar: encodeURIComponent(user.email) para manejar caracteres especiales
- * Ver: src/config/urls.ts para la configuración centralizada de URLs
- */
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
