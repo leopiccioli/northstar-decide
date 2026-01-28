@@ -53,9 +53,9 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     // Download file from storage
-    console.log(`Downloading file: ${filename} from bucket: legacy-import`);
+    console.log(`Downloading file: ${filename} from bucket: csv`);
     const { data: fileData, error: downloadError } = await supabase.storage
-      .from("legacy-import")
+      .from("csv")
       .download(filename);
 
     if (downloadError) {
