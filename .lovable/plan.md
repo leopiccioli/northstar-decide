@@ -1,42 +1,78 @@
 
 
-# Plan: Ajustar Edge Function para bucket correcto
+# Plan: Migrar datos de staging a records_3d
 
-## Situación Actual
+## Datos Verificados
 
-- **Bucket existente:** `csv`
-- **Archivo:** `legacy-import.csv`
-- **Edge Function actual:** Configurada para leer de bucket `legacy-import`
+| Verificación | Resultado |
+|--------------|-----------|
+| Total registros en staging | 12,106 |
+| Emails únicos | 9,186 |
+| Scores dinero | 1-10 (correcto) |
+| Scores desarrollo | 1-10 (correcto) |
+| Scores diversion | 1-10 (correcto) |
+| Registros con fecha | 12,075 (99.7%) |
+| Registros con pais | 6,501 (53.7%) |
+| Registros legacy previos en records_3d | 0 |
 
-## Cambio Necesario
+## Estrategia de Migración
 
-Modificar una línea en `supabase/functions/import-legacy-csv/index.ts`:
+Insertar todos los registros de `staging_legacy_3d` a `records_3d` con:
+- `option_name = 'legacy'` para identificarlos
+- `created_at` parseado desde el campo `fecha`
+- Mapeo directo de scores y comentario
 
-```typescript
-// Línea 54 actual:
-const { data: fileData, error: downloadError } = await supabase.storage
-  .from("legacy-import")  // ← cambiar esto
-  .download(filename);
+## SQL de Migración
 
-// Cambiar a:
-const { data: fileData, error: downloadError } = await supabase.storage
-  .from("csv")  // ← bucket correcto
-  .download(filename);
+```sql
+INSERT INTO records_3d (
+  email,
+  option_name,
+  dinero,
+  desarrollo,
+  diversion,
+  comment,
+  country,
+  created_at
+)
+SELECT 
+  email,
+  'legacy' as option_name,
+  dinero,
+  desarrollo,
+  diversion,
+  comentario as comment,
+  pais as country,
+  -- Parsear fecha "2026-01-27 19:53" a timestamp
+  CASE 
+    WHEN fecha IS NOT NULL AND fecha != '' 
+    THEN (fecha || ':00')::timestamp with time zone
+    ELSE NOW()
+  END as created_at
+FROM staging_legacy_3d
+WHERE dinero IS NOT NULL 
+  AND desarrollo IS NOT NULL 
+  AND diversion IS NOT NULL;
 ```
 
-## Archivo a Modificar
+## Resultado Esperado
 
-| Archivo | Cambio |
-|---------|--------|
-| `supabase/functions/import-legacy-csv/index.ts` | Cambiar bucket de `legacy-import` a `csv` |
+- ~12,030 registros migrados (los que tienen scores completos)
+- Todos marcados con `option_name = 'legacy'`
+- Fechas preservadas del sistema original
 
-## Después del Cambio
+## Post-Migración
 
-1. La función se despliega automáticamente
-2. Ejecuto la función con `{ "filename": "legacy-import.csv" }`
-3. Vemos el resultado con conteo de registros importados
+Después de confirmar la migración exitosa:
+1. Verificar conteo en `records_3d WHERE option_name = 'legacy'`
+2. La tabla `staging_legacy_3d` puede eliminarse o dejarse como backup
 
 ## Sección Técnica
 
-El cambio es mínimo - solo actualizar el nombre del bucket en la llamada a `supabase.storage.from()`. El resto de la lógica (parseo CSV, mapeo de columnas, inserción en batches) permanece igual.
+La migración usa un INSERT directo sin conflictos porque:
+- No hay constraint UNIQUE en email (un usuario puede tener múltiples registros)
+- Cada registro legacy es una "foto" histórica del 3D del usuario
+- Los duplicados de email representan múltiples completados a lo largo del tiempo
+
+El parseo de fecha agrega `:00` para los segundos ya que el formato original es `YYYY-MM-DD HH:MM`.
 
