@@ -163,7 +163,7 @@ export async function generateShareImage({
 
 // Share text templates based on user context
 const shareTemplates: Record<UserContext, string> = {
-  improve: 'Quiero mejorar mi trabajo.\nMis 3D laborales: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Qué mejorarías primero?',
+  improve: 'Quiero mejorar mi trabajo.\nMis 3D laborales: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Qué mirarías primero?',
   change: 'Estoy pensando en cambiar.\nMis 3D laborales: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Vos cambiarías?',
   burnout: 'Me siento estancado.\nMis 3D laborales: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Qué harías en mi lugar?',
   check: 'Mis 3D laborales hoy: Dinero {d} | Desarrollo {dev} | Diversión {div}\n¿Cómo lo ves?',
