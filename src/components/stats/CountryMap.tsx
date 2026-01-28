@@ -9,12 +9,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { getCountryByEnglishName, getCountryName, getCountryFlag } from '@/lib/countries';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
+import type { QuartileBoundaries } from './StatsLegend';
 
 const GEO_URL = '/maps/countries-110m.json';
 
 interface CountryMapProps {
   stats: CountryFullStat[];
   isLoading?: boolean;
+  quartileBoundaries: QuartileBoundaries | null;
 }
 
 function getTwitterUrl(countryName: string, flag: string): string {
@@ -29,20 +31,24 @@ Solo toma 2 minutos: 3d.ceoencamiseta.com
   return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
 
-function getCountryColor(stat: CountryFullStat | undefined): string {
+function formatValue(value: number): string {
+  return value.toFixed(1);
+}
+
+function getCountryColor(stat: CountryFullStat | undefined, quartiles: QuartileBoundaries | null): string {
   if (!stat) return '#fcd34d'; // Sin datos -> AMARILLO
   if (stat.count < MIN_RESPONSES_THRESHOLD) return '#e5e5e5'; // Pocos datos -> GRIS
   
-  // Rangos fijos de valores
+  if (!quartiles) return '#858585'; // Fallback
+  
   const avg = stat.promedio;
-  if (avg >= 8) return '#252525';  // 8-10
-  if (avg >= 6) return '#555555';  // 6-8
-  if (avg >= 4) return '#858585';  // 4-6
-  if (avg >= 2) return '#b5b5b5';  // 2-4
-  return '#d5d5d5';                // 0-2
+  if (avg >= quartiles.q3) return '#252525';  // Q4 (top quartile)
+  if (avg >= quartiles.q2) return '#555555';  // Q3
+  if (avg >= quartiles.q1) return '#858585';  // Q2
+  return '#b5b5b5';                           // Q1 (bottom quartile)
 }
 
-export function CountryMap({ stats, isLoading }: CountryMapProps) {
+export function CountryMap({ stats, isLoading, quartileBoundaries }: CountryMapProps) {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
 
@@ -99,7 +105,7 @@ export function CountryMap({ stats, isLoading }: CountryMapProps) {
                 const geoName = geo.properties.name;
                 const country = getCountryByEnglishName(geoName);
                 const stat = country ? statsMap.get(country.code) : undefined;
-                const fillColor = getCountryColor(stat);
+                const fillColor = getCountryColor(stat, quartileBoundaries);
 
                 return (
                   <Geography
@@ -147,13 +153,13 @@ export function CountryMap({ stats, isLoading }: CountryMapProps) {
               <>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                   <span className="text-muted-foreground">Dinero:</span>
-                  <span className="font-mono">{selectedStat.dinero}</span>
+                  <span className="font-mono">{formatValue(selectedStat.dinero)}</span>
                   <span className="text-muted-foreground">Desarrollo:</span>
-                  <span className="font-mono">{selectedStat.desarrollo}</span>
+                  <span className="font-mono">{formatValue(selectedStat.desarrollo)}</span>
                   <span className="text-muted-foreground">Diversión:</span>
-                  <span className="font-mono">{selectedStat.diversion}</span>
+                  <span className="font-mono">{formatValue(selectedStat.diversion)}</span>
                   <span className="text-muted-foreground font-medium">Promedio:</span>
-                  <span className="font-mono font-medium">{selectedStat.promedio}</span>
+                  <span className="font-mono font-medium">{formatValue(selectedStat.promedio)}</span>
                 </div>
                 <div className="text-xs text-muted-foreground pt-1 border-t">
                   {selectedStat.count.toLocaleString()} respuestas
