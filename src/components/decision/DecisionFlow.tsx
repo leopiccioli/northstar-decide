@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { DecisionState, UserContext, Scores } from '@/types/decision';
 import { EntryScreen } from './EntryScreen';
-import { ContextScreen } from './ContextScreen';
-import { InputScreen } from './InputScreen';
-import { ResultScreen } from './ResultScreen';
-import { CloseScreen } from './CloseScreen';
 import { ProgressIndicator } from './ProgressIndicator';
+
+// Lazy load screens that are not shown initially
+const ContextScreen = lazy(() => import('./ContextScreen'));
+const InputScreen = lazy(() => import('./InputScreen'));
+const ResultScreen = lazy(() => import('./ResultScreen'));
+const CloseScreen = lazy(() => import('./CloseScreen'));
+
+// Minimal spinner for lazy loading fallback
+const ScreenLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="w-6 h-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const initialState: DecisionState = {
   context: null,
@@ -98,38 +107,48 @@ export function DecisionFlow() {
       )}
       
       {state.step === 'context' && (
-        <ContextScreen onSelect={handleContextSelect} />
+        <Suspense fallback={<ScreenLoader />}>
+          <ContextScreen onSelect={handleContextSelect} />
+        </Suspense>
       )}
       
       {state.step === 'input' && state.context && (
-        <InputScreen
-          context={state.context}
-          isComparison={false}
-          isFirstComparison={state.context === 'compare'}
-          onComplete={handleInputComplete}
-          onBack={handleBack}
-        />
+        <Suspense fallback={<ScreenLoader />}>
+          <InputScreen
+            context={state.context}
+            isComparison={false}
+            isFirstComparison={state.context === 'compare'}
+            onComplete={handleInputComplete}
+            onBack={handleBack}
+          />
+        </Suspense>
       )}
       
       {state.step === 'input-comparison' && state.context && (
-        <InputScreen
-          context={state.context}
-          isComparison={true}
-          onComplete={handleInputComplete}
-          onBack={handleBack}
-        />
+        <Suspense fallback={<ScreenLoader />}>
+          <InputScreen
+            context={state.context}
+            isComparison={true}
+            onComplete={handleInputComplete}
+            onBack={handleBack}
+          />
+        </Suspense>
       )}
       
       {state.step === 'result' && state.currentOption && state.context && (
-        <ResultScreen
-          currentOption={state.currentOption}
-          comparisonOption={state.comparisonOption}
-          userContext={state.context}
-        />
+        <Suspense fallback={<ScreenLoader />}>
+          <ResultScreen
+            currentOption={state.currentOption}
+            comparisonOption={state.comparisonOption}
+            userContext={state.context}
+          />
+        </Suspense>
       )}
       
       {state.step === 'close' && (
-        <CloseScreen onRestart={handleRestart} />
+        <Suspense fallback={<ScreenLoader />}>
+          <CloseScreen onRestart={handleRestart} />
+        </Suspense>
       )}
     </main>
   );
