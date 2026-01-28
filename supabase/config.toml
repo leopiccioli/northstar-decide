@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.import-legacy-csv]
 verify_jwt = false
+
+[functions.send-legacy-notification]
+verify_jwt = false
