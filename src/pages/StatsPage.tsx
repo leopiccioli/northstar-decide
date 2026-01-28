@@ -6,12 +6,11 @@ import { getCountryName } from '@/lib/countries';
 import { CountryMap, CountryStatData } from '@/components/stats/CountryMap';
 import { StatsLegend } from '@/components/stats/StatsLegend';
 
-type Period = 'month' | '3months' | 'all';
+type Period = 'month' | 'all';
 type Dimension = 'dinero' | 'desarrollo' | 'diversion' | 'promedio';
 
 const PERIOD_OPTIONS: { id: Period; label: string }[] = [
   { id: 'month', label: 'Último mes' },
-  { id: '3months', label: '3 meses' },
   { id: 'all', label: 'Todo' },
 ];
 
