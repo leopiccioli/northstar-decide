@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      country_stats_cache: {
+        Row: {
+          avg_value: number | null
+          count: number
+          country: string
+          dimension: string
+          period: string
+          updated_at: string
+        }
+        Insert: {
+          avg_value?: number | null
+          count?: number
+          country: string
+          dimension: string
+          period: string
+          updated_at?: string
+        }
+        Update: {
+          avg_value?: number | null
+          count?: number
+          country?: string
+          dimension?: string
+          period?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       outbound_emails: {
         Row: {
           created_at: string
@@ -151,6 +178,7 @@ export type Database = {
     }
     Functions: {
       normalize_country: { Args: { input: string }; Returns: string }
+      refresh_country_stats: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

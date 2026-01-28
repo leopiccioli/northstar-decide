@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface StatsRequest {
-  period: 'month' | '3months' | 'all';
+  period: 'month' | 'all';
   dimension: 'dinero' | 'desarrollo' | 'diversion' | 'promedio';
 }
 
@@ -26,70 +26,32 @@ serve(async (req) => {
   try {
     const { period, dimension }: StatsRequest = await req.json();
 
-    console.log(`[get-country-stats] Fetching stats for period=${period}, dimension=${dimension}`);
+    console.log(`[get-country-stats] Fetching from cache: period=${period}, dimension=${dimension}`);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Build date filter
-    let dateFilter: Date | null = null;
-    if (period === 'month') {
-      dateFilter = new Date();
-      dateFilter.setMonth(dateFilter.getMonth() - 1);
-    } else if (period === '3months') {
-      dateFilter = new Date();
-      dateFilter.setMonth(dateFilter.getMonth() - 3);
-    }
-
-    // Fetch all records with country
-    let query = supabase
-      .from('records_3d')
-      .select('country, dinero, desarrollo, diversion')
-      .not('country', 'is', null);
-
-    if (dateFilter) {
-      query = query.gte('created_at', dateFilter.toISOString());
-    }
-
-    const { data, error } = await query;
+    // Read from cache table
+    const { data, error } = await supabase
+      .from('country_stats_cache')
+      .select('country, avg_value, count')
+      .eq('period', period)
+      .eq('dimension', dimension);
 
     if (error) {
       console.error('[get-country-stats] Query error:', error);
       throw error;
     }
 
-    console.log(`[get-country-stats] Found ${data?.length ?? 0} records`);
+    console.log(`[get-country-stats] Found ${data?.length ?? 0} cached entries`);
 
-    // Aggregate by country
-    const byCountry: Record<string, { sum: number; count: number }> = {};
-    
-    for (const row of data || []) {
-      if (!row.country) continue;
-      
-      if (!byCountry[row.country]) {
-        byCountry[row.country] = { sum: 0, count: 0 };
-      }
-
-      let value: number;
-      if (dimension === 'promedio') {
-        value = (row.dinero + row.desarrollo + row.diversion) / 3;
-      } else {
-        value = row[dimension];
-      }
-
-      byCountry[row.country].sum += value;
-      byCountry[row.country].count++;
-    }
-
-    const stats: CountryStat[] = Object.entries(byCountry).map(([country, data]) => ({
-      country,
-      avg: Math.round((data.sum / data.count) * 10) / 10,
-      count: data.count,
+    const stats: CountryStat[] = (data || []).map(row => ({
+      country: row.country,
+      avg: row.avg_value,
+      count: row.count,
     }));
-
-    console.log(`[get-country-stats] Aggregated ${stats.length} countries`);
 
     return new Response(
       JSON.stringify({ stats }),
