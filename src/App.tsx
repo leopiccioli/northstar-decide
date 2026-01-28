@@ -1,6 +1,4 @@
 import { lazy, Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -10,6 +8,10 @@ import Index from "./pages/Index";
 const ResultPage = lazy(() => import("./pages/ResultPage"));
 const StatsPage = lazy(() => import("./pages/StatsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Lazy load toasters - not needed for initial render
+const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
+const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
 
 const queryClient = new QueryClient();
 
@@ -23,8 +25,11 @@ const PageLoader = () => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
+      {/* Lazy load toasters - they're not needed until user interaction */}
+      <Suspense fallback={null}>
+        <Toaster />
+        <Sonner />
+      </Suspense>
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
           <Routes>

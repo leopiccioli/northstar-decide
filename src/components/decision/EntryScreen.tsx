@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MobileQRCard } from './MobileQRCard';
 import { usePrefetchContextScreen } from '@/hooks/usePrefetch';
+
+// Lazy load QR code - only needed on desktop
+const MobileQRCard = lazy(() => import('./MobileQRCard').then(m => ({ default: m.MobileQRCard })));
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { buildBeehiivUrl } from '@/config/urls';
 
@@ -69,8 +71,12 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
           En 20 segundos vas a poder tomar una mejor decisión laboral.
         </p>
 
-        {/* QR Card - only on desktop */}
-        {!isMobile && <MobileQRCard />}
+        {/* QR Card - only on desktop, lazy loaded */}
+        {!isMobile && (
+          <Suspense fallback={<div className="h-[200px]" />}>
+            <MobileQRCard />
+          </Suspense>
+        )}
 
         {/* Single CTA */}
         <button

@@ -5,9 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     
+    <!-- Preconnect to Supabase for faster API calls -->
+    <link rel="preconnect" href="https://bcokciysbyuaeodnsxas.supabase.co" />
+    <link rel="dns-prefetch" href="https://bcokciysbyuaeodnsxas.supabase.co" />
+    
     <!-- Preload fonts for faster rendering -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Critical CSS for EntryScreen - inline for faster FCP -->
+    <style>
+      :root{--background:0 0% 7%;--foreground:0 0% 98%}
+      body{margin:0;background:hsl(var(--background));color:hsl(var(--foreground));font-family:'Space Grotesk',system-ui,sans-serif}
+      .min-h-screen{min-height:100vh}
+      .flex{display:flex}
+      .items-center{align-items:center}
+      .justify-center{justify-content:center}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      .animate-spin{animation:spin 1s linear infinite}
+    </style>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
     <noscript>
