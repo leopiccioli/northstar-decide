@@ -112,7 +112,7 @@ export function InputScreen({ context, isComparison, isFirstComparison, optionNa
                 bullets: [
                   "¿Arrancás el día con ganas?",
                   "¿Las tareas te energizan o te drenan?",
-                  "¿Podrías hacerlo gratis por un tiempo?"
+                  "¿Te da energía o te la saca?"
                 ]
               }}
             />

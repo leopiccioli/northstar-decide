@@ -389,11 +389,11 @@ function SaveSection({
     <div className="space-y-5 p-4 bg-secondary rounded-sm border border-border animate-fade-up">
       {/* Microcopy */}
       <p className="text-subtle text-center">
-        Quienes repiten el 3D suelen mejorar sus puntajes con el tiempo.
+        Esto queda guardado para cuando quieras volver a mirarlo.
       </p>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Guardá tu resultado y seguí creciendo</label>
+        <label className="text-sm font-medium">Guardá este resultado para más adelante</label>
         <input
           type="email"
           value={email}
