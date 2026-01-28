@@ -7,6 +7,18 @@ const BASE_URL = 'https://3d.ceoencamiseta.com';
 const EMAIL_FROM = '3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>';
 const EMAIL_REPLY_TO = 'leopiccioli@gmail.com';
 
+/**
+ * IMPORTANTE: Siempre incluir ?email= en los links de emails
+ * 
+ * La aplicación soporta pre-fill via URL params (?email=xxx@xxx.com).
+ * Esto mejora la UX porque:
+ * - El email ya está pre-llenado en el formulario
+ * - La sección de guardado se auto-expande
+ * 
+ * Usar: encodeURIComponent(user.email) para manejar caracteres especiales
+ * Ver: src/config/urls.ts para la configuración centralizada de URLs
+ */
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
