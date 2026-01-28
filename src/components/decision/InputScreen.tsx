@@ -12,7 +12,7 @@ interface InputScreenProps {
   onBack: () => void;
 }
 
-export function InputScreen({ context, isComparison, isFirstComparison, optionName, onComplete, onBack }: InputScreenProps) {
+export default function InputScreen({ context, isComparison, isFirstComparison, optionName, onComplete, onBack }: InputScreenProps) {
   // Prefetch ResultScreen while user fills sliders
   usePrefetchResultScreen();
   

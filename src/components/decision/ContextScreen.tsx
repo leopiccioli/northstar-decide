@@ -13,7 +13,7 @@ const options: { id: UserContext; label: string }[] = [
   { id: 'check', label: 'Solo quiero chequear cómo estoy' },
 ];
 
-export function ContextScreen({ onSelect }: ContextScreenProps) {
+export default function ContextScreen({ onSelect }: ContextScreenProps) {
   // Prefetch next screen while user chooses context
   usePrefetchInputScreen();
   return (

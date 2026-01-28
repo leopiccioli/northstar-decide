@@ -454,7 +454,7 @@ function SaveSection({
   );
 }
 
-export function ResultScreen({ 
+export default function ResultScreen({ 
   currentOption, 
   comparisonOption,
   userContext,

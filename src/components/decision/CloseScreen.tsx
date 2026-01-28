@@ -4,7 +4,7 @@ interface CloseScreenProps {
   onRestart: () => void;
 }
 
-export function CloseScreen({ onRestart }: CloseScreenProps) {
+export default function CloseScreen({ onRestart }: CloseScreenProps) {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
