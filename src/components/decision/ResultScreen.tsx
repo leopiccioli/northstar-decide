@@ -10,6 +10,7 @@ import { Check, ChevronsUpDown, ExternalLink, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QRCodeSVG } from 'qrcode.react';
+import { SITE_CONFIG } from '@/config/urls';
 import {
   Command,
   CommandEmpty,
@@ -24,9 +25,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-
-const SHARE_URL = 'https://3d.ceoencamiseta.com';
-const CEO_COMMUNITY_URL = 'https://ceoencamiseta.com/comunidad';
 
 const COUNTRIES = [
   { code: 'AR', name: 'Argentina' },
@@ -152,8 +150,8 @@ function SuccessWithShare({
   onShare: () => void;
   email: string;
 }) {
-  const shareUrl = `${SHARE_URL}/r/${recordId}`;
-  const ceoUrl = `https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e?email=${encodeURIComponent(email)}`;
+  const shareUrl = `${SITE_CONFIG.baseUrl}/r/${recordId}`;
+  const ceoUrl = `${SITE_CONFIG.beehiivUrl}?email=${encodeURIComponent(email)}`;
 
   return (
     <div className="space-y-6 p-6 bg-secondary rounded-sm border border-border animate-fade-up text-center">
@@ -509,7 +507,7 @@ export function ResultScreen({
     
     try {
       const shareText = getShareText(userContext, currentOption, comparisonOption);
-      const shareUrl = isOptimistic ? SHARE_URL : `${SHARE_URL}/r/${savedRecordId}`;
+      const shareUrl = isOptimistic ? SITE_CONFIG.baseUrl : `${SITE_CONFIG.baseUrl}/r/${savedRecordId}`;
       const fullText = `${shareText}\n${shareUrl}`;
 
       // Check if we can share files on mobile

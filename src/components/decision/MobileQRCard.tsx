@@ -1,8 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react';
 import { Smartphone } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-
-const BASE_URL = 'https://3d.ceoencamiseta.com';
+import { SITE_CONFIG } from '@/config/urls';
 
 interface MobileQRCardProps {
   /** Direct URL to encode (overrides default URL building) */
@@ -28,10 +27,10 @@ export function MobileQRCard({
   let qrUrl: string;
   
   if (url) {
-    qrUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`;
+    qrUrl = url.startsWith('http') ? url : `${SITE_CONFIG.baseUrl}${url}`;
   } else {
     // Build URL with UTM params (default behavior)
-    const urlObj = new URL(BASE_URL);
+    const urlObj = new URL(SITE_CONFIG.baseUrl);
     urlObj.searchParams.set('utm_source', source);
     urlObj.searchParams.set('utm_medium', medium);
     urlObj.searchParams.set('utm_campaign', 'mobile_redirect');
