@@ -1,87 +1,153 @@
 
-# Plan: Centralizar URL del Dominio en Variable de Configuración
 
-## Problema Actual
+# Plan: Importar CSV via Storage Bucket
 
-Las URLs están hardcodeadas en múltiples archivos:
+## Estrategia
 
-| Archivo | URL Actual |
-|---------|------------|
-| `ResultScreen.tsx` | `https://3d.ceoencamiseta.com` |
-| `ResultPage.tsx` | `https://3d.ceoencamiseta.com` |
-| `MobileQRCard.tsx` | `https://3d.ceoencamiseta.com` |
-| `ShareImageGenerator.ts` | `3d.ceoencamiseta.com` (sin https) |
-| `save-result/index.ts` | `3d@3d.ceoencamiseta.com` (email) |
-| `index.html` | `https://lovable.dev/opengraph-image-p98pqg.png` (OG images) |
+1. Crear un bucket privado `legacy-import`
+2. Vos subís el CSV desde Cloud View → Files
+3. Edge Function lee el archivo del bucket, parsea y carga a `staging_legacy_3d`
+4. La función devuelve un resumen con conteo de éxitos/errores
 
 ---
 
-## Solución: Archivo de Configuración Centralizado
+## Por qué es mejor
 
-Crear un archivo `src/config/urls.ts` que exporte todas las URLs del proyecto:
+| Aspecto | Bucket + Edge Function |
+|---------|------------------------|
+| Tamaño | Sin límite práctico (hasta 50MB) |
+| Confiabilidad | El archivo persiste, se puede reintentar |
+| Visibilidad | Logs en Cloud View → Functions |
+| Progreso | La función retorna estadísticas al terminar |
 
-```typescript
-// src/config/urls.ts
+---
 
-export const SITE_CONFIG = {
-  // Dominio principal de la app
-  baseUrl: 'https://3d.ceoencamiseta.com',
-  domain: '3d.ceoencamiseta.com',
-  
-  // Email para notificaciones
-  emailFrom: '3d@3d.ceoencamiseta.com',
-  emailReplyTo: 'leopiccioli@gmail.com',
-  
-  // Links externos
-  communityUrl: 'https://ceoencamiseta.com/comunidad',
-  mainSiteUrl: 'https://ceoencamiseta.com',
-  beehiivUrl: 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e',
-} as const;
+## Flujo Visual
+
+```text
+Cloud View → Files
+      │
+      ▼
+┌─────────────────────┐
+│ Bucket: legacy-     │
+│ import              │
+│ └── data.csv        │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Edge Function:      │
+│ import-legacy-csv   │
+│                     │
+│ 1. Lee archivo      │
+│ 2. Parsea CSV       │
+│ 3. Inserta en       │
+│    staging_legacy   │
+│ 4. Retorna stats    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Response:           │
+│ {                   │
+│   total: 13000,     │
+│   inserted: 12950,  │
+│   errors: 50        │
+│ }                   │
+└─────────────────────┘
 ```
 
 ---
 
-## Archivos a Modificar
+## Archivos a Crear/Modificar
 
-### Frontend (4 archivos)
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/config/urls.ts` | **CREAR** - Archivo de configuración centralizado |
-| `src/components/decision/ResultScreen.tsx` | Importar `SITE_CONFIG.baseUrl` en lugar de constante local |
-| `src/components/decision/MobileQRCard.tsx` | Importar `SITE_CONFIG.baseUrl` en lugar de `BASE_URL` |
-| `src/components/decision/ShareImageGenerator.ts` | Importar `SITE_CONFIG.domain` en lugar de constante local |
-| `src/pages/ResultPage.tsx` | Importar `SITE_CONFIG.baseUrl` y `SITE_CONFIG.beehiivUrl` |
-
-### Edge Function (1 archivo)
-
-| Archivo | Cambio |
-|---------|--------|
-| `supabase/functions/save-result/index.ts` | Crear constantes al inicio del archivo (no puede importar de `src/`) |
-
-### HTML (1 archivo)
-
-| Archivo | Cambio |
-|---------|--------|
-| `index.html` | Actualizar las meta tags de Open Graph con imagen propia |
+| Archivo | Acción | Descripción |
+|---------|--------|-------------|
+| Migration SQL | Crear | Bucket `legacy-import` con policy para service role |
+| `supabase/functions/import-legacy-csv/index.ts` | Crear | Edge function que lee y procesa |
+| `supabase/functions/import-legacy-csv/deno.json` | Crear | Config Deno |
+| `supabase/config.toml` | Modificar | Agregar función |
 
 ---
 
-## Detalle Técnico
+## Edge Function: `import-legacy-csv`
 
-### Nota sobre Edge Functions
+```typescript
+// Lógica principal:
+// 1. Recibe POST con { filename: "data.csv" }
+// 2. Lee el archivo desde storage con service role
+// 3. Parsea CSV línea por línea
+// 4. Inserta en batches de 100 registros
+// 5. Cuenta éxitos y errores
+// 6. Retorna resumen JSON
 
-Las Edge Functions corren en Deno y no pueden importar de `src/`. Por eso, para el backend crearemos las constantes directamente en el archivo. Una alternativa sería usar variables de entorno, pero para URLs estáticas no es necesario.
-
-### Open Graph Images
-
-Actualmente apuntan a `lovable.dev`. Idealmente deberías subir una imagen de preview a tu dominio (por ejemplo `https://3d.ceoencamiseta.com/og-image.png`) y actualizar el HTML.
+// Características:
+// - Procesa en memoria con streaming
+// - Maneja valores vacíos y comillas
+// - Loguea errores específicos por línea
+// - Timeout de 120 segundos (suficiente para 13K registros)
+```
 
 ---
 
-## Beneficios
+## Bucket Storage
 
-1. **Un solo lugar para cambiar** - Si cambia el dominio, se modifica en un archivo
-2. **Consistencia** - Todas las URLs usan la misma fuente de verdad
-3. **TypeScript** - Autocompletado y errores si hay typos
-4. **Documentación implícita** - Queda claro qué URLs usa el proyecto
+```sql
+-- Crear bucket privado
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('legacy-import', 'legacy-import', false);
+
+-- Policy: solo service role puede leer/escribir
+-- (el bucket privado ya restringe acceso público)
+```
+
+---
+
+## Pasos de Ejecución
+
+1. **Crear bucket** via migración SQL
+2. **Crear Edge Function** `import-legacy-csv`
+3. **Vos subís el CSV** en Cloud View → Files → legacy-import
+4. **Llamás a la función** (te doy el comando curl o un botón)
+5. **Ves el resultado** con conteo de registros insertados
+6. **Continuamos** con la migración a `records_3d`
+
+---
+
+## Manejo de Errores
+
+- Si la función falla, el archivo sigue en el bucket - se puede reintentar
+- Cada error de parseo se loguea con número de línea
+- El response final incluye array de errores específicos
+- Logs disponibles en Cloud View → Functions → import-legacy-csv
+
+---
+
+## Sección Técnica
+
+### Estructura del CSV esperada
+
+```text
+um,Email,Fecha,Dinero,Desarrollo,Diversión,Comentario,País de Residencia
+12075,email@example.com,2026-01-27 19:53,5,7,9,"comentario",Perú
+```
+
+### Mapeo de columnas
+
+| CSV Header | DB Column |
+|------------|-----------|
+| um | legacy_id |
+| Email | email |
+| Fecha | fecha |
+| Dinero | dinero |
+| Desarrollo | desarrollo |
+| Diversión | diversion |
+| Comentario | comentario |
+| País de Residencia | pais |
+
+### Validaciones
+
+- Email no vacío (requerido)
+- Scores 1-10 (convertidos a integer)
+- Fecha parseada como string (se convierte después)
+
