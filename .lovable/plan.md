@@ -1,161 +1,99 @@
 
-# Plan: Links a Beehiiv con UTM Tracking
+# Plan: Arreglar bug de cuartiles duplicados en la leyenda
 
-## Resumen
+## Problema Detectado
 
-Actualizar todos los links a CEO en Camiseta para que:
-1. Apunten al signup de Beehiiv (magic link)
-2. Incluyan email si está disponible
-3. Incluyan UTMs para saber desde dónde llegó el usuario
+Cuando se cambia de período (Trimestre -> Todo), la leyenda muestra 7+ rangos de grises mezclados en lugar de solo 4 cuartiles fijos.
 
----
-
-## Links Actuales
-
-| Ubicación | URL actual | Tiene email? |
-|-----------|------------|--------------|
-| Resultado guardado | `beehiivUrl?email=X` | Si |
-| Resultado compartido | `beehiivUrl` (sin email) | No |
-| Home footer | `ceoencamiseta.com` | No |
+**Causa raíz**: En `StatsLegend.tsx`, el `key` de React usa el `label` (el rango numérico como "6.1 - 6.3") en lugar del color. Cuando los cuartiles cambian, React no identifica correctamente qué elementos reemplazar, causando que se acumulen elementos de ambos períodos.
 
 ---
 
-## Cambios Propuestos
+## Solución
 
-### 1. Configuración centralizada
+### 1. Cambiar la clave de React en StatsLegend
 
-Actualizar `src/config/urls.ts`:
-- Cambiar `communityUrl` a la URL base de Beehiiv
-- Eliminar redundancia con `beehiivUrl`
+Usar el **color** (que es constante: `#252525`, `#555555`, `#858585`, `#b5b5b5`) como `key` en lugar del `label` (que cambia con cada período).
 
-### 2. Crear helper para construir URLs
+### 2. Centralizar la paleta de colores
 
-Nueva función `buildBeehiivUrl(options)` que:
-- Siempre agrega `utm_source=3dapp`
-- Agrega `utm_medium` según el contexto (home, result, shared)
-- Agrega `email` si está disponible
-
-### 3. Actualizar cada ubicación
-
-**ResultScreen.tsx (resultado guardado):**
-```
-utm_source=3dapp
-utm_medium=result
-email={email del formulario}
-```
-
-**ResultPage.tsx (link compartido):**
-```
-utm_source=3dapp
-utm_medium=shared
-(sin email - es una visita anónima)
-```
-
-**EntryScreen.tsx (home footer):**
-```
-utm_source=3dapp
-utm_medium=home
-email={si viene en URL params}
-```
+Mover los 4 colores de cuartiles a una constante compartida entre `CountryMap.tsx` y `StatsLegend.tsx` para evitar duplicación y asegurar consistencia.
 
 ---
 
-## Resultado Final
+## Sección Tecnica
 
-Todos los links seguirán este formato:
-```
-https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e
-  ?email={si disponible}
-  &utm_source=3dapp
-  &utm_medium={home|result|shared}
-```
+### Archivo: src/config/stats.ts
 
-Esto te permitirá ver en Beehiiv de dónde vienen los suscriptores.
-
----
-
-## Sección Técnica
-
-### Archivo: src/config/urls.ts
-
-Simplificar configuración - una sola URL base de Beehiiv:
+Agregar la paleta de colores centralizada:
 
 ```typescript
-export const SITE_CONFIG = {
-  baseUrl: 'https://3d.ceoencamiseta.com',
-  domain: '3d.ceoencamiseta.com',
-  emailFrom: '3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>',
-  emailReplyTo: 'leopiccioli@gmail.com',
-  mainSiteUrl: 'https://ceoencamiseta.com',
-  beehiivBaseUrl: 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e',
+export const MIN_RESPONSES_THRESHOLD = 30;
+
+// Paleta de colores para cuartiles (de mayor a menor)
+export const QUARTILE_COLORS = {
+  q4: '#252525',  // Top quartile (más oscuro)
+  q3: '#555555',
+  q2: '#858585',
+  q1: '#b5b5b5',  // Bottom quartile (más claro)
+  noData: '#fcd34d',        // Amarillo - sin datos
+  insufficient: '#e5e5e5',  // Gris claro - datos insuficientes
 } as const;
+```
 
-// Helper para construir URL con tracking
-export function buildBeehiivUrl(options: {
-  email?: string;
-  utmMedium: 'home' | 'result' | 'shared';
-}): string {
-  const params = new URLSearchParams();
+### Archivo: src/components/stats/StatsLegend.tsx
+
+Cambiar de `key={item.label}` a `key={item.color}` e importar los colores desde config:
+
+```typescript
+import { MIN_RESPONSES_THRESHOLD, QUARTILE_COLORS } from '@/config/stats';
+
+// Usar keys fijos basados en identificadores, no en labels dinámicos
+const legendItems = [
+  { id: 'q4', color: QUARTILE_COLORS.q4, label: quartileBoundaries ? `${formatValue(quartileBoundaries.q3)} - ${formatValue(quartileBoundaries.max)}` : 'Muy alto' },
+  { id: 'q3', color: QUARTILE_COLORS.q3, label: quartileBoundaries ? `${formatValue(quartileBoundaries.q2)} - ${formatValue(quartileBoundaries.q3)}` : 'Alto' },
+  { id: 'q2', color: QUARTILE_COLORS.q2, label: quartileBoundaries ? `${formatValue(quartileBoundaries.q1)} - ${formatValue(quartileBoundaries.q2)}` : 'Medio' },
+  { id: 'q1', color: QUARTILE_COLORS.q1, label: quartileBoundaries ? `${formatValue(quartileBoundaries.min)} - ${formatValue(quartileBoundaries.q1)}` : 'Bajo' },
+];
+
+// En el render:
+{legendItems.map((item) => (
+  <div key={item.id} className="...">
+```
+
+### Archivo: src/components/stats/CountryMap.tsx
+
+Importar los colores desde config en lugar de hardcodearlos:
+
+```typescript
+import { MIN_RESPONSES_THRESHOLD, QUARTILE_COLORS } from '@/config/stats';
+
+function getCountryColor(stat: CountryFullStat | undefined, quartiles: QuartileBoundaries | null): string {
+  if (!stat) return QUARTILE_COLORS.noData;
+  if (stat.count < MIN_RESPONSES_THRESHOLD) return QUARTILE_COLORS.insufficient;
   
-  if (options.email) {
-    params.set('email', options.email);
-  }
-  params.set('utm_source', '3dapp');
-  params.set('utm_medium', options.utmMedium);
+  if (!quartiles) return QUARTILE_COLORS.q2; // Fallback
   
-  return `${SITE_CONFIG.beehiivBaseUrl}?${params.toString()}`;
+  const avg = stat.promedio;
+  if (avg >= quartiles.q3) return QUARTILE_COLORS.q4;
+  if (avg >= quartiles.q2) return QUARTILE_COLORS.q3;
+  if (avg >= quartiles.q1) return QUARTILE_COLORS.q2;
+  return QUARTILE_COLORS.q1;
 }
-```
-
-### Archivo: src/components/decision/EntryScreen.tsx
-
-Agregar import de `useTrackingData` para capturar email de URL y usar el helper:
-
-```typescript
-import { useTrackingData } from '@/hooks/useTrackingData';
-import { buildBeehiivUrl } from '@/config/urls';
-
-// En el componente:
-const trackingData = useTrackingData();
-const beehiivUrl = buildBeehiivUrl({ 
-  email: trackingData.email || undefined, 
-  utmMedium: 'home' 
-});
-
-// En el footer:
-<a href={beehiivUrl} ...>
-```
-
-### Archivo: src/components/decision/ResultScreen.tsx
-
-Actualizar SuccessWithShare para usar el helper:
-
-```typescript
-import { buildBeehiivUrl } from '@/config/urls';
-
-// Línea 135 cambiar:
-const ceoUrl = buildBeehiivUrl({ email, utmMedium: 'result' });
-```
-
-### Archivo: src/pages/ResultPage.tsx
-
-Actualizar link para usar el helper (sin email):
-
-```typescript
-import { buildBeehiivUrl } from '@/config/urls';
-
-// En el componente:
-const beehiivUrl = buildBeehiivUrl({ utmMedium: 'shared' });
-
-// Línea 346:
-<a href={beehiivUrl} ...>
 ```
 
 ---
 
 ## Archivos a Modificar
 
-1. `src/config/urls.ts` - Nueva función helper
-2. `src/components/decision/EntryScreen.tsx` - Usar helper con email de URL
-3. `src/components/decision/ResultScreen.tsx` - Usar helper
-4. `src/pages/ResultPage.tsx` - Usar helper
+1. `src/config/stats.ts` - Agregar constantes de colores
+2. `src/components/stats/StatsLegend.tsx` - Usar keys fijos y colores centralizados
+3. `src/components/stats/CountryMap.tsx` - Usar colores centralizados
+
+---
+
+## Resultado
+
+- La leyenda siempre mostrara exactamente **4 cuartiles + 2 estados especiales**
+- Los colores son constantes y centralizados
+- Cambiar de periodo actualizara solo los labels numericos, sin duplicar elementos
