@@ -8,7 +8,7 @@ import { generateShareImage, getShareText } from '@/components/decision/ShareIma
 import { QRCodeSVG } from 'qrcode.react';
 import { Smartphone, ExternalLink, Loader2 } from 'lucide-react';
 import { Option, Scores } from '@/types/decision';
-import { SITE_CONFIG } from '@/config/urls';
+import { SITE_CONFIG, buildBeehiivUrl } from '@/config/urls';
 
 interface ResultData {
   optionName: string;
@@ -343,7 +343,7 @@ export default function ResultPage() {
           )}
 
           <a
-            href={SITE_CONFIG.beehiivUrl}
+            href={buildBeehiivUrl({ utmMedium: 'shared' })}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full py-3 text-sm border border-border rounded-sm

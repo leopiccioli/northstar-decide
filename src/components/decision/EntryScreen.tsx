@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileQRCard } from './MobileQRCard';
 import { usePrefetchContextScreen } from '@/hooks/usePrefetch';
+import { useTrackingData } from '@/hooks/useTrackingData';
+import { buildBeehiivUrl } from '@/config/urls';
 
 interface EntryScreenProps {
   onStart: () => void;
@@ -11,6 +13,13 @@ interface EntryScreenProps {
 export function EntryScreen({ onStart }: EntryScreenProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const isMobile = useIsMobile();
+  const trackingData = useTrackingData();
+  
+  // Build Beehiiv URL with tracking
+  const beehiivUrl = buildBeehiivUrl({ 
+    email: trackingData.email || undefined, 
+    utmMedium: 'home' 
+  });
   
   // Prefetch next screen while user reads entry
   usePrefetchContextScreen();
@@ -75,7 +84,7 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
       {/* Footer */}
       <footer className="absolute bottom-6 flex flex-col items-center gap-2">
         <a 
-          href="https://ceoencamiseta.com" 
+          href={beehiivUrl}
           target="_blank" 
           rel="noopener noreferrer"
           className="text-subtle hover:text-foreground transition-colors"
