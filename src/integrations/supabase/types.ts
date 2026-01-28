@@ -69,6 +69,7 @@ export type Database = {
           comment: string | null
           comparison: Json | null
           country: string | null
+          country_raw: string | null
           created_at: string | null
           desarrollo: number
           dinero: number
@@ -94,6 +95,7 @@ export type Database = {
           comment?: string | null
           comparison?: Json | null
           country?: string | null
+          country_raw?: string | null
           created_at?: string | null
           desarrollo: number
           dinero: number
@@ -119,6 +121,7 @@ export type Database = {
           comment?: string | null
           comparison?: Json | null
           country?: string | null
+          country_raw?: string | null
           created_at?: string | null
           desarrollo?: number
           dinero?: number
@@ -147,7 +150,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      normalize_country: { Args: { input: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
