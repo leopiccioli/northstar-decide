@@ -1,243 +1,159 @@
 
 
-# Plan: Mejoras al Mapa de Estadísticas
+# Plan: Cambiar a Trimestre + Umbral Configurable (30)
 
-## Resumen de Cambios
+## Resumen
 
-1. **Tooltip clickeable** - Usar Radix Popover en lugar de tooltip manual
-2. **Colores corregidos** - Amarillo = sin datos, gris = menos de 10 respuestas
-3. **Leyenda mejorada** - Sin quintiles, usar rangos de valores reales
-4. **Tabla con las 4 dimensiones** - Dinero, Desarrollo, Diversión, Promedio + Respuestas
-5. **Filtrar tabla igual que mapa** - Solo mostrar países con 10+ respuestas
-6. **Mejor zoom y contornos** - Configurar ZoomableGroup correctamente
+1. Cambiar periodo de "mes" a "trimestre" (3 meses)
+2. Crear constante `MIN_RESPONSES_THRESHOLD = 30` y usarla en todos lados
+3. Actualizar la funcion de base de datos para calcular trimestre en lugar de mes
 
 ---
 
-## Cambios por Archivo
+## Lugares a Modificar
 
-### 1. CountryMap.tsx
+### Umbral (10 -> 30)
 
-| Cambio | Descripcion |
-|--------|-------------|
-| Tooltip a Popover | Usar Radix Popover que se abre al hacer click y permanece abierto |
-| Colores invertidos | Amarillo (#fcd34d) para sin datos, gris (#e5e5e5) para menos de 10 |
-| Mejor zoom | Agregar zoom controls y limites razonables al ZoomableGroup |
-| Bordes mas visibles | Aumentar strokeWidth a 0.75 y usar color mas oscuro |
+| Archivo | Linea | Cambio |
+|---------|-------|--------|
+| `src/config/stats.ts` (NUEVO) | - | Crear constante `MIN_RESPONSES_THRESHOLD = 30` |
+| `src/pages/StatsPage.tsx` | 52 | Importar y usar constante |
+| `src/components/stats/CountryMap.tsx` | 33, 145 | Importar y usar constante |
+| `src/components/stats/StatsLegend.tsx` | 12 | Importar y usar constante |
 
-**Antes (colores):**
-```text
-Sin datos -> gris claro
-< 10 respuestas -> amarillo
-```
+### Periodo (mes -> trimestre)
 
-**Despues (colores):**
-```text
-Sin datos -> amarillo (llama la atencion para pedir datos)
-< 10 respuestas -> gris claro (se ve pero no cuenta)
-```
+| Archivo | Linea | Cambio |
+|---------|-------|--------|
+| `src/pages/StatsPage.tsx` | 10-14 | Cambiar tipo a `'quarter' \| 'all'`, label a "Ultimo trimestre" |
+| `supabase/functions/get-country-stats/index.ts` | 11 | Cambiar tipo a `'quarter' \| 'all'` |
+| Base de datos | funcion | Nueva migracion: cambiar `interval '1 month'` a `'3 months'` y `period = 'month'` a `'quarter'` |
 
-**Popover en lugar de tooltip:**
+---
+
+## Archivos Nuevos
+
+### src/config/stats.ts
+
 ```typescript
-// Click para abrir popover que permanece abierto
-// El usuario puede clickear el link de Twitter
-// Click afuera o en otro pais para cerrar
+// Umbral minimo de respuestas para mostrar datos
+export const MIN_RESPONSES_THRESHOLD = 30;
 ```
 
 ---
 
-### 2. StatsLegend.tsx
+## Cambios en Codigo
 
-Cambiar de quintiles confusos a rangos de valores claros:
+### 1. StatsPage.tsx
 
-**Antes:**
-```text
-Q5 (mas alto)
-Q4
-Q3
-Q2
-Q1 (mas bajo)
-```
-
-**Despues:**
-```text
-8-10 (muy alto)
-6-8 (alto)
-4-6 (medio)
-2-4 (bajo)
-0-2 (muy bajo)
-Sin datos
-< 10 respuestas
-```
-
----
-
-### 3. Edge Function get-country-stats
-
-Modificar para devolver las 4 dimensiones por pais en una sola llamada:
-
-**Nueva respuesta:**
 ```typescript
-interface CountryFullStat {
-  country: string;
-  dinero: number;
-  desarrollo: number;
-  diversion: number;
-  promedio: number;
-  count: number;
+import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
+
+type Period = 'quarter' | 'all';  // Cambiado de 'month'
+
+const PERIOD_OPTIONS: { id: Period; label: string }[] = [
+  { id: 'quarter', label: 'Ultimo trimestre' },  // Cambiado
+  { id: 'all', label: 'Todo' },
+];
+
+// Linea 52
+const tableStats = stats
+  .filter(s => s.count >= MIN_RESPONSES_THRESHOLD)  // Antes: 10
+  .sort((a, b) => b.promedio - a.promedio);
+```
+
+### 2. CountryMap.tsx
+
+```typescript
+import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
+
+function getCountryColor(stat: CountryFullStat | undefined): string {
+  if (!stat) return '#fcd34d';
+  if (stat.count < MIN_RESPONSES_THRESHOLD) return '#e5e5e5';  // Antes: 10
+  // ...
 }
 
-// GET /get-country-stats?period=all
-// Devuelve todas las dimensiones por pais
+// Linea 145 en popover
+{selectedStat && selectedStat.count >= MIN_RESPONSES_THRESHOLD ? (
+  // ...
+)}
 ```
 
----
+### 3. StatsLegend.tsx
 
-### 4. StatsPage.tsx
+```typescript
+import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 
-**Cambios en la tabla:**
-- Mostrar columnas: Pais, Dinero, Desarrollo, Diversion, Promedio, Respuestas
-- Filtrar: solo paises con 10+ respuestas
-- Ordenar: por promedio descendente
-- Agregar bandera emoji al nombre del pais
-
-**Nueva estructura de tabla:**
-```text
-| Pais          | Dinero | Desarrollo | Diversion | Promedio | Resp. |
-|---------------|--------|------------|-----------|----------|-------|
-| Bolivia       | 7.7    | 7.5        | 6.1       | 7.1      | 11    |
-| Mexico        | 5.8    | 6.8        | 6.3       | 6.3      | 1,093 |
+const LEGEND_ITEMS = [
+  // ...
+  { color: '#e5e5e5', label: `< ${MIN_RESPONSES_THRESHOLD} respuestas`, border: true },
+];
 ```
 
----
-
-## Seccion Tecnica
-
-### Edge Function Actualizada
+### 4. Edge Function get-country-stats/index.ts
 
 ```typescript
 interface StatsRequest {
-  period: 'month' | 'all';
+  period: 'quarter' | 'all';  // Cambiado de 'month'
 }
+```
 
-interface CountryFullStat {
-  country: string;
-  dinero: number;
-  desarrollo: number;
-  diversion: number;
-  promedio: number;
-  count: number;
-}
+---
 
-serve(async (req) => {
-  const { period }: StatsRequest = await req.json();
+## Migracion de Base de Datos
 
-  // Obtener todas las dimensiones para el periodo
-  const { data, error } = await supabase
-    .from('country_stats_cache')
-    .select('country, dimension, avg_value, count')
-    .eq('period', period);
+Actualizar la funcion `refresh_country_stats()` para usar trimestre:
 
-  // Agrupar por pais
-  const byCountry = new Map<string, CountryFullStat>();
+```sql
+CREATE OR REPLACE FUNCTION public.refresh_country_stats()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  quarter_ago TIMESTAMPTZ := now() - interval '3 months';  -- Antes: 1 month
+BEGIN
+  TRUNCATE public.country_stats_cache;
   
-  for (const row of data) {
-    if (!byCountry.has(row.country)) {
-      byCountry.set(row.country, {
-        country: row.country,
-        dinero: 0,
-        desarrollo: 0,
-        diversion: 0,
-        promedio: 0,
-        count: row.count,
-      });
-    }
-    const stat = byCountry.get(row.country)!;
-    stat[row.dimension] = row.avg_value;
-  }
-
-  return Response.json({ 
-    stats: Array.from(byCountry.values()) 
-  });
-});
-```
-
-### CountryMap: Popover clickeable
-
-```typescript
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-
-// Estado para pais seleccionado
-const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-
-// Click en pais abre popover
-const handleClick = (geoName: string) => {
-  const country = getCountryByEnglishName(geoName);
-  setSelectedCountry(country?.code || null);
-};
-
-// Popover con contenido
-<PopoverContent>
-  <div>
-    {flag} {name}
-    {count >= 10 ? (
-      <div>Promedio: {avg}</div>
-    ) : (
-      <a href={twitterUrl}>Pedi ayuda en Twitter</a>
-    )}
-  </div>
-</PopoverContent>
-```
-
-### Funcion de color actualizada
-
-```typescript
-function getCountryColor(stat: CountryFullStat | undefined): string {
-  if (!stat) return '#fcd34d'; // Sin datos -> AMARILLO
-  if (stat.count < 10) return '#e5e5e5'; // Pocos datos -> GRIS
+  -- ALL TIME (sin cambios)
+  -- ...
   
-  // Rangos fijos de valores (no quintiles)
-  const avg = stat.promedio;
-  if (avg >= 8) return '#252525';  // 8-10
-  if (avg >= 6) return '#555555';  // 6-8
-  if (avg >= 4) return '#858585';  // 4-6
-  if (avg >= 2) return '#b5b5b5';  // 2-4
-  return '#e5e5e5';                // 0-2
-}
-```
+  -- QUARTER: dinero (antes era MONTH)
+  INSERT INTO public.country_stats_cache (country, period, dimension, avg_value, count)
+  SELECT country, 'quarter', 'dinero', ROUND(AVG(dinero)::numeric, 1), COUNT(*)
+  FROM public.records_3d 
+  WHERE country IS NOT NULL AND created_at >= quarter_ago
+  GROUP BY country;
+  
+  -- (repetir para desarrollo, diversion, promedio con period='quarter')
+  
+  -- Actualizar timestamp
+  UPDATE public.country_stats_cache SET updated_at = now();
+END;
+$$;
 
-### ZoomableGroup mejorado
-
-```typescript
-<ZoomableGroup
-  zoom={1}
-  minZoom={0.8}
-  maxZoom={5}
-  center={[0, 20]}
->
-  <Geographies geography={GEO_URL}>
-    {/* ... */}
-  </Geographies>
-</ZoomableGroup>
+-- Borrar datos viejos de 'month' y regenerar con 'quarter'
+DELETE FROM public.country_stats_cache WHERE period = 'month';
+SELECT public.refresh_country_stats();
 ```
 
 ---
 
 ## Orden de Implementacion
 
-1. Actualizar edge function para devolver las 4 dimensiones
-2. Actualizar CountryMap: colores, popover, zoom
-3. Actualizar StatsLegend: rangos en lugar de quintiles
-4. Actualizar StatsPage: tabla con 4 columnas, filtro y orden
+1. Crear `src/config/stats.ts` con la constante
+2. Actualizar frontend (StatsPage, CountryMap, StatsLegend)
+3. Actualizar edge function
+4. Crear migracion de base de datos
+5. Ejecutar refresh del cache
 
 ---
 
 ## Resultado Esperado
 
-- Tooltip que se puede clickear (popover)
-- Colores: amarillo = sin datos, gris = pocos datos
-- Leyenda con rangos claros (8-10, 6-8, etc.)
-- Tabla muestra Dinero, Desarrollo, Diversion, Promedio, Respuestas
-- Tabla solo muestra paises con 10+ respuestas
-- Zoom funcional con scroll del mouse
-- Bordes de paises mas visibles
+- Selector muestra "Ultimo trimestre" en lugar de "Ultimo mes"
+- Umbral de 30 respuestas en todos lados
+- Leyenda muestra "< 30 respuestas"
+- Datos del trimestre tienen mas volumen que los del mes
 
