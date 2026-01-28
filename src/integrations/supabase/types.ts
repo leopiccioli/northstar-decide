@@ -142,39 +142,6 @@ export type Database = {
         }
         Relationships: []
       }
-      staging_legacy_3d: {
-        Row: {
-          comentario: string | null
-          desarrollo: number | null
-          dinero: number | null
-          diversion: number | null
-          email: string
-          fecha: string | null
-          legacy_id: number | null
-          pais: string | null
-        }
-        Insert: {
-          comentario?: string | null
-          desarrollo?: number | null
-          dinero?: number | null
-          diversion?: number | null
-          email: string
-          fecha?: string | null
-          legacy_id?: number | null
-          pais?: string | null
-        }
-        Update: {
-          comentario?: string | null
-          desarrollo?: number | null
-          dinero?: number | null
-          diversion?: number | null
-          email?: string
-          fecha?: string | null
-          legacy_id?: number | null
-          pais?: string | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
