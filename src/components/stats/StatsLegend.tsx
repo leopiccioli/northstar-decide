@@ -1,3 +1,5 @@
+import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
+
 interface StatsLegendProps {
   className?: string;
 }
@@ -9,7 +11,7 @@ const LEGEND_ITEMS = [
   { color: '#b5b5b5', label: '2-4 (bajo)' },
   { color: '#d5d5d5', label: '0-2 (muy bajo)' },
   { color: '#fcd34d', label: 'Sin datos' },
-  { color: '#e5e5e5', label: '< 10 respuestas', border: true },
+  { color: '#e5e5e5', label: `< ${MIN_RESPONSES_THRESHOLD} respuestas`, border: true },
 ];
 
 export function StatsLegend({ className = '' }: StatsLegendProps) {
