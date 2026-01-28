@@ -3,13 +3,13 @@ interface StatsLegendProps {
 }
 
 const LEGEND_ITEMS = [
-  { color: '#252525', label: 'Q5 (más alto)' },
-  { color: '#555555', label: 'Q4' },
-  { color: '#858585', label: 'Q3' },
-  { color: '#b5b5b5', label: 'Q2' },
-  { color: '#e5e5e5', label: 'Q1 (más bajo)' },
-  { color: '#f5f5f5', label: 'Sin datos', border: true },
-  { color: '#fcd34d', label: '< 10 respuestas' },
+  { color: '#252525', label: '8-10 (muy alto)' },
+  { color: '#555555', label: '6-8 (alto)' },
+  { color: '#858585', label: '4-6 (medio)' },
+  { color: '#b5b5b5', label: '2-4 (bajo)' },
+  { color: '#d5d5d5', label: '0-2 (muy bajo)' },
+  { color: '#fcd34d', label: 'Sin datos' },
+  { color: '#e5e5e5', label: '< 10 respuestas', border: true },
 ];
 
 export function StatsLegend({ className = '' }: StatsLegendProps) {

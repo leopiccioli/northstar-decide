@@ -8,12 +8,14 @@ const corsHeaders = {
 
 interface StatsRequest {
   period: 'month' | 'all';
-  dimension: 'dinero' | 'desarrollo' | 'diversion' | 'promedio';
 }
 
-interface CountryStat {
+interface CountryFullStat {
   country: string;
-  avg: number;
+  dinero: number;
+  desarrollo: number;
+  diversion: number;
+  promedio: number;
   count: number;
 }
 
@@ -24,21 +26,20 @@ serve(async (req) => {
   }
 
   try {
-    const { period, dimension }: StatsRequest = await req.json();
+    const { period }: StatsRequest = await req.json();
 
-    console.log(`[get-country-stats] Fetching from cache: period=${period}, dimension=${dimension}`);
+    console.log(`[get-country-stats] Fetching all dimensions for period=${period}`);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Read from cache table
+    // Fetch all dimensions for the period
     const { data, error } = await supabase
       .from('country_stats_cache')
-      .select('country, avg_value, count')
-      .eq('period', period)
-      .eq('dimension', dimension);
+      .select('country, dimension, avg_value, count')
+      .eq('period', period);
 
     if (error) {
       console.error('[get-country-stats] Query error:', error);
@@ -47,11 +48,29 @@ serve(async (req) => {
 
     console.log(`[get-country-stats] Found ${data?.length ?? 0} cached entries`);
 
-    const stats: CountryStat[] = (data || []).map(row => ({
-      country: row.country,
-      avg: row.avg_value,
-      count: row.count,
-    }));
+    // Group by country
+    const byCountry = new Map<string, CountryFullStat>();
+    
+    for (const row of data || []) {
+      if (!byCountry.has(row.country)) {
+        byCountry.set(row.country, {
+          country: row.country,
+          dinero: 0,
+          desarrollo: 0,
+          diversion: 0,
+          promedio: 0,
+          count: row.count,
+        });
+      }
+      const stat = byCountry.get(row.country)!;
+      if (row.dimension === 'dinero') stat.dinero = row.avg_value ?? 0;
+      else if (row.dimension === 'desarrollo') stat.desarrollo = row.avg_value ?? 0;
+      else if (row.dimension === 'diversion') stat.diversion = row.avg_value ?? 0;
+      else if (row.dimension === 'promedio') stat.promedio = row.avg_value ?? 0;
+    }
+
+    const stats = Array.from(byCountry.values());
+    console.log(`[get-country-stats] Returning ${stats.length} countries`);
 
     return new Response(
       JSON.stringify({ stats }),
