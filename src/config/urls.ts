@@ -13,6 +13,7 @@ export const SITE_CONFIG = {
   // Links externos
   mainSiteUrl: 'https://ceoencamiseta.com',
   beehiivBaseUrl: 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e',
+  beehiivRedirectUrl: 'https://www.ceoencamiseta.com/3d-dinero-desarrollo-diversion',
 } as const;
 
 // Helper para construir URL de Beehiiv con tracking
@@ -27,6 +28,7 @@ export function buildBeehiivUrl(options: {
   }
   params.set('utm_source', '3dapp');
   params.set('utm_medium', options.utmMedium);
+  params.set('redirect_to', SITE_CONFIG.beehiivRedirectUrl);
   
   return `${SITE_CONFIG.beehiivBaseUrl}?${params.toString()}`;
 }
