@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileQRCard } from './MobileQRCard';
 import { usePrefetchContextScreen } from '@/hooks/usePrefetch';
@@ -72,12 +73,18 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
       </div>
 
       {/* Footer */}
-      <footer className="absolute bottom-6 text-subtle">
+      <footer className="absolute bottom-6 flex flex-col items-center gap-2">
+        <Link 
+          to="/por-pais"
+          className="text-subtle hover:text-foreground transition-colors text-sm"
+        >
+          Ver estadísticas por país
+        </Link>
         <a 
           href="https://ceoencamiseta.com" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="hover:text-foreground transition-colors"
+          className="text-subtle hover:text-foreground transition-colors"
         >
           Hecho con ❤️ para la comunidad de CEO en Camiseta
         </a>

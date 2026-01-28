@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.send-legacy-notification]
 verify_jwt = false
+
+[functions.get-country-stats]
+verify_jwt = false
