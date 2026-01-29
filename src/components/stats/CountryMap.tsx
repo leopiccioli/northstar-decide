@@ -22,7 +22,7 @@ interface CountryMapProps {
 function getTwitterUrl(countryName: string, flag: string): string {
   const text = `En ${countryName} ${flag}, ¿cómo estás con dinero, desarrollo y diversión?
 
-2 minutos acá:
+20 segundos acá:
 3d.ceoencamiseta.com`;
 
   return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
