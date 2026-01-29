@@ -7,6 +7,7 @@ import { CountryMap } from '@/components/stats/CountryMap';
 import { StatsLegend } from '@/components/stats/StatsLegend';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
+import logoImage from '@/assets/3d-logo.svg';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'country' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
@@ -28,6 +29,7 @@ export default function StatsPage() {
   const [error, setError] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<SortColumn>('promedio');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -42,6 +44,9 @@ export default function StatsPage() {
         if (fnError) throw fnError;
 
         setStats(data?.stats || []);
+        if (data?.lastUpdated) {
+          setLastUpdated(data.lastUpdated);
+        }
       } catch (err) {
         console.error('Error fetching stats:', err);
         setError('No se pudieron cargar las estadísticas');
@@ -111,19 +116,43 @@ export default function StatsPage() {
 
   const columnClass = "px-4 py-3 cursor-pointer hover:bg-secondary/80 transition-colors select-none";
 
+  // Format last updated date for display
+  const formattedLastUpdated = useMemo(() => {
+    if (!lastUpdated) return null;
+    const date = new Date(lastUpdated);
+    return date.toLocaleString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Argentina/Buenos_Aires',
+    });
+  }, [lastUpdated]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Volver</span>
-          </Link>
-          <h1 className="text-lg font-semibold">Estadísticas por País</h1>
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm">Volver</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <img src={logoImage} alt="3D Logo" className="w-6 h-6" />
+              <h1 className="text-lg font-semibold">3D para Decidir</h1>
+            </div>
+          </div>
+          {formattedLastUpdated && (
+            <div className="text-xs text-muted-foreground">
+              Actualizado: {formattedLastUpdated}
+            </div>
+          )}
         </div>
       </header>
 

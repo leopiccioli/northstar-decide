@@ -38,7 +38,7 @@ serve(async (req) => {
     // Fetch all dimensions for the period
     const { data, error } = await supabase
       .from('country_stats_cache')
-      .select('country, dimension, avg_value, count')
+      .select('country, dimension, avg_value, count, updated_at')
       .eq('period', period);
 
     if (error) {
@@ -47,6 +47,15 @@ serve(async (req) => {
     }
 
     console.log(`[get-country-stats] Found ${data?.length ?? 0} cached entries`);
+
+    // Get the most recent updated_at timestamp
+    let lastUpdated: string | null = null;
+    if (data && data.length > 0) {
+      lastUpdated = data.reduce((latest, row) => {
+        if (!latest || row.updated_at > latest) return row.updated_at;
+        return latest;
+      }, null as string | null);
+    }
 
     // Group by country
     const byCountry = new Map<string, CountryFullStat>();
@@ -73,7 +82,7 @@ serve(async (req) => {
     console.log(`[get-country-stats] Returning ${stats.length} countries`);
 
     return new Response(
-      JSON.stringify({ stats }),
+      JSON.stringify({ stats, lastUpdated }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200 
