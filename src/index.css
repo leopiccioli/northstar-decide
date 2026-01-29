@@ -117,6 +117,17 @@
     font-family: 'Space Grotesk', system-ui, sans-serif;
   }
 
+  /* Eliminate 300ms tap delay on mobile for interactive elements */
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [role="link"] {
+    touch-action: manipulation;
+  }
+
   /* Utility typography */
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
