@@ -30,7 +30,7 @@ const metaEvents: Record<FlowEvent, string> = {
 const xEvents: Record<FlowEvent, string> = {
   start_flow: 'StartTrial',
   select_context: 'ViewContent',
-  complete_3d: 'Lead',
+  complete_3d: 'complete_3d',
   save_result: 'Signup',
   share_result: 'Share',
 };
