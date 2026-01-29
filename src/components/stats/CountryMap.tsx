@@ -20,13 +20,10 @@ interface CountryMapProps {
 }
 
 function getTwitterUrl(countryName: string, flag: string): string {
-  const text = `Estoy armando el mapa de satisfacción laboral por país.
+  const text = `En ${countryName} ${flag}, ¿cómo estás con dinero, desarrollo y diversión?
 
-Necesito más datos de ${countryName} ${flag}
-
-Solo toma 2 minutos: 3d.ceoencamiseta.com
-
-#3Dlaborales`;
+2 minutos acá:
+3d.ceoencamiseta.com`;
 
   return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
