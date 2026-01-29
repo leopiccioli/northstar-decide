@@ -74,7 +74,7 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
         {/* QR Card - only on desktop, lazy loaded */}
         {!isMobile && (
           <Suspense fallback={<div className="h-[200px]" />}>
-            <MobileQRCard />
+            <MobileQRCard originalTracking={trackingData} />
           </Suspense>
         )}
 

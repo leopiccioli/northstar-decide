@@ -2,25 +2,20 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Smartphone } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SITE_CONFIG } from '@/config/urls';
+import type { TrackingData } from '@/hooks/useTrackingData';
 
 interface MobileQRCardProps {
   /** Direct URL to encode (overrides default URL building) */
   url?: string;
-  /** Additional UTM context for tracking */
-  context?: string;
-  /** Source identifier (default: 'qr') */
-  source?: string;
-  /** Medium identifier (default: 'desktop') */
-  medium?: string;
+  /** Original tracking data to preserve in QR URL */
+  originalTracking?: TrackingData;
   /** Compact variant for result screen */
   compact?: boolean;
 }
 
 export function MobileQRCard({ 
   url,
-  context,
-  source = 'qr',
-  medium = 'desktop',
+  originalTracking,
   compact = false,
 }: MobileQRCardProps) {
   // If a direct URL is provided, use it (make it absolute if needed)
@@ -29,14 +24,19 @@ export function MobileQRCard({
   if (url) {
     qrUrl = url.startsWith('http') ? url : `${SITE_CONFIG.baseUrl}${url}`;
   } else {
-    // Build URL with UTM params (default behavior)
+    // Build URL preserving original tracking params
     const urlObj = new URL(SITE_CONFIG.baseUrl);
-    urlObj.searchParams.set('utm_source', source);
-    urlObj.searchParams.set('utm_medium', medium);
-    urlObj.searchParams.set('utm_campaign', 'mobile_redirect');
-    if (context) {
-      urlObj.searchParams.set('context', context);
+    
+    if (originalTracking) {
+      if (originalTracking.utm_source) urlObj.searchParams.set('utm_source', originalTracking.utm_source);
+      if (originalTracking.utm_medium) urlObj.searchParams.set('utm_medium', originalTracking.utm_medium);
+      if (originalTracking.utm_campaign) urlObj.searchParams.set('utm_campaign', originalTracking.utm_campaign);
+      if (originalTracking.utm_content) urlObj.searchParams.set('utm_content', originalTracking.utm_content);
+      if (originalTracking.utm_term) urlObj.searchParams.set('utm_term', originalTracking.utm_term);
+      if (originalTracking.gclid) urlObj.searchParams.set('gclid', originalTracking.gclid);
+      if (originalTracking.fbclid) urlObj.searchParams.set('fbclid', originalTracking.fbclid);
     }
+    
     qrUrl = urlObj.toString();
   }
   
