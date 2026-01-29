@@ -1,37 +1,42 @@
 
-
-## Cambiar evento de X Pixel a custom `complete_3d`
+## Actualizar X Pixel con Event ID específico
 
 ### Cambio requerido
 
-Modificar el mapeo de eventos de X Pixel en `src/lib/analytics.ts` para que el evento `complete_3d` envíe un evento custom en lugar del estándar `Lead`.
+Modificar `src/lib/analytics.ts` para usar el Event ID exacto que X Ads generó para la conversión.
 
 ### Detalle técnico
 
 **Archivo:** `src/lib/analytics.ts`
 
-**Línea 33 - Cambiar de:**
+**Cambio 1 - Línea 33, actualizar el mapeo:**
 ```typescript
-complete_3d: 'Lead',
+// De:
+complete_3d: 'complete_3d',
+
+// A:
+complete_3d: 'tw-o1ve0-r2y9y',
 ```
 
-**A:**
+**Cambio 2 - Línea 56, cambiar el método de tracking:**
 ```typescript
-complete_3d: 'complete_3d',
+// De:
+window.twq('track', xEvents[event], data);
+
+// A:
+window.twq('event', xEvents[event], data);
 ```
+
+### Por qué estos cambios
+
+1. X Ads usa `'event'` en lugar de `'track'` para eventos de conversión custom
+2. El Event ID `tw-o1ve0-r2y9y` es el identificador único que X Ads asocia con tu conversión específica
 
 ### Resultado
 
-- Meta Pixel seguirá enviando `Lead` (evento estándar)
-- X Pixel enviará `complete_3d` (evento custom único para esta app)
-- GA4 seguirá enviando `generate_lead`
+Cuando un usuario complete las 3D, el código enviará exactamente:
+```javascript
+twq('event', 'tw-o1ve0-r2y9y', {});
+```
 
-### Configuración en X Ads
-
-Después del cambio:
-1. Ir a X Ads Manager → Event Manager
-2. El evento `complete_3d` aparecerá como nuevo evento custom
-3. Marcarlo como conversión para optimizar campañas
-
-Esto te permite filtrar fácilmente las conversiones de esta app vs otros sitios que usan el mismo pixel.
-
+Que es lo que X Ads espera para registrar la conversión correctamente.
