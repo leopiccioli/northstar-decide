@@ -58,8 +58,34 @@ export default function StatsPage() {
     fetchStats();
   }, [period]);
 
+  // Calculate global weighted averages
+  const globalAverages = useMemo(() => {
+    if (stats.length === 0) return null;
+    
+    let totalCount = 0;
+    let sumDinero = 0;
+    let sumDesarrollo = 0;
+    let sumDiversion = 0;
+    
+    for (const s of stats) {
+      totalCount += s.count;
+      sumDinero += s.dinero * s.count;
+      sumDesarrollo += s.desarrollo * s.count;
+      sumDiversion += s.diversion * s.count;
+    }
+    
+    if (totalCount === 0) return null;
+    
+    const dinero = sumDinero / totalCount;
+    const desarrollo = sumDesarrollo / totalCount;
+    const diversion = sumDiversion / totalCount;
+    const promedio = (dinero + desarrollo + diversion) / 3;
+    
+    return { dinero, desarrollo, diversion, promedio, count: totalCount };
+  }, [stats]);
+
   // Calculate total responses
-  const totalResponses = stats.reduce((sum, s) => sum + s.count, 0);
+  const totalResponses = globalAverages?.count ?? 0;
 
   // Filter and sort countries
   const tableStats = useMemo(() => {
@@ -193,6 +219,31 @@ export default function StatsPage() {
         {error && (
           <div className="p-4 bg-destructive/10 text-destructive rounded-sm text-center">
             {error}
+          </div>
+        )}
+
+        {/* Global Averages */}
+        {!isLoading && globalAverages && (
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground">Promedios Globales</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="border border-border rounded-sm p-3 bg-secondary/30">
+                <div className="text-xs text-muted-foreground">Dinero</div>
+                <div className="text-xl font-mono font-medium">{formatValue(globalAverages.dinero)}</div>
+              </div>
+              <div className="border border-border rounded-sm p-3 bg-secondary/30">
+                <div className="text-xs text-muted-foreground">Desarrollo</div>
+                <div className="text-xl font-mono font-medium">{formatValue(globalAverages.desarrollo)}</div>
+              </div>
+              <div className="border border-border rounded-sm p-3 bg-secondary/30">
+                <div className="text-xs text-muted-foreground">Diversión</div>
+                <div className="text-xl font-mono font-medium">{formatValue(globalAverages.diversion)}</div>
+              </div>
+              <div className="border border-border rounded-sm p-3 bg-foreground text-background">
+                <div className="text-xs opacity-70">General</div>
+                <div className="text-xl font-mono font-medium">{formatValue(globalAverages.promedio)}</div>
+              </div>
+            </div>
           </div>
         )}
 
