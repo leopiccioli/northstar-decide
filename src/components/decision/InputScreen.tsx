@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Scores, UserContext, contextQuestions } from '@/types/decision';
 import { DimensionSlider } from './DimensionSlider';
 import { usePrefetchResultScreen } from '@/hooks/usePrefetch';
-import { trackFlowEvent } from '@/lib/analytics';
 
 interface InputScreenProps {
   context: UserContext;
@@ -28,11 +27,6 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
 
   const handleSubmit = () => {
     if (showNameInput && !name.trim()) return;
-    trackFlowEvent('complete_3d', { 
-      dinero: scores.dinero, 
-      desarrollo: scores.desarrollo, 
-      diversion: scores.diversion 
-    });
     onComplete(name || 'Situación actual', scores, comment || undefined);
   };
 
