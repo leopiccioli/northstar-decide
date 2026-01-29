@@ -1,180 +1,81 @@
 
+# Plan: Preservar UTMs Originales en el QR
 
-# Plan: Solución Definitiva para Legacy Notifications
+## Problema
 
-## Problema Actual
-
-El código tiene 3 queries problemáticas que sufren del límite de 1000 registros:
-
-1. **Línea 114-118**: `SELECT` de `records_3d` sin límite explícito
-2. **Línea 137-140**: `SELECT` de `outbound_emails` sin límite explícito  
-3. **Línea 251-254**: Otro `SELECT` de `records_3d` sin límite
-
-Cambiar el orden (ASC/DESC) no soluciona el problema fundamental: el cliente JavaScript nunca ve más de 1000 registros.
-
-## Solución: Database Function (RPC)
-
-Crear una función PostgreSQL que haga TODO el trabajo de filtrado en el servidor:
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│                    PostgreSQL                           │
-│  ┌──────────────┐    LEFT JOIN    ┌─────────────────┐  │
-│  │  records_3d  │ ──────────────► │ outbound_emails │  │
-│  │  (12,028)    │    WHERE null   │     (811)       │  │
-│  └──────────────┘                 └─────────────────┘  │
-│           │                                             │
-│           ▼                                             │
-│   Solo emails NO notificados (8,301)                   │
-│   Agrupados + scores más recientes                     │
-│   LIMIT batchSize                                      │
-└─────────────────────────────────────────────────────────┘
-           │
-           ▼ (máximo 15 registros por batch)
-    Edge Function envía emails
+Cuando un usuario llega con `?utm_source=newsletter`, el QR genera:
+```
+utm_source=qr
+utm_medium=desktop  
+utm_campaign=mobile_redirect
 ```
 
-## Implementación
+Perdiendo la atribución original.
 
-### 1. Crear Database Function via Migration
+## Solución
 
-```sql
-CREATE OR REPLACE FUNCTION get_pending_legacy_notifications(batch_limit INTEGER DEFAULT 15)
-RETURNS TABLE (
-  email TEXT,
-  record_count BIGINT,
-  dinero INTEGER,
-  desarrollo INTEGER,
-  diversion INTEGER,
-  created_at TIMESTAMPTZ
-)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-AS $$
-  WITH legacy_emails AS (
-    -- Obtener todos los emails únicos de legacy con su conteo
-    SELECT 
-      r.email,
-      COUNT(*) as record_count
-    FROM records_3d r
-    WHERE r.option_name = 'legacy'
-    GROUP BY r.email
-  ),
-  notified_emails AS (
-    -- Emails que ya fueron notificados (exitosamente o no)
-    SELECT DISTINCT to_email 
-    FROM outbound_emails 
-    WHERE email_type = 'legacy_notification'
-  ),
-  pending_emails AS (
-    -- Emails legacy que NO están en notificados
-    SELECT le.email, le.record_count
-    FROM legacy_emails le
-    LEFT JOIN notified_emails ne ON le.email = ne.to_email
-    WHERE ne.to_email IS NULL
-    LIMIT batch_limit
-  ),
-  latest_records AS (
-    -- Para cada email pendiente, obtener su registro más reciente
-    SELECT DISTINCT ON (r.email)
-      r.email,
-      r.dinero,
-      r.desarrollo,
-      r.diversion,
-      r.created_at
-    FROM records_3d r
-    INNER JOIN pending_emails pe ON r.email = pe.email
-    WHERE r.option_name = 'legacy'
-    ORDER BY r.email, r.created_at DESC
-  )
-  SELECT 
-    lr.email,
-    pe.record_count,
-    lr.dinero,
-    lr.desarrollo,
-    lr.diversion,
-    lr.created_at
-  FROM latest_records lr
-  INNER JOIN pending_emails pe ON lr.email = pe.email;
-$$;
-```
+Pasar los UTMs originales al QR. Si el usuario llegó con `?utm_source=newsletter&utm_campaign=enero`, el QR tendrá exactamente esos mismos parámetros.
 
-### 2. Actualizar Edge Function
+## Cambios
 
-Simplificar `send-legacy-notification/index.ts` para usar solo el RPC:
+### 1. MobileQRCard.tsx
 
-```typescript
-// Líneas 103-163: Reemplazar todo el bloque de queries por:
-const { data: usersToNotify, error: queryError } = await supabase
-  .rpc('get_pending_legacy_notifications', { batch_limit: batchSize });
+Agregar prop `originalTracking` y usarla para construir la URL:
 
-if (queryError) {
-  throw new Error(`Failed to fetch pending users: ${queryError.message}`);
+```tsx
+interface MobileQRCardProps {
+  originalTracking?: TrackingData;
+  // ... resto de props existentes
+}
+
+// Al construir la URL:
+if (originalTracking) {
+  // Usar los UTMs originales
+  if (originalTracking.utm_source) urlObj.searchParams.set('utm_source', originalTracking.utm_source);
+  if (originalTracking.utm_medium) urlObj.searchParams.set('utm_medium', originalTracking.utm_medium);
+  // ... etc
+} else {
+  // Sin tracking original = URL limpia (solo baseUrl)
 }
 ```
 
-### 3. Simplificar cálculo de "remaining"
+### 2. EntryScreen.tsx
 
-```typescript
-// Líneas 250-257: Reemplazar por query eficiente
-const { count: pendingCount } = await supabase
-  .rpc('count_pending_legacy_notifications');
+Pasar el `trackingData` al componente:
 
-results.remaining = pendingCount || 0;
+```tsx
+<MobileQRCard originalTracking={trackingData} />
 ```
 
-Con una segunda función helper:
+## Flujo Resultante
 
-```sql
-CREATE OR REPLACE FUNCTION count_pending_legacy_notifications()
-RETURNS BIGINT
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-AS $$
-  SELECT COUNT(DISTINCT r.email)
-  FROM records_3d r
-  LEFT JOIN outbound_emails oe 
-    ON r.email = oe.to_email 
-    AND oe.email_type = 'legacy_notification'
-  WHERE r.option_name = 'legacy'
-    AND oe.to_email IS NULL;
-$$;
+```text
+┌────────────────────────────────────────────────────────┐
+│  DESKTOP: ?utm_source=newsletter&utm_campaign=enero   │
+└────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────┐
+│  QR genera: ?utm_source=newsletter&utm_campaign=enero │
+│  (mismos parámetros, sin agregar nada)                │
+└────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────┐
+│  MOBILE: Llega con los UTMs originales intactos       │
+│  Atribución correcta al guardar                       │
+└────────────────────────────────────────────────────────┘
 ```
 
 ## Archivos a Modificar
 
-1. **Migration SQL** - Crear las 2 funciones de base de datos
-2. **supabase/functions/send-legacy-notification/index.ts** - Simplificar usando RPC
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/decision/MobileQRCard.tsx` | Agregar prop `originalTracking`, usar UTMs originales en la URL |
+| `src/components/decision/EntryScreen.tsx` | Pasar `trackingData` a `MobileQRCard` |
 
-## Ventajas de Esta Solución
+## Notas
 
-| Aspecto | Antes | Después |
-|---------|-------|---------|
-| Límite 1000 | Afecta todo | No aplica (PostgreSQL) |
-| Queries | 3+ roundtrips | 1 RPC call |
-| Filtrado | JavaScript (lento) | PostgreSQL (rápido) |
-| Escalabilidad | Falla con +1000 | Funciona con millones |
-| Código | 60 líneas | 10 líneas |
-
-## Resultado Esperado
-
-- El cron job empezará a procesar los 8,301 usuarios pendientes inmediatamente
-- A razón de 15 emails/minuto, se completará en ~9 horas
-- No habrá más problemas de límite sin importar cuántos usuarios haya
-
-## Sección Técnica
-
-### Performance de la Query
-
-La función usa CTEs (Common Table Expressions) que PostgreSQL optimiza eficientemente:
-- Índice existente en `records_3d(option_name)` acelera el filtro
-- Índice existente en `outbound_emails(email_type)` acelera el JOIN
-- `DISTINCT ON` es más eficiente que `GROUP BY` + subquery para "último registro"
-
-### Seguridad
-
-- `SECURITY DEFINER` permite que la función acceda a las tablas aunque RLS esté activo
-- Solo retorna los campos necesarios, no expone datos sensibles
-
+- Si el usuario llegó sin UTMs, el QR apunta a la URL base limpia
+- No se necesitan cambios en `useTrackingData.ts`
+- Eliminamos los UTMs hardcodeados del QR (`qr`, `desktop`, `mobile_redirect`)
