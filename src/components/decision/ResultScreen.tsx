@@ -394,7 +394,14 @@ export default function ResultScreen({
 
   // Optimistic save: show success UI immediately
   const handleOptimisticSave = (email: string) => {
-    trackFlowEvent('save_result', { email_provided: true });
+    // Track complete_3d with email for X Ads attribution
+    trackFlowEvent('complete_3d', { 
+      email,
+      dinero: currentOption.scores.dinero, 
+      desarrollo: currentOption.scores.desarrollo, 
+      diversion: currentOption.scores.diversion 
+    });
+    trackFlowEvent('save_result', { email });
     const optimisticId = generateOptimisticId();
     setSavedRecordId(optimisticId);
     setSavedEmail(email);
