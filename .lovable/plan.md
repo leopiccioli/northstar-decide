@@ -1,144 +1,212 @@
 
-# Plan: Normalizar Emails para Evitar Duplicados
+# Plan: Implementar Tracking de Ads (Meta Pixel, X Pixel, GA4)
 
-## Problema
+## Resumen Ejecutivo
 
-El CSV legacy se importo sin normalizar los emails a minusculas. Como resultado:
+Tu app actualmente captura UTM parameters y fbclid/gclid en la URL, pero **no tiene ningún pixel de tracking instalado**. Esto significa que:
+- No podés crear audiencias de retargeting
+- No podés trackear conversiones para optimizar campanas
+- No tenés datos de comportamiento en GA4
 
-- **records_3d** tiene 9,187 emails unicos (case-sensitive) pero solo 8,823 unicos reales (case-insensitive)
-- **364 usuarios duplicados** por diferencia de mayusculas
-- **312 notificaciones duplicadas** ya enviadas (el mismo usuario recibio 2+ emails)
+## Eventos Clave para Trackear
 
-Ejemplo: `Rocio_accornero@hotmail.com` y `rocio_accornero@hotmail.com` se tratan como 2 personas.
+Basado en el flujo de tu app, estos son los eventos que deberías trackear:
 
-## Solucion
+| Evento | Punto del Flujo | Meta Pixel | X Pixel | GA4 |
+|--------|-----------------|------------|---------|-----|
+| **PageView** | Carga inicial | PageView | PageView | page_view |
+| **Start Flow** | Click "Empezar" | InitiateCheckout | tw-xxxxx-xxxxx (custom) | begin_checkout |
+| **Select Context** | Elige situacion | ViewContent | ViewContent | select_content |
+| **Complete 3D** | Termina de puntuar | Lead | Lead | generate_lead |
+| **Save Result** | Guarda con email | CompleteRegistration | CompleteRegistration | sign_up |
+| **Share** | Comparte resultado | Share | Share | share |
 
-### 1. Normalizar emails existentes en records_3d
+## Arquitectura Propuesta
 
-Ejecutar una migracion que convierta todos los emails a minusculas:
-
-```sql
-UPDATE records_3d
-SET email = LOWER(email)
-WHERE email != LOWER(email);
+```text
+index.html
+    |
+    +-- Scripts de pixels (Meta, X, GA4)
+    |
+src/lib/analytics.ts (NUEVO)
+    |
+    +-- Funciones wrapper type-safe
+    |   - trackEvent()
+    |   - trackPageView()
+    |   - trackConversion()
+    |
+    +-- Inicializacion condicional
 ```
 
-### 2. Actualizar las funciones RPC para usar LOWER()
+## Implementacion
 
-Modificar `get_pending_legacy_notifications` y `count_pending_legacy_notifications` para hacer comparaciones case-insensitive:
+### 1. Agregar Scripts Base en index.html
 
-```sql
--- En get_pending_legacy_notifications:
-LEFT JOIN notified_emails ne ON LOWER(le.email) = LOWER(ne.to_email)
+Insertar los snippets de cada plataforma en el `<head>`, usando IDs que se configuren como env variables publicas:
 
--- En count_pending_legacy_notifications:
-LEFT JOIN outbound_emails oe 
-  ON LOWER(r.email) = LOWER(oe.to_email)
+```html
+<!-- Meta Pixel -->
+<script>
+  !function(f,b,e,v,n,t,s){...}
+  fbq('init', 'TU_PIXEL_ID');
+  fbq('track', 'PageView');
+</script>
+
+<!-- X (Twitter) Pixel -->
+<script>
+  !function(e,t,n,s,u,a){...}
+  twq('config','TU_PIXEL_ID');
+</script>
+
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXX');
+</script>
 ```
 
-### 3. Evitar envios duplicados futuros
+### 2. Crear Modulo de Analytics (src/lib/analytics.ts)
 
-Agregar los emails ya notificados (en cualquier case) al filtro. Esto evita reenviar a quien ya recibio el email con diferente capitalizacion.
+Un wrapper centralizado que:
+- Abstrae las diferencias entre plataformas
+- Evita errores si un pixel no esta cargado
+- Permite activar/desactivar cada uno
 
-## Migracion SQL Completa
+```typescript
+// src/lib/analytics.ts
 
-```sql
--- 1. Normalizar emails existentes en records_3d
-UPDATE records_3d
-SET email = LOWER(email)
-WHERE email != LOWER(email);
+// Type declarations para los pixels
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+    twq?: (...args: unknown[]) => void;
+    gtag?: (...args: unknown[]) => void;
+  }
+}
 
--- 2. Normalizar emails en outbound_emails (para consistencia)
-UPDATE outbound_emails
-SET to_email = LOWER(to_email)
-WHERE to_email != LOWER(to_email);
+// Configuracion de IDs (desde env o hardcoded)
+const CONFIG = {
+  META_PIXEL_ID: import.meta.env.VITE_META_PIXEL_ID,
+  X_PIXEL_ID: import.meta.env.VITE_X_PIXEL_ID,
+  GA4_ID: import.meta.env.VITE_GA4_ID,
+};
 
--- 3. Actualizar funcion get_pending_legacy_notifications con comparacion case-insensitive
-CREATE OR REPLACE FUNCTION get_pending_legacy_notifications(batch_limit INTEGER DEFAULT 15)
-RETURNS TABLE (
-  email TEXT,
-  record_count BIGINT,
-  dinero INTEGER,
-  desarrollo INTEGER,
-  diversion INTEGER,
-  created_at TIMESTAMPTZ
-)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  WITH legacy_emails AS (
-    SELECT 
-      LOWER(r.email) as email,
-      COUNT(*) as record_count
-    FROM records_3d r
-    WHERE r.option_name = 'legacy'
-    GROUP BY LOWER(r.email)
-  ),
-  notified_emails AS (
-    SELECT DISTINCT LOWER(to_email) as email
-    FROM outbound_emails 
-    WHERE email_type = 'legacy_notification'
-  ),
-  pending_emails AS (
-    SELECT le.email, le.record_count
-    FROM legacy_emails le
-    LEFT JOIN notified_emails ne ON le.email = ne.email
-    WHERE ne.email IS NULL
-    LIMIT batch_limit
-  ),
-  latest_records AS (
-    SELECT DISTINCT ON (LOWER(r.email))
-      LOWER(r.email) as email,
-      r.dinero,
-      r.desarrollo,
-      r.diversion,
-      r.created_at
-    FROM records_3d r
-    INNER JOIN pending_emails pe ON LOWER(r.email) = pe.email
-    WHERE r.option_name = 'legacy'
-    ORDER BY LOWER(r.email), r.created_at DESC
-  )
-  SELECT 
-    lr.email,
-    pe.record_count,
-    lr.dinero,
-    lr.desarrollo,
-    lr.diversion,
-    lr.created_at
-  FROM latest_records lr
-  INNER JOIN pending_emails pe ON lr.email = pe.email;
-$$;
+// Eventos del flujo 3D
+type FlowEvent = 
+  | 'start_flow'      // Empezar
+  | 'select_context'  // Elige situacion
+  | 'complete_3d'     // Termina sliders
+  | 'save_result'     // Guarda con email
+  | 'share_result';   // Comparte
 
--- 4. Actualizar funcion count_pending_legacy_notifications
-CREATE OR REPLACE FUNCTION count_pending_legacy_notifications()
-RETURNS BIGINT
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT COUNT(DISTINCT LOWER(r.email))
-  FROM records_3d r
-  LEFT JOIN outbound_emails oe 
-    ON LOWER(r.email) = LOWER(oe.to_email) 
-    AND oe.email_type = 'legacy_notification'
-  WHERE r.option_name = 'legacy'
-    AND oe.to_email IS NULL;
-$$;
+export function trackFlowEvent(event: FlowEvent, data?: Record<string, unknown>) {
+  // Meta Pixel
+  if (window.fbq) {
+    const metaEvents: Record<FlowEvent, string> = {
+      start_flow: 'InitiateCheckout',
+      select_context: 'ViewContent',
+      complete_3d: 'Lead',
+      save_result: 'CompleteRegistration',
+      share_result: 'Share',
+    };
+    window.fbq('track', metaEvents[event], data);
+  }
+
+  // X Pixel
+  if (window.twq) {
+    const xEvents: Record<FlowEvent, string> = {
+      start_flow: 'StartTrial',
+      select_context: 'ViewContent',
+      complete_3d: 'Lead',
+      save_result: 'Signup',
+      share_result: 'Share',
+    };
+    window.twq('track', xEvents[event], data);
+  }
+
+  // GA4
+  if (window.gtag) {
+    const ga4Events: Record<FlowEvent, string> = {
+      start_flow: 'begin_checkout',
+      select_context: 'select_content',
+      complete_3d: 'generate_lead',
+      save_result: 'sign_up',
+      share_result: 'share',
+    };
+    window.gtag('event', ga4Events[event], data);
+  }
+}
 ```
 
-## Impacto
+### 3. Integrar en Componentes
 
-| Metrica | Antes | Despues |
-|---------|-------|---------|
-| Emails unicos en records_3d | 9,187 | 8,823 |
-| Duplicados por case | 364 | 0 |
-| Notificaciones pendientes | ~X con duplicados | ~X-364 sin duplicados |
+Agregar llamadas en los puntos clave:
 
-## Notas
+| Archivo | Evento | Donde |
+|---------|--------|-------|
+| `EntryScreen.tsx` | start_flow | onClick de "Empezar" |
+| `ContextScreen.tsx` | select_context | onSelect |
+| `InputScreen.tsx` | complete_3d | onComplete |
+| `ResultScreen.tsx` | save_result | handleOptimisticSave |
+| `ResultScreen.tsx` | share_result | handleShare |
 
-- Los 312 emails duplicados ya enviados no se pueden deshacer, pero no causaron dano real (la persona recibio 2 emails iguales)
-- Esta solucion previene que siga pasando
-- El codigo de `save-result` ya normaliza a minusculas (linea 378), asi que nuevos registros no tendran este problema
+Ejemplo de integracion:
+
+```typescript
+// EntryScreen.tsx
+import { trackFlowEvent } from '@/lib/analytics';
+
+const handleStart = () => {
+  trackFlowEvent('start_flow');
+  onStart();
+};
+```
+
+### 4. Configurar IDs de Pixels
+
+Hay dos opciones:
+
+**Opcion A: Variables de entorno publicas (recomendado)**
+```
+VITE_META_PIXEL_ID=123456789
+VITE_X_PIXEL_ID=xxxxx
+VITE_GA4_ID=G-XXXXXXXXXX
+```
+
+**Opcion B: Hardcoded en el codigo**
+Como son IDs publicos (no secretos), pueden ir directo en el codigo.
+
+## Archivos a Crear/Modificar
+
+| Archivo | Accion |
+|---------|--------|
+| `index.html` | Agregar scripts de Meta, X, GA4 |
+| `src/lib/analytics.ts` | Crear modulo centralizado |
+| `src/components/decision/EntryScreen.tsx` | Agregar track start_flow |
+| `src/components/decision/ContextScreen.tsx` | Agregar track select_context |
+| `src/components/decision/InputScreen.tsx` | Agregar track complete_3d |
+| `src/components/decision/ResultScreen.tsx` | Agregar track save_result y share_result |
+| `src/vite-env.d.ts` | Agregar tipos para env variables |
+
+## Proximos Pasos para Activar
+
+1. Crear Meta Pixel en Meta Business Suite
+2. Crear X Pixel en X Ads
+3. Crear propiedad GA4 en Google Analytics
+4. Proporcionar los IDs para configurar
+
+## Consideraciones Adicionales
+
+### GDPR/Cookies
+Para Argentina/LATAM no es obligatorio, pero si queres expandir a Europa, necesitarias un banner de cookies.
+
+### Verificacion
+- Meta: Usar "Facebook Pixel Helper" extension
+- X: Revisar en X Ads "Event Manager"
+- GA4: Usar "DebugView" en Google Analytics
+
+### Server-Side Tracking (opcional futuro)
+Para mejor precision, se pueden enviar eventos desde el edge function `save-result` usando Conversion API de Meta. Esto mejora el tracking cuando hay adblockers.
