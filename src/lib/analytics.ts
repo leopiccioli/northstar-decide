@@ -30,7 +30,7 @@ const metaEvents: Record<FlowEvent, string> = {
 const xEvents: Record<FlowEvent, string> = {
   start_flow: 'StartTrial',
   select_context: 'ViewContent',
-  complete_3d: 'complete_3d',
+  complete_3d: 'tw-o1ve0-r2y9y',
   save_result: 'Signup',
   share_result: 'Share',
 };
@@ -61,7 +61,7 @@ export function trackFlowEvent(event: FlowEvent, data?: Record<string, unknown>)
   // X (Twitter) Pixel
   if (typeof window !== 'undefined' && window.twq) {
     try {
-      window.twq('track', xEvents[event], data);
+      window.twq('event', xEvents[event], data);
     } catch (e) {
       console.warn('X Pixel error:', e);
     }
