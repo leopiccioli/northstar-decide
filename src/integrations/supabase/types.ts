@@ -177,6 +177,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_pending_legacy_notifications: { Args: never; Returns: number }
+      get_pending_legacy_notifications: {
+        Args: { batch_limit?: number }
+        Returns: {
+          created_at: string
+          desarrollo: number
+          dinero: number
+          diversion: number
+          email: string
+          record_count: number
+        }[]
+      }
       normalize_country: { Args: { input: string }; Returns: string }
       refresh_country_stats: { Args: never; Returns: undefined }
     }

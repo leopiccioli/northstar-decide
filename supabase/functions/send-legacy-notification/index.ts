@@ -100,78 +100,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { batchSize = 50, delayMs = 3000, dryRun = false }: NotificationRequest = await req.json().catch(() => ({}));
 
-    // Query to get legacy users with their record count and latest scores
-    // Using a CTE to get the most recent record per email along with total count
-    const { data: legacyUsers, error: queryError } = await supabase.rpc('get_legacy_users_for_notification', {
-      batch_limit: batchSize
-    });
+    // Use PostgreSQL RPC to get pending users (bypasses 1000 record limit)
+    const { data: usersToNotify, error: queryError } = await supabase
+      .rpc('get_pending_legacy_notifications', { batch_limit: batchSize });
 
-    // If RPC doesn't exist, fall back to raw query approach
-    let usersToNotify: LegacyUser[] = [];
-    
-    if (queryError || !legacyUsers) {
-      // Fallback: Use SQL query via REST
-      const { data: rawUsers, error: rawError } = await supabase
-        .from('records_3d')
-        .select('email, dinero, desarrollo, diversion, created_at')
-        .eq('option_name', 'legacy')
-        .order('created_at', { ascending: false });
-
-      if (rawError) {
-        throw new Error(`Failed to fetch legacy users: ${rawError.message}`);
-      }
-
-      // Group by email and get the most recent record + count
-      const userMap = new Map<string, { records: typeof rawUsers, count: number }>();
-      
-      for (const record of rawUsers || []) {
-        if (!userMap.has(record.email)) {
-          userMap.set(record.email, { records: [record], count: 1 });
-        } else {
-          const existing = userMap.get(record.email)!;
-          existing.count++;
-        }
-      }
-
-      // Get already notified emails
-      const { data: notifiedEmails } = await supabase
-        .from('outbound_emails')
-        .select('to_email')
-        .eq('email_type', 'legacy_notification');
-
-      const notifiedSet = new Set((notifiedEmails || []).map(e => e.to_email));
-
-      // Filter and transform
-      for (const [email, data] of userMap.entries()) {
-        if (!notifiedSet.has(email)) {
-          const latestRecord = data.records[0];
-          usersToNotify.push({
-            email,
-            record_count: data.count,
-            dinero: latestRecord.dinero,
-            desarrollo: latestRecord.desarrollo,
-            diversion: latestRecord.diversion,
-            created_at: latestRecord.created_at
-          });
-        }
-      }
-
-      // Limit to batch size
-      usersToNotify = usersToNotify.slice(0, batchSize);
-    } else {
-      usersToNotify = legacyUsers;
+    if (queryError) {
+      throw new Error(`Failed to fetch pending users: ${queryError.message}`);
     }
-
-    // Count remaining users for response
-    const { count: totalLegacyUsers } = await supabase
-      .from('records_3d')
-      .select('email', { count: 'exact', head: true })
-      .eq('option_name', 'legacy');
-
-    const { count: alreadyNotified } = await supabase
-      .from('outbound_emails')
-      .select('*', { count: 'exact', head: true })
-      .eq('email_type', 'legacy_notification');
 
     const results = {
       sent: 0,
@@ -247,14 +182,9 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Calculate remaining
-    const uniqueEmails = new Set((await supabase
-      .from('records_3d')
-      .select('email')
-      .eq('option_name', 'legacy')).data?.map(r => r.email) || []);
-    
-    const newlyNotified = (alreadyNotified || 0) + results.sent;
-    results.remaining = uniqueEmails.size - newlyNotified;
+    // Calculate remaining using RPC (bypasses 1000 record limit)
+    const { data: pendingCount } = await supabase.rpc('count_pending_legacy_notifications');
+    results.remaining = (pendingCount || 0) - results.sent;
 
     return new Response(JSON.stringify(results), {
       status: 200,
