@@ -61,7 +61,12 @@ export function trackFlowEvent(event: FlowEvent, data?: Record<string, unknown>)
   // X (Twitter) Pixel
   if (typeof window !== 'undefined' && window.twq) {
     try {
-      window.twq('event', xEvents[event], data);
+      // Format data for X Ads (uses specific field names)
+      const xData: Record<string, unknown> = {};
+      if (data?.email) {
+        xData.email_address = data.email;
+      }
+      window.twq('event', xEvents[event], xData);
     } catch (e) {
       console.warn('X Pixel error:', e);
     }
