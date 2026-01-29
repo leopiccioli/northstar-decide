@@ -23,6 +23,8 @@
       .justify-center{justify-content:center}
       @keyframes spin{to{transform:rotate(360deg)}}
       .animate-spin{animation:spin 1s linear infinite}
+      /* Eliminate 300ms tap delay on mobile */
+      button,a,input,select,textarea,[role="button"]{touch-action:manipulation}
     </style>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />

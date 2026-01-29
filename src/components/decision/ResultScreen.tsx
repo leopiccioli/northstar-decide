@@ -1,31 +1,20 @@
 import { Option, UserContext } from '@/types/decision';
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
-import { generateShareImage, getShareText } from './ShareImageGenerator';
-import { Check, ChevronsUpDown, ExternalLink, Smartphone } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { COUNTRIES } from '@/lib/countries';
+import { Check, ExternalLink, Smartphone } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QRCodeSVG } from 'qrcode.react';
 import { SITE_CONFIG, buildBeehiivUrl } from '@/config/urls';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+
+// Lazy load CountryCombobox - only needed at save step
+const CountryCombobox = lazy(() => import('./CountryCombobox').then(m => ({ default: m.CountryCombobox })));
+
+// Dynamic imports for share functionality - loaded on demand
+const loadShareUtils = () => import('./ShareImageGenerator');
 
 interface ResultScreenProps {
   currentOption: Option;
@@ -193,73 +182,7 @@ function SuccessWithShare({
   );
 }
 
-// Country combobox with search
-function CountryCombobox({ 
-  value, 
-  onChange, 
-  error 
-}: { 
-  value: string; 
-  onChange: (value: string) => void;
-  error?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const selectedCountry = COUNTRIES.find((c) => c.code === value);
-
-  return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">País</label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn(
-              "w-full justify-between font-normal",
-              !value && "text-muted-foreground",
-              error && "border-destructive"
-            )}
-          >
-            {selectedCountry?.name || "Seleccioná tu país"}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0 bg-popover" align="start">
-          <Command>
-            <CommandInput placeholder="Buscar país..." />
-            <CommandList>
-              <CommandEmpty>No se encontró el país.</CommandEmpty>
-              <CommandGroup>
-                {COUNTRIES.map((country) => (
-                  <CommandItem
-                    key={country.code}
-                    value={country.name}
-                    onSelect={() => {
-                      onChange(country.code);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === country.code ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {country.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
-    </div>
-  );
-}
+// CountryCombobox is now lazy loaded from ./CountryCombobox.tsx
 
 // Generate a temporary optimistic ID for immediate UI feedback
 function generateOptimisticId(): string {
@@ -413,14 +336,16 @@ function SaveSection({
         )}
       </div>
 
-      <CountryCombobox
-        value={country}
-        onChange={(val) => {
-          setCountry(val);
-          if (countryError) setCountryError('');
-        }}
-        error={countryError}
-      />
+      <Suspense fallback={<div className="h-[72px] bg-secondary animate-pulse rounded-sm" />}>
+        <CountryCombobox
+          value={country}
+          onChange={(val) => {
+            setCountry(val);
+            if (countryError) setCountryError('');
+          }}
+          error={countryError}
+        />
+      </Suspense>
 
       <div className="space-y-2">
         <label className="text-sm text-muted-foreground">Recordatorio</label>
@@ -487,6 +412,9 @@ export default function ResultScreen({
     setIsSharing(true);
     
     try {
+      // Dynamic import share utilities only when sharing
+      const { getShareText, generateShareImage } = await loadShareUtils();
+      
       const shareText = getShareText(userContext, currentOption, comparisonOption);
       const shareUrl = isOptimistic ? SITE_CONFIG.baseUrl : `${SITE_CONFIG.baseUrl}/r/${savedRecordId}`;
       const fullText = `${shareText}\n${shareUrl}`;
