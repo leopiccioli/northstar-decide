@@ -9,6 +9,7 @@ import { Check, ExternalLink, Smartphone } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QRCodeSVG } from 'qrcode.react';
 import { SITE_CONFIG, buildBeehiivUrl } from '@/config/urls';
+import { trackFlowEvent } from '@/lib/analytics';
 
 // Lazy load CountryCombobox - only needed at save step
 const CountryCombobox = lazy(() => import('./CountryCombobox').then(m => ({ default: m.CountryCombobox })));
@@ -393,6 +394,7 @@ export default function ResultScreen({
 
   // Optimistic save: show success UI immediately
   const handleOptimisticSave = (email: string) => {
+    trackFlowEvent('save_result', { email_provided: true });
     const optimisticId = generateOptimisticId();
     setSavedRecordId(optimisticId);
     setSavedEmail(email);
@@ -406,6 +408,7 @@ export default function ResultScreen({
   };
 
   const handleShare = async () => {
+    trackFlowEvent('share_result');
     // Allow sharing even with optimistic ID (will use fallback text share)
     const isOptimistic = savedRecordId?.startsWith('optimistic-');
     

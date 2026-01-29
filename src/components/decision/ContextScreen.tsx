@@ -1,5 +1,6 @@
 import { UserContext } from '@/types/decision';
 import { usePrefetchInputScreen } from '@/hooks/usePrefetch';
+import { trackFlowEvent } from '@/lib/analytics';
 
 interface ContextScreenProps {
   onSelect: (context: UserContext) => void;
@@ -22,7 +23,10 @@ export default function ContextScreen({ onSelect }: ContextScreenProps) {
         {options.map((option, index) => (
           <button
             key={option.id}
-            onClick={() => onSelect(option.id)}
+            onClick={() => {
+              trackFlowEvent('select_context', { context: option.id });
+              onSelect(option.id);
+            }}
             className={`card-option animate-fade-up opacity-0`}
             style={{ animationDelay: `${index * 0.05}s` }}
           >

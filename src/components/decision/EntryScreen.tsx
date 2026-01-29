@@ -7,6 +7,7 @@ import { usePrefetchContextScreen } from '@/hooks/usePrefetch';
 const MobileQRCard = lazy(() => import('./MobileQRCard').then(m => ({ default: m.MobileQRCard })));
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { buildBeehiivUrl } from '@/config/urls';
+import { trackFlowEvent } from '@/lib/analytics';
 
 interface EntryScreenProps {
   onStart: () => void;
@@ -80,7 +81,10 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
 
         {/* Single CTA */}
         <button
-          onClick={onStart}
+          onClick={() => {
+            trackFlowEvent('start_flow');
+            onStart();
+          }}
           className="btn-primary w-full max-w-xs mx-auto"
         >
           Empezar
