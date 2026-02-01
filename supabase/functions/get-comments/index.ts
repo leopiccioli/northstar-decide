@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
       .not("comment", "is", null)
       .neq("comment", "")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(21);
 
     if (error) {
       throw error;
