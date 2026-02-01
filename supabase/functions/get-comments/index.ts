@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
 
     const { data, error } = await supabase
       .from("records_3d")
-      .select("id, comment, created_at")
+      .select("id, comment, created_at, dinero, desarrollo, diversion")
       .not("comment", "is", null)
       .neq("comment", "")
       .order("created_at", { ascending: false })
