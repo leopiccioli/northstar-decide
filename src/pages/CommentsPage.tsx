@@ -103,37 +103,60 @@ interface ViewProps {
 }
 
 const FeedView = ({ comments, formatDate }: ViewProps) => (
-  <div className="max-w-[600px] mx-auto space-y-4">
-    {comments.map((comment) => (
-      <article
-        key={comment.id}
-        className="p-5 border border-border rounded-sm bg-card"
-      >
-        <p className="text-foreground leading-relaxed">{comment.comment}</p>
-        <time className="block mt-3 text-sm text-muted-foreground">
-          {formatDate(comment.created_at)}
-        </time>
-      </article>
-    ))}
+  <div className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl overflow-hidden">
+    <div className="divide-y divide-zinc-800">
+      {comments.map((comment) => (
+        <article
+          key={comment.id}
+          className="flex gap-3 p-4 hover:bg-zinc-800/50 transition-colors"
+        >
+          {/* Avatar placeholder */}
+          <div className="w-10 h-10 rounded-full bg-zinc-700 flex-shrink-0" />
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1 text-sm">
+              <span className="font-semibold text-zinc-100">Anónimo</span>
+              <span className="text-zinc-500">·</span>
+              <time className="text-zinc-500">{formatDate(comment.created_at)}</time>
+            </div>
+            <p className="mt-1 text-zinc-100">{comment.comment}</p>
+          </div>
+        </article>
+      ))}
+    </div>
   </div>
 );
 
+const cardColors = [
+  "bg-rose-50 dark:bg-rose-950/30",
+  "bg-blue-50 dark:bg-blue-950/30",
+  "bg-amber-50 dark:bg-amber-950/30",
+  "bg-emerald-50 dark:bg-emerald-950/30",
+  "bg-violet-50 dark:bg-violet-950/30",
+  "bg-slate-100 dark:bg-slate-800/30",
+];
+
 const MosaicView = ({ comments, formatDate }: ViewProps) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
+  <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
     {comments.map((comment, index) => {
-      const isLong = comment.comment.length > 150;
+      const isShort = comment.comment.length < 80;
+      const isLong = comment.comment.length > 200;
+      const colorClass = cardColors[index % cardColors.length];
+
       return (
         <article
           key={comment.id}
           className={cn(
-            "p-5 border border-border rounded-sm bg-card break-inside-avoid",
-            index % 5 === 0 && "sm:col-span-1"
+            "break-inside-avoid rounded-xl shadow-sm mb-4",
+            colorClass,
+            isShort ? "p-6" : isLong ? "p-4" : "p-5"
           )}
         >
           <p
             className={cn(
               "text-foreground leading-relaxed",
-              isLong ? "text-sm" : "text-base"
+              isShort ? "text-xl font-medium" : isLong ? "text-sm" : "text-base"
             )}
           >
             {comment.comment}
