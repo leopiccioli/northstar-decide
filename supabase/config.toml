@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.get-country-stats]
 verify_jwt = false
+
+[functions.get-comments]
+verify_jwt = false
