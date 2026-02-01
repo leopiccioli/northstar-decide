@@ -17,13 +17,17 @@ type ViewMode = "feed" | "mosaic";
 const CommentsPage = () => {
   const [view, setView] = useState<ViewMode>("feed");
 
-  const { data: comments, isLoading } = useQuery({
+  const { data: comments, isLoading, isError, refetch } = useQuery({
     queryKey: ["comments"],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("get-comments");
       if (error) throw error;
       return data.comments as Comment[];
     },
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
   });
 
   const formatDate = (dateString: string) => {
@@ -72,6 +76,16 @@ const CommentsPage = () => {
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="w-6 h-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center py-12 gap-4">
+            <p className="text-muted-foreground">No se pudieron cargar los comentarios</p>
+            <button 
+              onClick={() => refetch()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm"
+            >
+              Reintentar
+            </button>
           </div>
         ) : view === "feed" ? (
           <FeedView comments={comments || []} formatDate={formatDate} />
