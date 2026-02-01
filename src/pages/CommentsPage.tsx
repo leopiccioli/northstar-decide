@@ -138,8 +138,8 @@ const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
           <ArrowRight className="w-5 h-5 text-primary-foreground" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-foreground">¿Y vos, cómo estás?</p>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="font-semibold text-zinc-100">¿Y vos, cómo estás?</p>
+          <p className="text-sm text-zinc-400 mt-0.5">
             Respondé las 3D y compartí tu situación →
           </p>
         </div>
