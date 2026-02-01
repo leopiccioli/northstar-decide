@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { List, LayoutGrid } from "lucide-react";
+import { List, LayoutGrid, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -51,10 +52,19 @@ const CommentsPage = () => {
       {/* Header with title and toggle */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="flex flex-col items-center py-4 gap-3">
-          {/* Title */}
-          <h1 className="text-2xl font-bold text-foreground">
-            Pared de la Empatía
-          </h1>
+          {/* Title + CTA */}
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-foreground">
+              Pared de la Empatía
+            </h1>
+            <Link 
+              to="/"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
+            >
+              Responder las 3D
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
           
           {/* Toggle */}
           <div className="bg-secondary p-1 rounded-full inline-flex">
@@ -192,16 +202,18 @@ const MosaicView = ({ comments, formatDate }: ViewProps) => (
       const isShort = comment.comment.length < 80;
       const isLong = comment.comment.length > 120;
       const colorClass = cardColors[index % cardColors.length];
+      const animationDelay = Math.min(index * 50, 500); // Cap at 500ms
 
       return (
         <article
           key={comment.id}
           className={cn(
-            "break-inside-avoid rounded-xl shadow-sm mb-4",
+            "break-inside-avoid rounded-xl shadow-sm mb-4 opacity-0 animate-fade-up",
             colorClass,
             isShort ? "p-5" : isLong ? "p-3" : "p-4",
             isLong ? "flex flex-col gap-3" : "flex gap-3"
           )}
+          style={{ animationDelay: `${animationDelay}ms` }}
         >
           {/* Columna texto */}
           <div className={cn("min-w-0", isLong ? "w-full" : "flex-1")}>
