@@ -127,27 +127,67 @@ interface ViewProps {
   formatDate: (date: string) => string;
 }
 
+const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
+  if (variant === "feed") {
+    return (
+      <Link
+        to="/"
+        className="flex gap-3 p-4 bg-primary/10 hover:bg-primary/20 transition-colors border-y border-primary/20"
+      >
+        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+          <ArrowRight className="w-5 h-5 text-primary-foreground" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-foreground">¿Y vos, cómo estás?</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Respondé las 3D y compartí tu situación →
+          </p>
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      to="/"
+      className="break-inside-avoid rounded-xl shadow-sm mb-4 p-5 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-colors block opacity-0 animate-fade-up"
+      style={{ animationDelay: "150ms" }}
+    >
+      <p className="text-lg font-semibold text-foreground">¿Y vos, cómo estás?</p>
+      <p className="text-sm text-muted-foreground mt-1">
+        Respondé las 3D y compartí tu situación
+      </p>
+      <span className="inline-flex items-center gap-1 mt-3 text-sm font-medium text-primary">
+        Empezar <ArrowRight className="w-4 h-4" />
+      </span>
+    </Link>
+  );
+};
+
 const FeedView = ({ comments, formatDate }: ViewProps) => (
   <div className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl overflow-hidden">
     <div className="divide-y divide-zinc-800">
-      {comments.map((comment) => (
-        <article
-          key={comment.id}
-          className="flex gap-3 p-4 hover:bg-zinc-800/50 transition-colors"
-        >
-          {/* Avatar placeholder */}
-          <div className="w-10 h-10 rounded-full bg-zinc-700 flex-shrink-0" />
-          
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1 text-sm">
-              <span className="font-semibold text-zinc-100">Anónimo</span>
-              <span className="text-zinc-500">·</span>
-              <time className="text-zinc-500">{formatDate(comment.created_at)}</time>
+      {comments.map((comment, index) => (
+        <>
+          {index === 3 && <CTACard key="cta" variant="feed" />}
+          <article
+            key={comment.id}
+            className="flex gap-3 p-4 hover:bg-zinc-800/50 transition-colors"
+          >
+            {/* Avatar placeholder */}
+            <div className="w-10 h-10 rounded-full bg-zinc-700 flex-shrink-0" />
+            
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1 text-sm">
+                <span className="font-semibold text-zinc-100">Anónimo</span>
+                <span className="text-zinc-500">·</span>
+                <time className="text-zinc-500">{formatDate(comment.created_at)}</time>
+              </div>
+              <p className="mt-1 text-zinc-100">{comment.comment}</p>
             </div>
-            <p className="mt-1 text-zinc-100">{comment.comment}</p>
-          </div>
-        </article>
+          </article>
+        </>
       ))}
     </div>
   </div>
@@ -202,19 +242,21 @@ const MosaicView = ({ comments, formatDate }: ViewProps) => (
       const isShort = comment.comment.length < 80;
       const isLong = comment.comment.length > 120;
       const colorClass = cardColors[index % cardColors.length];
-      const animationDelay = Math.min(index * 50, 500); // Cap at 500ms
+      const animationDelay = Math.min((index + (index >= 3 ? 1 : 0)) * 50, 500);
 
       return (
-        <article
-          key={comment.id}
-          className={cn(
-            "break-inside-avoid rounded-xl shadow-sm mb-4 opacity-0 animate-fade-up",
-            colorClass,
-            isShort ? "p-5" : isLong ? "p-3" : "p-4",
-            isLong ? "flex flex-col gap-3" : "flex gap-3"
-          )}
-          style={{ animationDelay: `${animationDelay}ms` }}
-        >
+        <>
+          {index === 3 && <CTACard key="cta-mosaic" variant="mosaic" />}
+          <article
+            key={comment.id}
+            className={cn(
+              "break-inside-avoid rounded-xl shadow-sm mb-4 opacity-0 animate-fade-up",
+              colorClass,
+              isShort ? "p-5" : isLong ? "p-3" : "p-4",
+              isLong ? "flex flex-col gap-3" : "flex gap-3"
+            )}
+            style={{ animationDelay: `${animationDelay}ms` }}
+          >
           {/* Columna texto */}
           <div className={cn("min-w-0", isLong ? "w-full" : "flex-1")}>
             <p
@@ -242,6 +284,7 @@ const MosaicView = ({ comments, formatDate }: ViewProps) => (
             />
           </div>
         </article>
+        </>
       );
     })}
   </div>
