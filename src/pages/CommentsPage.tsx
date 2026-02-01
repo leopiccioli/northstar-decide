@@ -6,6 +6,7 @@ import { List, LayoutGrid, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -99,9 +100,7 @@ const CommentsPage = () => {
       {/* Content */}
       <main className="p-4 md:p-6">
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="w-6 h-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
-          </div>
+          view === "feed" ? <FeedSkeleton /> : <MosaicSkeleton />
         ) : isError ? (
           <div className="flex flex-col items-center py-12 gap-4">
             <p className="text-muted-foreground">No se pudieron cargar los comentarios</p>
@@ -126,6 +125,37 @@ interface ViewProps {
   comments: Comment[];
   formatDate: (date: string) => string;
 }
+
+const FeedSkeleton = () => (
+  <div className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl overflow-hidden">
+    {[...Array(6)].map((_, i) => (
+      <div key={i} className="flex gap-3 p-4 border-b border-zinc-800 last:border-b-0">
+        <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const MosaicSkeleton = () => (
+  <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+    {[...Array(8)].map((_, i) => (
+      <div 
+        key={i} 
+        className={cn("break-inside-avoid rounded-xl p-4 mb-4", cardColors[i % cardColors.length])}
+      >
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-4/5 mb-2" />
+        <Skeleton className="h-4 w-3/5 mb-3" />
+        <Skeleton className="h-3 w-20" />
+      </div>
+    ))}
+  </div>
+);
 
 const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
   if (variant === "feed") {
