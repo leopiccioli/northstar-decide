@@ -1,88 +1,68 @@
 
 
-## Fix: CommentsPage - Retry automático y resilencia
+## Fix: CORS Headers en get-comments
 
-El problema NO es velocidad del query (responde en <1s). El problema es que errores de red transitorios dejan el componente en loading infinito porque `useQuery` no tiene configuración de retry adecuada.
+El problema NO es RLS ni velocidad del query. El edge function `get-comments` tiene CORS headers incompletos que bloquean el request POST del browser.
 
 ---
 
 ### Diagnóstico
 
-| Test | Resultado |
-|------|-----------|
-| curl get-comments | 200 OK, <1 segundo, 20 comentarios |
-| Preview iframe | "Failed to fetch" repetido |
-| Session replay | Spinner infinito, nunca muestra contenido |
+| Evidencia | Observación |
+|-----------|-------------|
+| Edge logs | Solo `OPTIONS` llega (200 OK), nunca POST |
+| Network requests | Browser envía `x-supabase-client-platform: macOS` |
+| get-comments headers | No incluye `x-supabase-client-platform` |
+| save-result / get-country-stats | SI incluyen todos los headers (y funcionan) |
 
-Los "Failed to fetch" son errores de red del preview, no del backend.
+El preflight CORS pasa, pero el POST real falla porque el browser envía headers que el servidor no acepta.
 
 ---
 
 ### Solución
 
-No es "mostrar error" - es **reintentar hasta que funcione** y **no quedarse colgado**.
+Actualizar CORS headers en `get-comments` para que coincidan con los otros edge functions que funcionan:
 
-**Archivo**: `src/pages/CommentsPage.tsx`
+**Archivo**: `supabase/functions/get-comments/index.ts`
 
-**Cambios en useQuery:**
-
+**Cambio**:
 ```typescript
-const { data: comments, isLoading, isError, refetch } = useQuery({
-  queryKey: ["comments"],
-  queryFn: async () => {
-    const { data, error } = await supabase.functions.invoke("get-comments");
-    if (error) throw error;
-    return data.comments as Comment[];
-  },
-  retry: 3,                    // Reintentar 3 veces antes de fallar
-  retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000), // Backoff exponencial
-  staleTime: 60000,            // Cache por 1 minuto
-  refetchOnWindowFocus: false, // No refetch al volver a la ventana
-});
-```
+// ANTES (incompleto)
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
 
-**Manejo de estado cuando falla después de reintentos:**
-
-```typescript
-// En el render - solo si falló TODOS los reintentos
-{isLoading ? (
-  <LoadingSpinner />
-) : isError ? (
-  <div className="flex flex-col items-center py-12 gap-4">
-    <p className="text-muted-foreground">No se pudieron cargar los comentarios</p>
-    <button 
-      onClick={() => refetch()}
-      className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm"
-    >
-      Reintentar
-    </button>
-  </div>
-) : view === "feed" ? (
-  <FeedView ... />
-) : (
-  <MosaicView ... />
-)}
+// DESPUES (completo)
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
 ```
 
 ---
 
 ### Por que esto arregla el problema
 
-1. **retry: 3** - Si el primer request falla por error de red transitorio, reintenta automáticamente hasta 3 veces
-2. **retryDelay con backoff** - Espera 1s, 2s, 4s entre reintentos, dándole tiempo a la red
-3. **staleTime** - Una vez cargado, no vuelve a pedir por 1 minuto
-4. **Botón reintentar** - Solo aparece si FALLAN los 3 reintentos automáticos
-
-En la práctica: si el edge function funciona (y funciona), el retry automático debería cargar en el primer o segundo intento, sin que el usuario vea nada.
+1. El cliente Supabase JS envía `x-supabase-client-platform` y otros headers de telemetria
+2. Si el servidor no los acepta en `Access-Control-Allow-Headers`, el browser bloquea el POST
+3. Los otros edge functions (`save-result`, `get-country-stats`) ya tienen estos headers y funcionan
+4. `get-comments` fue creado con los headers minimos que ya no son suficientes
 
 ---
 
-### Resultado esperado
+### Sobre paginacion
 
-```text
-Intento 1: Failed → retry automático
-Intento 2: Success → muestra comentarios
+Segun lo que indicaste, no hay navegacion - siempre muestra los ultimos 20 y si queres ver nuevos, haces refresh. Esto ya esta implementado correctamente.
 
-Usuario nunca ve el error, solo un loading ligeramente más largo.
-```
+---
+
+### Verificacion
+
+Una vez deployado el cambio:
+- El POST a `get-comments` deberia completarse exitosamente
+- Los comentarios deberian aparecer en el feed
+- No se necesita cambio en el frontend
 
