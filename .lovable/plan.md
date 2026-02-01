@@ -1,81 +1,188 @@
 
 
-## Ajuste: Feed Twitter sin @decisor + fondo oscuro
+## Feature: Cards en 2 columnas + Título "Pared de la Empatía"
 
-Modificaciones al plan anterior basadas en tu feedback.
-
----
-
-### Cambios en Feed (Twitter style)
-
-| Antes | Después |
-|-------|---------|
-| "Anónimo @decisor · hace 2h" | "Anónimo · hace 2h" |
-| Fondo claro (bg-background) | Fondo oscuro (bg-secondary o similar) |
+Layout actualizado para las tarjetas del mosaico con gráfico lateral y título general.
 
 ---
 
-### Estructura actualizada del tweet
+### Estructura de la Card
 
 ```text
-┌────────────────────────────────────────────────────┐
-│  ┌──┐  Anónimo · hace 2 horas                      │
-│  │  │                                              │
-│  └──┘  El texto del comentario va acá              │
-├────────────────────────────────────────────────────┤
-│  ┌──┐  Anónimo · hace 5 horas                      │
-│  │  │                                              │
-│  └──┘  Otro comentario                             │
-└────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│  "Mi comentario        │   ████████████████    │
+│   sobre el trabajo     │     ██████████        │
+│   que puede ser        │       ████            │
+│   largo o corto"       │                       │
+│                        │   (hover = tooltip)   │
+│  hace 2 horas          │                       │
+│                                                 │
+└─────────────────────────────────────────────────┘
+     ~65%                      ~35%
+```
+
+- Columna izquierda: Texto del comentario + fecha
+- Columna derecha: Mini gráfico 3D (sin números, tooltip al hover)
+
+---
+
+### Título de la página
+
+```text
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│            Pared de la Empatía                  │
+│                                                 │
+│         [Feed]  [Mosaico]                       │
+│                                                 │
+└─────────────────────────────────────────────────┘
 ```
 
 ---
 
-### Código del FeedView
+### Cambios necesarios
+
+#### 1. Backend: Traer datos de las 3D
+
+**Archivo**: `supabase/functions/get-comments/index.ts`
+
+Actualizar el select para incluir los valores:
 
 ```typescript
-const FeedView = ({ comments, formatDate }: ViewProps) => (
-  <div className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl overflow-hidden">
-    <div className="divide-y divide-zinc-800">
-      {comments.map((comment) => (
+.select("id, comment, created_at, dinero, desarrollo, diversion")
+```
+
+#### 2. Frontend: Actualizar interface
+
+**Archivo**: `src/pages/CommentsPage.tsx`
+
+```typescript
+interface Comment {
+  id: string;
+  comment: string;
+  created_at: string;
+  dinero: number;
+  desarrollo: number;
+  diversion: number;
+}
+```
+
+#### 3. Frontend: Componente Mini3DChart con Tooltip
+
+```typescript
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+const Mini3DChart = ({ dinero, desarrollo, diversion }: { 
+  dinero: number; 
+  desarrollo: number; 
+  diversion: number 
+}) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex flex-col items-center justify-center gap-1 cursor-help">
+          <div 
+            className="h-2 rounded-sm" 
+            style={{ width: `${dinero * 10}%`, backgroundColor: '#C41E3A', minWidth: '20%' }} 
+          />
+          <div 
+            className="h-2 rounded-sm" 
+            style={{ width: `${desarrollo * 10}%`, backgroundColor: '#1e3a5f', minWidth: '20%' }} 
+          />
+          <div 
+            className="h-2 rounded-sm" 
+            style={{ width: `${diversion * 10}%`, backgroundColor: '#9CA3AF', minWidth: '20%' }} 
+          />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="text-xs space-y-1">
+          <p><span className="text-[#C41E3A]">●</span> Dinero: {dinero}/10</p>
+          <p><span className="text-[#1e3a5f]">●</span> Desarrollo: {desarrollo}/10</p>
+          <p><span className="text-[#9CA3AF]">●</span> Diversión: {diversion}/10</p>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+```
+
+#### 4. Frontend: MosaicView con layout de 2 columnas
+
+```typescript
+const MosaicView = ({ comments, formatDate }: ViewProps) => (
+  <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+    {comments.map((comment, index) => {
+      const isShort = comment.comment.length < 80;
+      const isLong = comment.comment.length > 200;
+      const colorClass = cardColors[index % cardColors.length];
+
+      return (
         <article
           key={comment.id}
-          className="flex gap-3 p-4 hover:bg-zinc-800/50 transition-colors"
+          className={cn(
+            "break-inside-avoid rounded-xl shadow-sm mb-4 flex gap-3",
+            colorClass,
+            isShort ? "p-5" : isLong ? "p-3" : "p-4"
+          )}
         >
-          {/* Avatar placeholder */}
-          <div className="w-10 h-10 rounded-full bg-zinc-700 flex-shrink-0" />
-          
-          {/* Content */}
+          {/* Columna texto ~65% */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1 text-sm">
-              <span className="font-semibold text-zinc-100">Anónimo</span>
-              <span className="text-zinc-500">·</span>
-              <time className="text-zinc-500">{formatDate(comment.created_at)}</time>
-            </div>
-            <p className="mt-1 text-zinc-100">{comment.comment}</p>
+            <p className={cn(
+              "text-foreground leading-relaxed",
+              isShort ? "text-lg font-medium" : isLong ? "text-sm" : "text-base"
+            )}>
+              {comment.comment}
+            </p>
+            <time className="block mt-2 text-xs text-muted-foreground">
+              {formatDate(comment.created_at)}
+            </time>
+          </div>
+          
+          {/* Columna gráfico ~35% */}
+          <div className="w-[35%] flex-shrink-0 flex items-center">
+            <Mini3DChart 
+              dinero={comment.dinero} 
+              desarrollo={comment.desarrollo} 
+              diversion={comment.diversion} 
+            />
           </div>
         </article>
-      ))}
-    </div>
+      );
+    })}
   </div>
 );
+```
+
+#### 5. Frontend: Agregar título en el header
+
+```typescript
+<header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
+  <div className="flex flex-col items-center py-4 gap-3">
+    {/* Nuevo título */}
+    <h1 className="text-2xl font-bold text-foreground">
+      Pared de la Empatía
+    </h1>
+    
+    {/* Toggle existente */}
+    <div className="bg-secondary p-1 rounded-full inline-flex">
+      ...
+    </div>
+  </div>
+</header>
 ```
 
 ---
 
 ### Archivos a modificar
 
-1. `supabase/functions/get-comments/index.ts` - Cambiar limit a 21
-2. `src/pages/CommentsPage.tsx` - Feed con fondo oscuro sin @decisor + Mosaico Pinterest
+1. `supabase/functions/get-comments/index.ts` - Agregar campos 3D al select
+2. `src/pages/CommentsPage.tsx` - Título, interface actualizada, Mini3DChart con tooltip, MosaicView con 2 columnas
 
 ---
 
-### Resumen de cambios
+### Tooltip en mobile
 
-- Sin "@decisor" - solo "Anónimo · tiempo"
-- Fondo `bg-zinc-900` para el contenedor del feed
-- Divisores `divide-zinc-800` (línea oscura sutil)
-- Texto `text-zinc-100` para buen contraste
-- Avatar `bg-zinc-700` (gris medio)
-- Hover `bg-zinc-800/50` para interactividad
+En dispositivos táctiles el tooltip aparecerá al tocar el gráfico (comportamiento nativo de Radix Tooltip).
 
