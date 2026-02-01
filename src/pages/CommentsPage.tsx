@@ -5,11 +5,20 @@ import { es } from "date-fns/locale";
 import { List, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Comment {
   id: string;
   comment: string;
   created_at: string;
+  dinero: number;
+  desarrollo: number;
+  diversion: number;
 }
 
 type ViewMode = "feed" | "mosaic";
@@ -39,9 +48,15 @@ const CommentsPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with toggle */}
+      {/* Header with title and toggle */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="flex justify-center py-4">
+        <div className="flex flex-col items-center py-4 gap-3">
+          {/* Title */}
+          <h1 className="text-2xl font-bold text-foreground">
+            Pared de la Empatía
+          </h1>
+          
+          {/* Toggle */}
           <div className="bg-secondary p-1 rounded-full inline-flex">
             <button
               onClick={() => setView("feed")}
@@ -128,6 +143,40 @@ const FeedView = ({ comments, formatDate }: ViewProps) => (
   </div>
 );
 
+const Mini3DChart = ({ dinero, desarrollo, diversion }: { 
+  dinero: number; 
+  desarrollo: number; 
+  diversion: number 
+}) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex flex-col items-center justify-center gap-1 w-full cursor-help">
+          <div 
+            className="h-2 rounded-sm" 
+            style={{ width: `${dinero * 10}%`, backgroundColor: '#C41E3A', minWidth: '20%' }} 
+          />
+          <div 
+            className="h-2 rounded-sm" 
+            style={{ width: `${desarrollo * 10}%`, backgroundColor: '#1e3a5f', minWidth: '20%' }} 
+          />
+          <div 
+            className="h-2 rounded-sm" 
+            style={{ width: `${diversion * 10}%`, backgroundColor: '#9CA3AF', minWidth: '20%' }} 
+          />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="text-xs space-y-1">
+          <p><span style={{ color: '#C41E3A' }}>●</span> Dinero: {dinero}/10</p>
+          <p><span style={{ color: '#1e3a5f' }}>●</span> Desarrollo: {desarrollo}/10</p>
+          <p><span style={{ color: '#9CA3AF' }}>●</span> Diversión: {diversion}/10</p>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
 const cardColors = [
   "bg-rose-50 dark:bg-rose-950/30",
   "bg-blue-50 dark:bg-blue-950/30",
@@ -148,22 +197,34 @@ const MosaicView = ({ comments, formatDate }: ViewProps) => (
         <article
           key={comment.id}
           className={cn(
-            "break-inside-avoid rounded-xl shadow-sm mb-4",
+            "break-inside-avoid rounded-xl shadow-sm mb-4 flex gap-3",
             colorClass,
-            isShort ? "p-6" : isLong ? "p-4" : "p-5"
+            isShort ? "p-5" : isLong ? "p-3" : "p-4"
           )}
         >
-          <p
-            className={cn(
-              "text-foreground leading-relaxed",
-              isShort ? "text-xl font-medium" : isLong ? "text-sm" : "text-base"
-            )}
-          >
-            {comment.comment}
-          </p>
-          <time className="block mt-3 text-xs text-muted-foreground">
-            {formatDate(comment.created_at)}
-          </time>
+          {/* Columna texto ~65% */}
+          <div className="flex-1 min-w-0">
+            <p
+              className={cn(
+                "text-foreground leading-relaxed",
+                isShort ? "text-lg font-medium" : isLong ? "text-sm" : "text-base"
+              )}
+            >
+              {comment.comment}
+            </p>
+            <time className="block mt-2 text-xs text-muted-foreground">
+              {formatDate(comment.created_at)}
+            </time>
+          </div>
+          
+          {/* Columna gráfico ~35% */}
+          <div className="w-[35%] flex-shrink-0 flex items-center">
+            <Mini3DChart 
+              dinero={comment.dinero} 
+              desarrollo={comment.desarrollo} 
+              diversion={comment.diversion} 
+            />
+          </div>
         </article>
       );
     })}
