@@ -190,20 +190,21 @@ const MosaicView = ({ comments, formatDate }: ViewProps) => (
   <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
     {comments.map((comment, index) => {
       const isShort = comment.comment.length < 80;
-      const isLong = comment.comment.length > 200;
+      const isLong = comment.comment.length > 120;
       const colorClass = cardColors[index % cardColors.length];
 
       return (
         <article
           key={comment.id}
           className={cn(
-            "break-inside-avoid rounded-xl shadow-sm mb-4 flex gap-3",
+            "break-inside-avoid rounded-xl shadow-sm mb-4",
             colorClass,
-            isShort ? "p-5" : isLong ? "p-3" : "p-4"
+            isShort ? "p-5" : isLong ? "p-3" : "p-4",
+            isLong ? "flex flex-col gap-3" : "flex gap-3"
           )}
         >
-          {/* Columna texto ~65% */}
-          <div className="flex-1 min-w-0">
+          {/* Columna texto */}
+          <div className={cn("min-w-0", isLong ? "w-full" : "flex-1")}>
             <p
               className={cn(
                 "text-foreground leading-relaxed",
@@ -217,8 +218,11 @@ const MosaicView = ({ comments, formatDate }: ViewProps) => (
             </time>
           </div>
           
-          {/* Columna gráfico ~35% */}
-          <div className="w-[35%] flex-shrink-0 flex items-center">
+          {/* Gráfico: abajo si es largo, al lado si es corto */}
+          <div className={cn(
+            "flex items-center",
+            isLong ? "w-full justify-center" : "w-[35%] flex-shrink-0"
+          )}>
             <Mini3DChart 
               dinero={comment.dinero} 
               desarrollo={comment.desarrollo} 
