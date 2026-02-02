@@ -142,11 +142,11 @@ const FeedSkeleton = () => (
 );
 
 const MosaicSkeleton = () => (
-  <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {[...Array(8)].map((_, i) => (
       <div 
         key={i} 
-        className={cn("break-inside-avoid rounded-xl p-4 mb-4", cardColors[i % cardColors.length])}
+        className={cn("rounded-xl p-4", cardColors[i % cardColors.length])}
       >
         <Skeleton className="h-4 w-full mb-2" />
         <Skeleton className="h-4 w-4/5 mb-2" />
@@ -180,7 +180,7 @@ const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
   return (
     <Link
       to="/"
-      className="break-inside-avoid rounded-xl shadow-sm mb-4 p-5 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-colors block opacity-0 animate-fade-up"
+      className="rounded-xl shadow-sm p-5 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-colors block opacity-0 animate-fade-up"
       style={{ animationDelay: "150ms" }}
     >
       <p className="text-lg font-semibold text-foreground">¿Y vos, cómo estás?</p>
@@ -267,7 +267,7 @@ const cardColors = [
 ];
 
 const MosaicView = ({ comments, formatDate }: ViewProps) => (
-  <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {comments.map((comment, index) => {
       const isShort = comment.comment.length < 80;
       const isLong = comment.comment.length > 120;
@@ -280,7 +280,7 @@ const MosaicView = ({ comments, formatDate }: ViewProps) => (
           <article
             key={comment.id}
             className={cn(
-              "break-inside-avoid rounded-xl shadow-sm mb-4 opacity-0 animate-fade-up",
+              "rounded-xl shadow-sm opacity-0 animate-fade-up",
               colorClass,
               isShort ? "p-5" : isLong ? "p-3" : "p-4",
               isLong ? "flex flex-col gap-3" : "flex gap-3"
