@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -27,6 +27,7 @@ type ViewMode = "feed" | "mosaic";
 
 const CommentsPage = () => {
   const [view, setView] = useState<ViewMode>("feed");
+  const ctaPosition = useMemo(() => Math.floor(Math.random() * 13) + 3, []);
 
   const { data: comments, isLoading, isError, refetch } = useQuery({
     queryKey: ["comments"],
@@ -59,7 +60,7 @@ const CommentsPage = () => {
               Pared de la Empatía
             </h1>
             <Link 
-              to="/"
+              to="/?utm_source=comentarios&utm_medium=header"
               className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
             >
               Responder las 3D
@@ -112,9 +113,9 @@ const CommentsPage = () => {
             </button>
           </div>
         ) : view === "feed" ? (
-          <FeedView comments={comments || []} formatDate={formatDate} />
+          <FeedView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} />
         ) : (
-          <MosaicView comments={comments || []} formatDate={formatDate} />
+          <MosaicView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} />
         )}
       </main>
     </div>
@@ -124,6 +125,7 @@ const CommentsPage = () => {
 interface ViewProps {
   comments: Comment[];
   formatDate: (date: string) => string;
+  ctaPosition: number;
 }
 
 const FeedSkeleton = () => (
@@ -161,7 +163,7 @@ const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
   if (variant === "feed") {
     return (
       <Link
-        to="/"
+        to="/?utm_source=comentarios&utm_medium=cta_feed"
         className="flex gap-3 p-4 bg-primary/10 hover:bg-primary/20 transition-colors border-y border-primary/20"
       >
         <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
@@ -179,7 +181,7 @@ const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
 
   return (
     <Link
-      to="/"
+      to="/?utm_source=comentarios&utm_medium=cta_mosaic"
       className="rounded-xl shadow-sm p-5 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-colors block opacity-0 animate-fade-up"
       style={{ animationDelay: "150ms" }}
     >
@@ -194,12 +196,12 @@ const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
   );
 };
 
-const FeedView = ({ comments, formatDate }: ViewProps) => (
+const FeedView = ({ comments, formatDate, ctaPosition }: ViewProps) => (
   <div className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl overflow-hidden">
     <div className="divide-y divide-zinc-800">
       {comments.map((comment, index) => (
         <>
-          {index === 3 && <CTACard key="cta" variant="feed" />}
+          {index === ctaPosition && <CTACard key="cta" variant="feed" />}
           <article
             key={comment.id}
             className="flex gap-3 p-4 hover:bg-zinc-800/50 transition-colors"
@@ -266,17 +268,17 @@ const cardColors = [
   "bg-slate-100 dark:bg-slate-800/30",
 ];
 
-const MosaicView = ({ comments, formatDate }: ViewProps) => (
+const MosaicView = ({ comments, formatDate, ctaPosition }: ViewProps) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {comments.map((comment, index) => {
       const isShort = comment.comment.length < 80;
       const isLong = comment.comment.length > 120;
       const colorClass = cardColors[index % cardColors.length];
-      const animationDelay = Math.min((index + (index >= 3 ? 1 : 0)) * 50, 500);
+      const animationDelay = Math.min((index + (index >= ctaPosition ? 1 : 0)) * 50, 500);
 
       return (
         <>
-          {index === 3 && <CTACard key="cta-mosaic" variant="mosaic" />}
+          {index === ctaPosition && <CTACard key="cta-mosaic" variant="mosaic" />}
           <article
             key={comment.id}
             className={cn(
