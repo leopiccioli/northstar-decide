@@ -13,16 +13,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
+    <!-- Preload critical font weight (700 bold for H1) -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="https://fonts.gstatic.com/s/spacegrotesk/v16/V8mDoQDjQSkFtoMM3T6r8E7mPb54C_k3HqUtEw.woff2" />
+    
     <!-- Critical CSS for EntryScreen - inline for faster FCP -->
     <style>
       :root{--background:0 0% 7%;--foreground:0 0% 98%}
-      body{margin:0;background:hsl(var(--background));color:hsl(var(--foreground));font-family:'Space Grotesk',system-ui,sans-serif}
+      body{margin:0;background:hsl(var(--background));color:hsl(var(--foreground));font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
       .min-h-screen{min-height:100vh}
       .flex{display:flex}
       .items-center{align-items:center}
       .justify-center{justify-content:center}
       @keyframes spin{to{transform:rotate(360deg)}}
       .animate-spin{animation:spin 1s linear infinite}
+      /* Critical CSS for H1 - ensure LCP element renders immediately */
+      .heading-display{font-size:2.25rem;font-weight:700;line-height:1;letter-spacing:-0.025em}
+      @media(min-width:640px){.heading-display{font-size:3rem}}
+      @media(min-width:768px){.heading-display{font-size:3.75rem}}
       /* Eliminate 300ms tap delay on mobile */
       button,a,input,select,textarea,[role="button"]{touch-action:manipulation}
     </style>
@@ -31,37 +39,6 @@
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
     </noscript>
-    
-    <!-- Meta Pixel (Facebook) -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '877656423334083');
-      fbq('track', 'PageView');
-    </script>
-    
-    <!-- X (Twitter) Pixel -->
-    <script>
-      !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
-      },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='https://static.ads-twitter.com/uwt.js',
-      a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
-      twq('config','o1ve0');
-    </script>
-    
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DMQNVGCVEM"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-DMQNVGCVEM');
-    </script>
     
     <title>3D para Decidir - CEO en Camiseta</title>
     <meta name="description" content="Tomá mejores decisiones laborales en 20 segundos con las 3D: Dinero, Desarrollo, Diversión." />
@@ -81,5 +58,44 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Deferred Analytics - Load after page is interactive to improve FCP/LCP -->
+    <script>
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          // Meta Pixel (Facebook)
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init', '877656423334083');
+          fbq('track', 'PageView');
+
+          // X (Twitter) Pixel
+          !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+          },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='https://static.ads-twitter.com/uwt.js',
+          a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+          twq('config','o1ve0');
+
+          // Google Analytics 4
+          var gaScript = document.createElement('script');
+          gaScript.async = true;
+          gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-DMQNVGCVEM';
+          document.head.appendChild(gaScript);
+          
+          gaScript.onload = function() {
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-DMQNVGCVEM');
+          };
+        }, 100);
+      });
+    </script>
   </body>
 </html>
