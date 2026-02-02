@@ -1,96 +1,55 @@
 
 
-## Aumentar a 100 comentarios con Skeleton Loaders
+## Cambiar orden del Mosaico a lectura horizontal
 
-### Resumen
-Subir el límite de comentarios de 21 a 100 y agregar skeleton loaders para mejorar la percepción de velocidad durante la carga.
+### Problema actual
+El layout usa CSS `columns` que ordena verticalmente:
+```
+1  3  5
+2  4  6
+```
+
+### Solución
+Cambiar a CSS Grid para orden horizontal (lectura natural):
+```
+1  2  3
+4  5  6
+```
 
 ---
 
 ### Cambios
 
-#### 1. Backend: Aumentar límite
-**Archivo**: `supabase/functions/get-comments/index.ts`
-
-Cambiar `.limit(21)` a `.limit(100)`
-
-#### 2. Frontend: Agregar Skeleton Loaders
 **Archivo**: `src/pages/CommentsPage.tsx`
 
-Crear componentes de skeleton que imiten la estructura de las cards:
+#### 1. MosaicView - Cambiar de columns a grid
+```css
+/* Antes */
+columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4
 
-```text
-Feed Skeleton:
-┌─────────────────────────────────────────┐
-│  ○ ████████ · ██████                    │
-│  ████████████████████████               │
-│  ██████████████████                     │
-└─────────────────────────────────────────┘
-
-Mosaic Skeleton:
-┌─────────────────────────────┐
-│  ████████████████████       │
-│  ██████████████             │
-│  ██████                     │
-└─────────────────────────────┘
+/* Después */
+grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4
 ```
 
-Reemplazar el spinner actual por 6-8 skeletons que aparecen inmediatamente.
+#### 2. Cards - Remover `break-inside-avoid` y `mb-4`
+Estas clases eran para el layout de columns. Con grid ya no son necesarias.
+
+#### 3. MosaicSkeleton - Actualizar consistentemente
+Aplicar los mismos cambios al skeleton para mantener coherencia visual.
 
 ---
 
-### Detalles técnicos
+### Trade-off
 
-**SkeletonCard component:**
-- Usar el componente `Skeleton` existente de `@/components/ui/skeleton`
-- Variar alturas para simular comentarios de diferentes longitudes
-- Mantener los mismos colores pastel del mosaico para consistencia
+| CSS Columns (actual) | CSS Grid (propuesto) |
+|---------------------|---------------------|
+| Efecto masonry (alturas variables se acomodan) | Filas uniformes |
+| Orden vertical ❌ | Orden horizontal ✅ |
 
-**Implementación:**
-```typescript
-const FeedSkeleton = () => (
-  <div className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl">
-    {[...Array(6)].map((_, i) => (
-      <div key={i} className="flex gap-3 p-4 border-b border-zinc-800">
-        <Skeleton className="w-10 h-10 rounded-full" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-const MosaicSkeleton = () => (
-  <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
-    {[...Array(8)].map((_, i) => (
-      <div 
-        key={i} 
-        className={cn("break-inside-avoid rounded-xl p-4 mb-4", cardColors[i % cardColors.length])}
-      >
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-4 w-4/5 mb-2" />
-        <Skeleton className="h-3 w-20 mt-3" />
-      </div>
-    ))}
-  </div>
-);
-```
+El orden horizontal es más importante para contenido cronológico que el efecto masonry.
 
 ---
 
 ### Archivos a modificar
-
-1. `supabase/functions/get-comments/index.ts` - Cambiar limit de 21 a 100
-2. `src/pages/CommentsPage.tsx` - Agregar FeedSkeleton y MosaicSkeleton, reemplazar spinner
-
----
-
-### Beneficio UX
-
-- El usuario ve contenido placeholder inmediatamente (0ms)
-- La transición a contenido real se siente más suave
-- Mejor percepción de velocidad que un spinner genérico
+- `src/pages/CommentsPage.tsx` - MosaicView y MosaicSkeleton
 
