@@ -55,6 +55,7 @@ interface SaveResultRequest {
   comment?: string;
   comparison?: Comparison;
   reminderPeriod?: '1m' | '3m';
+  honeypot?: string; // Anti-bot field - should always be empty
   tracking: {
     utm_source?: string;
     utm_medium?: string;
@@ -65,6 +66,16 @@ interface SaveResultRequest {
     fbclid?: string;
     referrer?: string;
   };
+}
+
+// Sanitize text input: trim, limit length, strip HTML tags
+function sanitizeText(text: string | undefined | null, maxLength: number): string | null {
+  if (!text) return null;
+  return text
+    .trim()
+    .slice(0, maxLength)
+    .replace(/<[^>]*>/g, '') // Strip HTML tags
+    .replace(/[<>]/g, ''); // Remove any remaining angle brackets
 }
 
 // Validate email format
@@ -285,6 +296,16 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Honeypot check - if filled, it's a bot
+    if (body.honeypot) {
+      // Silently reject but return success to not tip off the bot
+      console.log('Honeypot triggered, rejecting submission');
+      return new Response(
+        JSON.stringify({ success: true, id: 'blocked' }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Validate scores
     const { dinero, desarrollo, diversion } = body.scores;
     if (!isValidScore(dinero) || !isValidScore(desarrollo) || !isValidScore(diversion)) {
@@ -371,18 +392,27 @@ const handler = async (req: Request): Promise<Response> => {
       ? calculateReminderDate(body.reminderPeriod)
       : null;
 
+    // Sanitize text inputs before insertion
+    const sanitizedOptionName = sanitizeText(body.optionName, 100) || 'Situación actual';
+    const sanitizedComment = sanitizeText(body.comment, 500);
+    const sanitizedComparison: Comparison | null = body.comparison ? {
+      ...body.comparison,
+      name: sanitizeText(body.comparison.name, 100) || 'Opción',
+      comment: sanitizeText(body.comparison.comment, 500) || undefined,
+    } : null;
+
     // Insert record into records_3d (email_sent defaults to false)
     const { data: insertedRecord, error: insertError } = await supabase
       .from('records_3d')
       .insert({
         email: body.email.toLowerCase(),
         country: body.country || null,
-        option_name: body.optionName,
+        option_name: sanitizedOptionName,
         dinero: body.scores.dinero,
         desarrollo: body.scores.desarrollo,
         diversion: body.scores.diversion,
-        comment: body.comment || null,
-        comparison: body.comparison || null,
+        comment: sanitizedComment,
+        comparison: sanitizedComparison,
         reminder_period: body.reminderPeriod || null,
         reminder_date: reminderDate,
         utm_source: body.tracking.utm_source || null,
@@ -410,10 +440,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build email content for async sending
     const emailContent = buildEmailContent(
-      body.optionName,
+      sanitizedOptionName,
       body.scores,
-      body.comment,
-      body.comparison || null,
+      sanitizedComment || undefined,
+      sanitizedComparison,
       previousMeasurement
     );
 

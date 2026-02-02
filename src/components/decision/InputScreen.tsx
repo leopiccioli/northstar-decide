@@ -19,6 +19,7 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
   const showNameInput = isComparison || isFirstComparison;
   const [name, setName] = useState(optionName || (showNameInput ? '' : 'Situación actual'));
   const [comment, setComment] = useState('');
+  const [honeypot, setHoneypot] = useState(''); // Anti-bot honeypot field
   const [scores, setScores] = useState<Scores>({
     dinero: 5,
     desarrollo: 5,
@@ -27,6 +28,7 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
 
   const handleSubmit = () => {
     if (showNameInput && !name.trim()) return;
+    if (honeypot) return; // Bot detected - silently reject
     onComplete(name || 'Situación actual', scores, comment || undefined);
   };
 
@@ -64,6 +66,18 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
             />
           </div>
         )}
+
+        {/* Honeypot - hidden field that only bots fill */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          className="absolute -left-[9999px]"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+        />
 
         {/* Sliders */}
         <div className="space-y-8">
