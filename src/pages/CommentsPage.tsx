@@ -53,7 +53,7 @@ const CommentsPage = () => {
     <div className="min-h-screen bg-background">
       {/* Header with title and toggle */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="flex flex-col items-center py-4 gap-3">
+        <div className="flex flex-col items-center py-4 px-4 gap-3">
           {/* Title + CTA */}
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-foreground">
