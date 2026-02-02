@@ -1,20 +1,9 @@
 
+## CTA con posición aleatoria y UTMs
 
-## Cambiar orden del Mosaico a lectura horizontal
-
-### Problema actual
-El layout usa CSS `columns` que ordena verticalmente:
-```
-1  3  5
-2  4  6
-```
-
-### Solución
-Cambiar a CSS Grid para orden horizontal (lectura natural):
-```
-1  2  3
-4  5  6
-```
+### Resumen
+1. Hacer que el CTA "¿Y vos, cómo estás?" aparezca en una posición aleatoria (entre 3 y 15)
+2. Agregar UTM params a todos los links hacia `/`
 
 ---
 
@@ -22,34 +11,48 @@ Cambiar a CSS Grid para orden horizontal (lectura natural):
 
 **Archivo**: `src/pages/CommentsPage.tsx`
 
-#### 1. MosaicView - Cambiar de columns a grid
-```css
-/* Antes */
-columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4
+#### 1. Generar posición aleatoria para el CTA
+Usar `useMemo` para calcular una posición random entre 3 y 15 que se mantenga estable durante la sesión:
 
-/* Después */
-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4
+```typescript
+const ctaPosition = useMemo(() => Math.floor(Math.random() * 13) + 3, []);
 ```
 
-#### 2. Cards - Remover `break-inside-avoid` y `mb-4`
-Estas clases eran para el layout de columns. Con grid ya no son necesarias.
+#### 2. Agregar UTMs a los links
+Cambiar los 3 links de `to="/"` a incluir UTM params:
 
-#### 3. MosaicSkeleton - Actualizar consistentemente
-Aplicar los mismos cambios al skeleton para mantener coherencia visual.
+| Link | utm_source | utm_medium |
+|------|------------|------------|
+| Header "Responder las 3D" | comentarios | header |
+| CTA Feed | comentarios | cta_feed |
+| CTA Mosaico | comentarios | cta_mosaic |
 
----
+```typescript
+// Header
+to="/?utm_source=comentarios&utm_medium=header"
 
-### Trade-off
+// CTACard feed
+to="/?utm_source=comentarios&utm_medium=cta_feed"
 
-| CSS Columns (actual) | CSS Grid (propuesto) |
-|---------------------|---------------------|
-| Efecto masonry (alturas variables se acomodan) | Filas uniformes |
-| Orden vertical ❌ | Orden horizontal ✅ |
+// CTACard mosaic  
+to="/?utm_source=comentarios&utm_medium=cta_mosaic"
+```
 
-El orden horizontal es más importante para contenido cronológico que el efecto masonry.
+#### 3. Pasar ctaPosition a los componentes
+Actualizar `FeedView` y `MosaicView` para recibir la posición como prop:
+
+```typescript
+<FeedView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} />
+<MosaicView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} />
+```
 
 ---
 
 ### Archivos a modificar
-- `src/pages/CommentsPage.tsx` - MosaicView y MosaicSkeleton
+- `src/pages/CommentsPage.tsx`
 
+---
+
+### Resultado
+- El CTA aparecerá en diferentes posiciones cada vez que se carga la página
+- Los UTMs permitirán trackear de dónde vienen los usuarios en analytics
