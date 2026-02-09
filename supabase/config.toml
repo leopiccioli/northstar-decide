@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.get-comments]
 verify_jwt = false
+
+[functions.resend-measurement]
+verify_jwt = false
