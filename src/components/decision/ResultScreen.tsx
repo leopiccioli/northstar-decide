@@ -10,6 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { QRCodeSVG } from 'qrcode.react';
 import { SITE_CONFIG, buildBeehiivUrl } from '@/config/urls';
 import { trackFlowEvent } from '@/lib/analytics';
+import { detectEmailTypo } from '@/lib/emailTypo';
 
 // Lazy load CountryCombobox - only needed at save step
 const CountryCombobox = lazy(() => import('./CountryCombobox').then(m => ({ default: m.CountryCombobox })));
@@ -208,6 +209,7 @@ function SaveSection({
   const [reminder, setReminder] = useState<ReminderPeriod>('1m');
   const [emailError, setEmailError] = useState('');
   const [countryError, setCountryError] = useState('');
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -218,6 +220,10 @@ function SaveSection({
     const trimmed = email.trim();
     if (trimmed && !validateEmail(trimmed)) {
       setEmailError('Email inválido');
+      setEmailSuggestion(null);
+    } else if (trimmed) {
+      const suggestion = detectEmailTypo(trimmed);
+      setEmailSuggestion(suggestion);
     }
   };
 
@@ -324,6 +330,7 @@ function SaveSection({
           onChange={(e) => {
             setEmail(e.target.value);
             if (emailError) setEmailError('');
+            if (emailSuggestion) setEmailSuggestion(null);
           }}
           onBlur={handleEmailBlur}
           placeholder="email@ejemplo.com"
@@ -334,6 +341,22 @@ function SaveSection({
         />
         {emailError && (
           <p className="text-sm text-destructive">{emailError}</p>
+        )}
+        {emailSuggestion && !emailError && (
+          <p className="text-sm text-muted-foreground">
+            Quisiste decir{' '}
+            <button
+              type="button"
+              onClick={() => {
+                setEmail(emailSuggestion);
+                setEmailSuggestion(null);
+              }}
+              className="font-medium text-foreground underline underline-offset-2 hover:opacity-80 transition-opacity"
+            >
+              {emailSuggestion}
+            </button>
+            ?
+          </p>
         )}
       </div>
 

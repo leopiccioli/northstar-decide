@@ -1,0 +1,123 @@
+// Domain typo dictionary - maps common misspellings to correct domains
+const DOMAIN_TYPOS: Record<string, string> = {
+  // Gmail
+  'gmial.com': 'gmail.com',
+  'gamil.com': 'gmail.com',
+  'gmai.com': 'gmail.com',
+  'gmaill.com': 'gmail.com',
+  'gmali.com': 'gmail.com',
+  'gnail.com': 'gmail.com',
+  'gmal.com': 'gmail.com',
+  'gimail.com': 'gmail.com',
+  // Hotmail
+  'hotmial.com': 'hotmail.com',
+  'hotmal.com': 'hotmail.com',
+  'hotmai.com': 'hotmail.com',
+  'hotmil.com': 'hotmail.com',
+  'hotnail.com': 'hotmail.com',
+  // Outlook
+  'outlok.com': 'outlook.com',
+  'outllok.com': 'outlook.com',
+  'outloo.com': 'outlook.com',
+  // Yahoo
+  'yaho.com': 'yahoo.com',
+  'yhaoo.com': 'yahoo.com',
+  'yahooo.com': 'yahoo.com',
+  // iCloud
+  'iclod.com': 'icloud.com',
+  // Protonmail
+  'protonmai.com': 'protonmail.com',
+  'protonmial.com': 'protonmail.com',
+  // mail.ru special
+  'mail,ru': 'mail.ru',
+};
+
+// Domains where .co is a typo for .com (not legitimate .co domains)
+const DOT_CO_DOMAINS = ['gmail', 'hotmail', 'yahoo', 'icloud', 'live', 'gmx'];
+
+// Known domains for format normalization (missing dot, double dot, comma)
+const KNOWN_DOMAINS = ['gmail', 'hotmail', 'outlook', 'yahoo', 'icloud', 'protonmail', 'live', 'gmx'];
+
+/**
+ * Detect common email domain typos and return a suggested correction.
+ * Returns the full corrected email or null if no typo detected.
+ */
+export function detectEmailTypo(email: string): string | null {
+  const trimmed = email.trim().toLowerCase();
+  const atIndex = trimmed.lastIndexOf('@');
+  if (atIndex < 1) return null;
+
+  const localPart = trimmed.slice(0, atIndex);
+  let domain = trimmed.slice(atIndex + 1);
+
+  // 1. Direct domain lookup
+  if (DOMAIN_TYPOS[domain]) {
+    return `${localPart}@${DOMAIN_TYPOS[domain]}`;
+  }
+
+  // 2. Format fixes: comma instead of dot (e.g. gmail,com)
+  const commaFixed = domain.replace(',', '.');
+  if (commaFixed !== domain && DOMAIN_TYPOS[commaFixed]) {
+    return `${localPart}@${DOMAIN_TYPOS[commaFixed]}`;
+  }
+  // Check if comma-fixed is a known valid domain
+  for (const known of KNOWN_DOMAINS) {
+    if (commaFixed === `${known}.com` && domain !== commaFixed) {
+      return `${localPart}@${commaFixed}`;
+    }
+  }
+
+  // 3. Double dot (e.g. gmail..com)
+  const doubleDotFixed = domain.replace('..', '.');
+  if (doubleDotFixed !== domain) {
+    for (const known of KNOWN_DOMAINS) {
+      if (doubleDotFixed === `${known}.com`) {
+        return `${localPart}@${doubleDotFixed}`;
+      }
+    }
+  }
+
+  // 4. Missing dot (e.g. gmailcom)
+  for (const known of KNOWN_DOMAINS) {
+    if (domain === `${known}com`) {
+      return `${localPart}@${known}.com`;
+    }
+  }
+
+  // 5. TLD typos
+  // .con → .com
+  if (domain.endsWith('.con')) {
+    const base = domain.slice(0, -4);
+    for (const known of KNOWN_DOMAINS) {
+      if (base === known) return `${localPart}@${known}.com`;
+    }
+    // me.con → me.com
+    if (base === 'me') return `${localPart}@me.com`;
+  }
+
+  // .cmo → .com
+  if (domain.endsWith('.cmo')) {
+    const base = domain.slice(0, -4);
+    for (const known of KNOWN_DOMAINS) {
+      if (base === known) return `${localPart}@${known}.com`;
+    }
+  }
+
+  // .cm → .com
+  if (domain.endsWith('.cm') && !domain.endsWith('.com')) {
+    const base = domain.slice(0, -3);
+    for (const known of KNOWN_DOMAINS) {
+      if (base === known) return `${localPart}@${known}.com`;
+    }
+  }
+
+  // .co → .com (only for known domains, not legitimate .co)
+  if (domain.endsWith('.co') && !domain.endsWith('.com')) {
+    const base = domain.slice(0, -3);
+    if (DOT_CO_DOMAINS.includes(base)) {
+      return `${localPart}@${base}.com`;
+    }
+  }
+
+  return null;
+}
