@@ -1,111 +1,61 @@
 
+## Detección de typos en email (flujo)
 
-## Análisis de Performance - Página Inicial
+### Qué se hace
 
-### Problemas Identificados
+Agregar lógica en `ResultScreen.tsx` para detectar typos comunes en el email al hacer blur, y mostrar una sugerencia "Quisiste decir X?" que el usuario puede aceptar con un click.
 
-| Métrica | Actual | Objetivo |
-|---------|--------|----------|
-| FCP | 2.4s | < 1.8s |
-| LCP | 4.9s | < 2.5s |
-| Performance Score | 79 | 90+ |
+### Cómo funciona
 
-### Problema Principal: LCP incorrecto
+1. Al hacer `onBlur` en el campo de email, se ejecuta la detección de typos
+2. Si se detecta un typo conocido, se muestra un chip debajo del input con la sugerencia
+3. El usuario clickea la sugerencia y el email se corrige automáticamente
+4. Si el usuario ignora la sugerencia y escribe otra cosa, la sugerencia desaparece
 
-Lighthouse detecta que el **LCP es el footer** ("Hecho con ❤️...") en vez del título principal. Esto indica que:
-1. El título H1 no se está pintando correctamente al inicio
-2. La fuente "Space Grotesk" está bloqueando el render del texto principal
+### Cambios
 
-### Causas Raíz
+**`src/components/decision/ResultScreen.tsx`**
 
-1. **Scripts de terceros bloquean el render**:
-   - Facebook Pixel: 137 KiB
-   - Google Tag Manager: 144 KiB
-   - Twitter Pixel: 17 KiB
-   - Total: ~300 KiB de JS ejecutándose antes del contenido
+1. Agregar estado `emailSuggestion` para la sugerencia activa
+2. Agregar función `detectEmailTypo(email)` con el diccionario completo de typos
+3. Modificar `handleEmailBlur` para llamar a `detectEmailTypo` antes de validar
+4. Agregar UI de sugerencia debajo del input (chip clickeable)
 
-2. **Fuentes sin fallback visual**:
-   - La fuente web tarda en cargar
-   - Mientras tanto el H1 es invisible (FOIT - Flash of Invisible Text)
+#### Diccionario de typos
 
-3. **CSS bundle completo bloqueando** (12 KiB):
-   - Se carga todo el CSS antes de pintar
+Dos niveles de detección:
+- **Dominio completo**: `gmial.com` -> `gmail.com`, `hotmial.com` -> `hotmail.com`, etc.
+- **TLD**: `.con` -> `.com`, `.co` -> `.com` (solo para dominios conocidos)
+- **Formato**: `gmail,com` -> `gmail.com`, `gmail..com` -> `gmail.com`, `gmailcom` -> `gmail.com`
 
----
+Se incluyen los 38 mappings proporcionados más variantes de formato (coma por punto, punto doble, falta de punto).
 
-### Plan de Optimización
+#### UI de sugerencia
 
-#### 1. Diferir scripts de analytics (Mayor impacto)
-Mover FB Pixel, Twitter Pixel y GA4 para cargar **después** del primer paint.
-
-**Archivo**: `index.html`
-
-Cambiar de scripts inline bloqueantes a carga diferida:
-```html
-<!-- Mover analytics al final del body con defer -->
-<script>
-  // Cargar analytics después de que la página sea interactiva
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      // Cargar FB, Twitter, GA4 aquí
-    }, 1000);
-  });
-</script>
+```
+[email input field]
+Quisiste decir nicolassaporiti12@gmail.com? [Sí, corregir]
 ```
 
-#### 2. Agregar font-display: swap
-Asegurar que el texto sea visible mientras carga la fuente.
+- Aparece como texto pequeño debajo del input con un link clickeable
+- Se oculta automáticamente al cambiar el email
+- Si el usuario acepta, se actualiza el email y se limpia la sugerencia
 
-**Archivo**: `index.html`
+### Detalle técnico
 
-Agregar `&display=swap` a la URL de Google Fonts (ya está pero verificar que funciona).
+La función `detectEmailTypo` extrae el dominio del email y lo busca en el diccionario. Para los casos de formato (`gmail,com`, `gmail..com`, `gmailcom`), se aplican reglas de normalización antes de buscar en el diccionario.
 
-**Archivo**: `src/index.css`
-
-Agregar fallback font explícito:
-```css
-body {
-  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-}
+```text
+Input: "user@gmial.com"
+         ↓
+Extract domain: "gmial.com"
+         ↓
+Lookup in DOMAIN_TYPOS: "gmail.com"
+         ↓
+Suggestion: "user@gmail.com"
 ```
 
-#### 3. Preload de fuente crítica
-Solo precargar el peso usado en la primera pantalla (700 bold para el H1).
+Para `mail,ru` se maneja como caso especial ya que el punto es un punto legítimo, no `.com`.
 
-**Archivo**: `index.html`
-
-```html
-<link rel="preload" as="font" type="font/woff2" crossorigin
-      href="https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb54C_k3HqUtEw.woff2" />
-```
-
-#### 4. Agregar CSS crítico para el H1
-Asegurar que el título sea visible inmediatamente.
-
-**Archivo**: `index.html` (en el style inline)
-
-```css
-.heading-display{font-size:2.25rem;font-weight:700;line-height:1}
-@media(min-width:640px){.heading-display{font-size:3rem}}
-```
-
----
-
-### Archivos a Modificar
-- `index.html` - Diferir analytics, preload fuente, CSS crítico
-
----
-
-### Resultado Esperado
-- LCP: 4.9s → ~2.5s (el H1 será visible inmediatamente)
-- FCP: 2.4s → ~1.5s (menos JS bloqueante)
-- Performance Score: 79 → 90+
-
----
-
-### Trade-offs
-| Cambio | Beneficio | Riesgo |
-|--------|-----------|--------|
-| Diferir analytics | Render más rápido | Puede perder 1-2% de eventos (usuarios que se van en <1s) |
-| Preload font | H1 visible antes | Un request extra inicial |
-
+### Archivos a modificar
+- `src/components/decision/ResultScreen.tsx` - Agregar detección y UI de sugerencia
