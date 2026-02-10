@@ -1,0 +1,1 @@
+ALTER TABLE public.records_3d ADD COLUMN context text;

@@ -47,12 +47,22 @@ interface Comparison {
   comment?: string;
 }
 
+// Context-to-question mapping (duplicated from src/types/decision.ts - edge functions can't import from src/)
+const contextQuestions: Record<string, string> = {
+  improve: '¿Qué querés mejorar primero?',
+  change: '¿Qué cambio buscás?',
+  compare: '¿Qué te hace dudar?',
+  burnout: '¿Qué te pesa hoy?',
+  check: '¿Algo que te haga ruido?',
+};
+
 interface SaveResultRequest {
   email: string;
   country?: string;
   optionName: string;
   scores: Scores;
   comment?: string;
+  context?: string;
   comparison?: Comparison;
   reminderPeriod?: '1m' | '3m';
   honeypot?: string; // Anti-bot field - should always be empty
@@ -115,12 +125,21 @@ function formatDate(dateStr: string): string {
 }
 
 // Build email content
+function formatComment(comment: string, context?: string): string {
+  const question = context ? contextQuestions[context] : null;
+  if (question) {
+    return `${question}\n"${comment}"`;
+  }
+  return `"${comment}"`;
+}
+
 function buildEmailContent(
   currentName: string,
   currentScores: Scores,
   currentComment: string | undefined,
   comparison: Comparison | null,
-  previousMeasurement: { dinero: number; desarrollo: number; diversion: number; created_at: string; comment?: string } | null
+  previousMeasurement: { dinero: number; desarrollo: number; diversion: number; created_at: string; comment?: string } | null,
+  context?: string
 ): string {
   let content = `Tu medicion de hoy:\n\n`;
 
@@ -130,7 +149,7 @@ function buildEmailContent(
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
     content += `Diversion: ${currentScores.diversion}\n`;
     if (currentComment) {
-      content += `"${currentComment}"\n`;
+      content += `${formatComment(currentComment, context)}\n`;
     }
     content += `\n`;
 
@@ -139,7 +158,7 @@ function buildEmailContent(
     content += `Desarrollo: ${comparison.desarrollo}\n`;
     content += `Diversion: ${comparison.diversion}\n`;
     if (comparison.comment) {
-      content += `"${comparison.comment}"\n`;
+      content += `${formatComment(comparison.comment, context)}\n`;
     }
     content += `\n`;
 
@@ -149,7 +168,7 @@ function buildEmailContent(
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
     content += `Diversion: ${currentScores.diversion}\n`;
     if (currentComment) {
-      content += `"${currentComment}"\n`;
+      content += `${formatComment(currentComment, context)}\n`;
     }
     content += `\n`;
 
@@ -173,7 +192,7 @@ function buildEmailContent(
     content += `Desarrollo: ${currentScores.desarrollo}\n`;
     content += `Diversion: ${currentScores.diversion}\n`;
     if (currentComment) {
-      content += `"${currentComment}"\n`;
+      content += `${formatComment(currentComment, context)}\n`;
     }
     content += `\n`;
 
@@ -413,6 +432,7 @@ const handler = async (req: Request): Promise<Response> => {
         diversion: body.scores.diversion,
         comment: sanitizedComment,
         comparison: sanitizedComparison,
+        context: body.context || null,
         reminder_period: body.reminderPeriod || null,
         reminder_date: reminderDate,
         utm_source: body.tracking.utm_source || null,
@@ -444,7 +464,8 @@ const handler = async (req: Request): Promise<Response> => {
       body.scores,
       sanitizedComment || undefined,
       sanitizedComparison,
-      previousMeasurement
+      previousMeasurement,
+      body.context
     );
 
     // Fire-and-forget: send email asynchronously without blocking the response
