@@ -1,63 +1,113 @@
 
 
-## Incluir la pregunta contextual en el email y en la pantalla de resultado
+## Auto-retry de reminders por inaccion
 
-### Resumen
+### Por que tiene sentido
 
-Agregar la pregunta que origino el comentario (ej: "¿Que queres mejorar primero?") como label arriba del comentario, tanto en la web como en el email.
+- 400 usuarios pidieron reminder, solo 7 volvieron hasta ahora
+- Los reminders ni siquiera se enviaron todavia (el primero vence el 26/feb)
+- Sin auto-retry, el 98% de esos reminders muere despues de un solo intento
+- Ya existen 7 usuarios con multiples reminders pendientes (mediciones duplicadas), confirmando que la dedup es necesaria
 
-### Cambios
+### Reglas de negocio
 
-#### 1. Frontend: pasar `userContext` al payload de guardado
+1. Se envia el reminder original (1m o 3m segun eligio el usuario)
+2. Si no hay "completion" (nueva medicion del mismo email), se agenda otro reminder 30 dias despues
+3. Maximo 3 intentos sin completion
+4. Despues del 3er intento sin respuesta: se frena (no baja frecuencia, para no molestar)
+5. Cualquier nueva medicion del usuario resetea el ciclo (la completion corta la cadena)
+6. Solo un reminder activo (pending) por email a la vez
 
-**Archivo**: `src/components/decision/ResultScreen.tsx`
+### Que cuenta como "completion"
 
-- `SaveSection` recibe `userContext` como nueva prop (viene del componente padre que ya lo tiene)
-- Agregar `context: userContext` al payload que se envia a `save-result` (linea ~257)
+Un nuevo registro en `records_3d` para ese email con `created_at` posterior al `created_at` del reminder original. Simple, sin tracking adicional de eventos.
 
-#### 2. Frontend: mostrar la pregunta en la pantalla de resultado
+### Dedup
 
-**Archivo**: `src/components/decision/ResultScreen.tsx`
+Antes de procesar, la query agrupa por `to_email` y toma solo el reminder mas reciente pendiente. Si hay varios (por mediciones multiples), se procesan en orden pero nunca se crean duplicados.
 
-- Importar `contextQuestions` desde `@/types/decision`
-- En el bloque single option (linea ~538), antes del blockquote del comentario, mostrar la pregunta como label:
-  ```
-  ¿Que queres mejorar primero?
-  "poco sueldo"
-  ```
-- En el bloque comparison (linea ~557), idem para cada comentario con su pregunta
+### Cambios a implementar
 
-#### 3. Backend: recibir `context` y usarlo en el email
+#### 1. Migracion: agregar columna `reminder_attempt`
 
-**Archivo**: `supabase/functions/save-result/index.ts`
+```sql
+ALTER TABLE outbound_emails 
+  ADD COLUMN reminder_attempt integer NOT NULL DEFAULT 1;
+```
 
-- Agregar `context?: string` al interface `SaveResultRequest`
-- Definir mapeo duplicado de contexto a pregunta (edge functions no pueden importar de `src/`):
-  ```typescript
-  const contextQuestions: Record<string, string> = {
-    improve: '¿Qué querés mejorar primero?',
-    change: '¿Qué cambio buscás?',
-    compare: '¿Qué te hace dudar?',
-    burnout: '¿Qué te pesa hoy?',
-    check: '¿Algo que te haga ruido?',
-  };
-  ```
-- En `buildEmailContent`, recibir `context` como parametro. Cuando hay comentario, mostrar la pregunta como label:
-  ```
-  ¿Que queres mejorar primero?
-  "poco sueldo"
-  ```
-- Pasar `context` desde el handler a `buildEmailContent`
+Los 409 reminders existentes quedan con `reminder_attempt = 1` automaticamente.
 
-#### 4. Base de datos: guardar el contexto
+#### 2. Modificar `send-reminders/index.ts`
 
-- Migracion SQL: agregar columna `context` (text, nullable) a `records_3d`
-- En el insert del handler, incluir `context: body.context || null`
-- Util para analytics y para los emails de recordatorio futuros
+Logica nueva despues de enviar exitosamente un reminder:
 
-### Archivos a modificar
+```
+1. Buscar si el usuario "completo" (nuevo record en records_3d 
+   con created_at > fecha del record original)
+2. Si NO completo Y attempt < 3:
+   - Verificar que no exista otro reminder pending para ese email
+   - Crear nuevo outbound_email con:
+     - scheduled_for = now + 30 dias
+     - reminder_attempt = current + 1
+     - mismo record_id (para mantener referencia al original)
+3. Si completo: no hacer nada (ciclo terminado)
+4. Si attempt >= 3: no hacer nada (maximo alcanzado)
+```
 
-- `src/components/decision/ResultScreen.tsx` -- pasar context al payload + mostrar pregunta en UI
-- `supabase/functions/save-result/index.ts` -- recibir context, incluir pregunta en email, guardar en DB
-- SQL migration: agregar columna `context` a `records_3d`
+La query principal tambien cambia para deduplicar: si un email tiene multiples reminders pending, procesa solo el de `scheduled_for` mas antiguo.
+
+#### 3. Actualizar contenido del email segun intento
+
+- Intento 1: "Hace 1 mes mediste tu 3D:" (el actual)
+- Intento 2: "Hace 2 meses mediste tu 3D:" (ajustar periodo)
+- Intento 3: "Hace 3 meses mediste tu 3D:" (ultimo empujon)
+
+El calculo del tiempo se hace con la diferencia entre `now()` y `records_3d.created_at` del record original, redondeado a meses.
+
+### Detalles tecnicos
+
+**Query principal con dedup:**
+```sql
+SELECT DISTINCT ON (to_email) 
+  id, record_id, to_email, reminder_attempt
+FROM outbound_emails
+WHERE email_type = 'reminder'
+  AND status = 'pending'
+  AND scheduled_for <= now()
+ORDER BY to_email, scheduled_for ASC
+LIMIT 20
+```
+
+**Check de completion:**
+```sql
+SELECT id FROM records_3d
+WHERE email = $to_email
+  AND created_at > (
+    SELECT created_at FROM records_3d WHERE id = $record_id
+  )
+LIMIT 1
+```
+
+**Prevencion de duplicados al crear follow-up:**
+```sql
+SELECT id FROM outbound_emails
+WHERE to_email = $email
+  AND email_type = 'reminder'
+  AND status = 'pending'
+LIMIT 1
+```
+
+Si existe, no crea otro.
+
+### Archivos afectados
+
+- **Migracion SQL**: agregar `reminder_attempt` a `outbound_emails`
+- **Modificar**: `supabase/functions/send-reminders/index.ts` (dedup, auto-retry, periodo dinamico)
+
+### Lo que NO cambia
+
+- `save-result` sigue creando el primer reminder igual que hoy
+- La UI de seleccion de periodo (1m/3m) sigue igual
+- El formato basico del email se mantiene frio y transaccional
+- No se agregan tablas nuevas ni campos de tracking extra
 
