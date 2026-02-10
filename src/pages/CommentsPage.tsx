@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { List, LayoutGrid, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +26,10 @@ interface Comment {
 type ViewMode = "feed" | "mosaic";
 
 const CommentsPage = () => {
-  const [view, setView] = useState<ViewMode>("feed");
+  const [searchParams] = useSearchParams();
+  const [view, setView] = useState<ViewMode>(
+    searchParams.get("vista") === "mosaico" ? "mosaic" : "feed"
+  );
   const ctaPosition = useMemo(() => Math.floor(Math.random() * 13) + 3, []);
 
   const { data: comments, isLoading, isError, refetch } = useQuery({
@@ -57,7 +60,7 @@ const CommentsPage = () => {
           {/* Title + CTA */}
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-foreground">
-              Pared de la Empatía
+              Muro de los Lamentos
             </h1>
             <Link 
               to="/?utm_source=comentarios&utm_medium=header"

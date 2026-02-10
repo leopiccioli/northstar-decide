@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getCountryName, getCountryFlag } from '@/lib/countries';
@@ -23,7 +23,10 @@ function formatValue(value: number): string {
 }
 
 export default function StatsPage() {
-  const [period, setPeriod] = useState<Period>('all');
+  const [searchParams] = useSearchParams();
+  const [period, setPeriod] = useState<Period>(
+    searchParams.get('periodo') === 'trimestre' ? 'quarter' : 'all'
+  );
   const [stats, setStats] = useState<CountryFullStat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
