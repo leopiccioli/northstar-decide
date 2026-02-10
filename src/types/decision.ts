@@ -28,7 +28,7 @@ export interface DecisionState {
 export const contextQuestions: Record<UserContext, string | null> = {
   improve: '¿Qué querés mejorar primero?',
   change: '¿Qué cambio buscás?',
-  compare: null,  // Solo nombres de opciones
+  compare: '¿Qué te hace dudar?',
   burnout: '¿Qué te pesa hoy?',
-  check: null,    // Sin comentarios
+  check: '¿Algo que te haga ruido?',
 };
