@@ -49,6 +49,7 @@ export type Database = {
           id: string
           provider_id: string | null
           record_id: string | null
+          reminder_attempt: number
           scheduled_for: string | null
           sent_at: string | null
           status: string
@@ -62,6 +63,7 @@ export type Database = {
           id?: string
           provider_id?: string | null
           record_id?: string | null
+          reminder_attempt?: number
           scheduled_for?: string | null
           sent_at?: string | null
           status?: string
@@ -75,6 +77,7 @@ export type Database = {
           id?: string
           provider_id?: string | null
           record_id?: string | null
+          reminder_attempt?: number
           scheduled_for?: string | null
           sent_at?: string | null
           status?: string

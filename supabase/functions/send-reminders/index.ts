@@ -8,6 +8,11 @@ const SITE_CONFIG = {
   emailReplyTo: 'leopiccioli@gmail.com',
 } as const;
 
+const MAX_ATTEMPTS = 3;
+const FOLLOW_UP_DAYS = 30;
+const BATCH_SIZE = 20;
+const DELAY_MS = 3000;
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
@@ -24,9 +29,6 @@ const contextQuestions: Record<string, string> = {
   check: '¿Algo que te hacía ruido?',
 };
 
-const BATCH_SIZE = 20;
-const DELAY_MS = 3000;
-
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -35,7 +37,6 @@ function buildReminderLink(email: string, record: any): string {
   const params = new URLSearchParams();
   params.set('email', email);
 
-  // Preserve original UTMs for attribution
   if (record.utm_source) params.set('utm_source', record.utm_source);
   if (record.utm_medium) params.set('utm_medium', record.utm_medium);
   if (record.utm_campaign) params.set('utm_campaign', record.utm_campaign);
@@ -55,8 +56,15 @@ function formatComment(comment: string, context?: string | null): string {
   return `"${comment}"`;
 }
 
-function buildReminderContent(record: any): string {
-  const periodLabel = record.reminder_period === '1m' ? '1 mes' : '3 meses';
+function computeMonthsAgo(recordCreatedAt: string): number {
+  const created = new Date(recordCreatedAt);
+  const now = new Date();
+  const months = (now.getFullYear() - created.getFullYear()) * 12 + (now.getMonth() - created.getMonth());
+  return Math.max(1, months);
+}
+
+function buildReminderContent(record: any, monthsAgo: number): string {
+  const periodLabel = monthsAgo === 1 ? '1 mes' : `${monthsAgo} meses`;
   const link = buildReminderLink(record.email, record);
 
   let content = `Hace ${periodLabel} mediste tu 3D:\n\n`;
@@ -96,38 +104,56 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Fetch pending reminders that are due
+    // Fetch pending reminders with dedup: one per email, oldest first
     const { data: pendingEmails, error: fetchErr } = await supabase
-      .from('outbound_emails')
-      .select('id, record_id, to_email')
-      .eq('email_type', 'reminder')
-      .eq('status', 'pending')
-      .lte('scheduled_for', new Date().toISOString())
-      .order('scheduled_for', { ascending: true })
-      .limit(BATCH_SIZE);
+      .rpc('get_pending_reminders_deduped', { batch_limit: BATCH_SIZE });
 
+    // Fallback: if RPC doesn't exist yet, use direct query
+    let reminders = pendingEmails;
     if (fetchErr) {
-      console.error('Fetch error:', fetchErr);
-      return new Response(JSON.stringify({ error: fetchErr.message }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      console.log('RPC not found, using direct query with dedup');
+      const { data, error } = await supabase
+        .from('outbound_emails')
+        .select('id, record_id, to_email, reminder_attempt')
+        .eq('email_type', 'reminder')
+        .eq('status', 'pending')
+        .lte('scheduled_for', new Date().toISOString())
+        .order('scheduled_for', { ascending: true })
+        .limit(BATCH_SIZE);
+
+      if (error) {
+        console.error('Fetch error:', error);
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Manual dedup: keep first (oldest) per email
+      const seen = new Set<string>();
+      reminders = (data || []).filter((r: any) => {
+        const email = r.to_email.toLowerCase();
+        if (seen.has(email)) return false;
+        seen.add(email);
+        return true;
       });
     }
 
-    if (!pendingEmails?.length) {
-      return new Response(JSON.stringify({ sent: 0, failed: 0, message: 'No pending reminders' }), {
+    if (!reminders?.length) {
+      return new Response(JSON.stringify({ sent: 0, failed: 0, scheduled: 0, message: 'No pending reminders' }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     let sent = 0;
     let failed = 0;
+    let scheduled = 0;
 
-    for (const pending of pendingEmails) {
+    for (const pending of reminders) {
       try {
-        // Fetch the original record for scores, comment, context, UTMs
+        // Fetch the original record
         const { data: record, error: recErr } = await supabase
           .from('records_3d')
-          .select('email, option_name, dinero, desarrollo, diversion, comment, comparison, context, reminder_period, utm_source, utm_medium, utm_campaign, utm_content, utm_term, gclid, fbclid')
+          .select('email, option_name, dinero, desarrollo, diversion, comment, comparison, context, reminder_period, created_at, utm_source, utm_medium, utm_campaign, utm_content, utm_term, gclid, fbclid')
           .eq('id', pending.record_id)
           .single();
 
@@ -141,7 +167,28 @@ const handler = async (req: Request): Promise<Response> => {
           continue;
         }
 
-        const emailContent = buildReminderContent(record);
+        // Check completion: any newer record from this email
+        const { data: completion } = await supabase
+          .from('records_3d')
+          .select('id')
+          .eq('email', record.email)
+          .gt('created_at', record.created_at)
+          .limit(1);
+
+        if (completion && completion.length > 0) {
+          // User already completed — mark as sent (no email needed), don't schedule follow-up
+          console.log(`Skipping ${pending.to_email}: already completed`);
+          await supabase.from('outbound_emails').update({
+            status: 'sent',
+            sent_at: new Date().toISOString(),
+            error_message: 'Skipped: user completed',
+          }).eq('id', pending.id);
+          continue;
+        }
+
+        // Compute dynamic period
+        const monthsAgo = computeMonthsAgo(record.created_at);
+        const emailContent = buildReminderContent(record, monthsAgo);
 
         const emailResponse = await resend.emails.send({
           from: SITE_CONFIG.emailFrom,
@@ -158,10 +205,45 @@ const handler = async (req: Request): Promise<Response> => {
         }).eq('id', pending.id);
 
         sent++;
-        console.log(`Sent reminder to ${pending.to_email}`);
+        console.log(`Sent reminder #${pending.reminder_attempt} to ${pending.to_email}`);
 
-        // Delay between emails to avoid rate limits
-        if (sent < pendingEmails.length) {
+        // Schedule follow-up if under max attempts
+        const currentAttempt = pending.reminder_attempt || 1;
+        if (currentAttempt < MAX_ATTEMPTS) {
+          // Check no other pending reminder exists for this email
+          const { data: existingPending } = await supabase
+            .from('outbound_emails')
+            .select('id')
+            .eq('to_email', pending.to_email)
+            .eq('email_type', 'reminder')
+            .eq('status', 'pending')
+            .limit(1);
+
+          if (!existingPending || existingPending.length === 0) {
+            const followUpDate = new Date();
+            followUpDate.setDate(followUpDate.getDate() + FOLLOW_UP_DAYS);
+
+            const { error: insertErr } = await supabase.from('outbound_emails').insert({
+              to_email: pending.to_email,
+              email_type: 'reminder',
+              subject: 'Recordatorio: Medí tu 3D',
+              record_id: pending.record_id,
+              scheduled_for: followUpDate.toISOString(),
+              reminder_attempt: currentAttempt + 1,
+              status: 'pending',
+            });
+
+            if (insertErr) {
+              console.error(`Failed to schedule follow-up for ${pending.to_email}:`, insertErr);
+            } else {
+              scheduled++;
+              console.log(`Scheduled follow-up #${currentAttempt + 1} for ${pending.to_email} on ${followUpDate.toISOString()}`);
+            }
+          }
+        }
+
+        // Delay between emails
+        if (sent < reminders.length) {
           await sleep(DELAY_MS);
         }
       } catch (err: any) {
@@ -182,7 +264,7 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('status', 'pending')
       .lte('scheduled_for', new Date().toISOString());
 
-    return new Response(JSON.stringify({ sent, failed, remaining: count || 0 }), {
+    return new Response(JSON.stringify({ sent, failed, scheduled, remaining: count || 0 }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {
