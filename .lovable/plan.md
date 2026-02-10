@@ -1,46 +1,37 @@
 
 
-## Atribución de reminder: saber qué intento convirtió
+## Probar reminder ahora para lyotard_98@yahoo.com
 
-### Qué pasa hoy
+### Situación actual
 
-El link del reminder ya lleva UTMs del registro original, pero no indica **qué número de intento** trajo al usuario de vuelta. Si alguien vuelve después del reminder #2, no hay forma de distinguirlo del #1.
+- Record: `d20633cf` (creado hoy, "Situación actual", periodo 1m)
+- Reminder pendiente: `bd094c8c`, attempt #1, programado para **10 de marzo 2026**
+- Estado: `pending`
 
-### Solución
+### Pasos
 
-Agregar `utm_content=reminder_N` al link del email de reminder (donde N es 1, 2 o 3). Ese valor ya se guarda automáticamente en `records_3d.utm_content` cuando el usuario completa una nueva medición.
+1. **Adelantar el scheduled_for** del reminder `bd094c8c` a `now()` con un UPDATE directo en la tabla `outbound_emails`
+2. **Ejecutar `send-reminders`** via HTTP para que procese el reminder
+3. **Verificar** que el email llega a lyotard_98@yahoo.com con el link conteniendo `utm_content=reminder_1`
 
-### Cambios
-
-**1 solo archivo**: `supabase/functions/send-reminders/index.ts`
-
-En la función `buildReminderLink`, recibir el `reminder_attempt` y setearlo como UTM content:
-
-```
-params.set('utm_content', `reminder_${attempt}`);
-```
-
-Esto sobreescribe el `utm_content` original del primer registro (que típicamente es null o un valor de campaña viejo). El `utm_source` y `utm_medium` originales se mantienen para no perder la atribución de canal.
-
-### Qué ganás
-
-Con una query simple podés saber exactamente qué intento funcionó:
+### Detalle tecnico
 
 ```sql
-SELECT utm_content, COUNT(*) 
-FROM records_3d 
-WHERE utm_content LIKE 'reminder_%' 
-GROUP BY utm_content;
+UPDATE outbound_emails 
+SET scheduled_for = now() 
+WHERE id = 'bd094c8c-ea00-4e3d-8100-44a6c50852c5';
 ```
 
-Resultado ejemplo:
-- `reminder_1`: 12 completados
-- `reminder_2`: 5 completados  
-- `reminder_3`: 2 completados
+Luego invocar la edge function `send-reminders` con un POST. La funcion va a:
+- Encontrar el reminder con `scheduled_for <= now()`
+- Buscar el record original para armar el contenido
+- Verificar que no haya medicion mas nueva (no la hay, es la ultima)
+- Enviar el email via Resend con `utm_content=reminder_1` en el link
+- Programar el follow-up #2 para 30 dias despues
 
-### Lo que NO cambia
+### Que verificar en el email recibido
 
-- No se agregan columnas nuevas
-- No se modifica `save-result` (ya guarda `utm_content` automáticamente)
-- No se modifica la UI
-- No se necesita migración de base de datos
+- El link contiene `utm_content=reminder_1`
+- Los valores de Dinero/Desarrollo/Diversion coinciden con el record
+- El periodo dice "Hace 1 mes" (o similar)
+
