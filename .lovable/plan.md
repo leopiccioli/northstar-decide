@@ -1,40 +1,26 @@
 
 
-## Cambios en Comentarios y Estadísticas
+## Agregar preguntas para todos los contextos
 
-### 1. Renombrar "Pared de la Empatia" a "Muro de los Lamentos"
+### Cambio
 
-Cambio de titulo en `src/pages/CommentsPage.tsx`, linea 60.
+Actualizar el mapeo de preguntas en `src/types/decision.ts` para que todos los contextos tengan una pregunta opcional:
 
-### 2. Parametro URL para vista inicial en /comentarios
+```
+improve: '¿Qué querés mejorar primero?'     (sin cambio)
+change:  '¿Qué cambio buscás?'              (sin cambio)
+compare: '¿Qué te hace dudar?'              (NUEVO)
+burnout: '¿Qué te pesa hoy?'               (sin cambio)
+check:   '¿Algo que te haga ruido?'         (NUEVO)
+```
 
-Leer el parametro `?vista=` de la URL para inicializar el estado de vista:
-- `/comentarios?vista=mosaico` abre directamente en mosaico
-- `/comentarios?vista=feed` o sin parametro abre en feed (default actual)
+### Impacto
 
-**Archivo**: `src/pages/CommentsPage.tsx`
-- Importar `useSearchParams` de react-router-dom
-- Leer `searchParams.get('vista')` para inicializar `view`:
-  - `"mosaico"` -> `"mosaic"`
-  - cualquier otro valor -> `"feed"`
+- **InputScreen** ya usa `contextQuestions[context]` y muestra el campo cuando el valor no es `null`. No necesita cambios: al dejar de ser `null`, el campo aparece automaticamente.
+- **save-result** ya recibe y guarda el `comment`. No necesita cambios.
+- **Emails**: cuando se implemente el plan pendiente (incluir la pregunta en el email), estas dos nuevas preguntas se incluiran automaticamente.
 
-### 3. Parametro URL para periodo en /por-pais
+### Archivo a modificar
 
-Leer el parametro `?periodo=` de la URL para inicializar el periodo:
-- `/por-pais?periodo=trimestre` abre con "Ultimo trimestre"
-- `/por-pais` sin parametro sigue abriendo en "Todo" (default actual)
-
-**Archivo**: `src/pages/StatsPage.tsx`
-- Importar `useSearchParams` de react-router-dom
-- Leer `searchParams.get('periodo')` para inicializar `period`:
-  - `"trimestre"` -> `"quarter"`
-  - cualquier otro valor -> `"all"`
-
-### Detalle tecnico
-
-Ambos cambios usan `useSearchParams` solo para leer el valor inicial. El estado local sigue manejando los cambios del usuario despues de la carga. No se sincroniza la URL al cambiar el toggle/filtro (es solo para el deep link de entrada).
-
-### Archivos a modificar
-- `src/pages/CommentsPage.tsx` -- titulo + parametro `?vista=`
-- `src/pages/StatsPage.tsx` -- parametro `?periodo=`
+- `src/types/decision.ts` -- cambiar `null` a los textos nuevos en `compare` y `check`
 
