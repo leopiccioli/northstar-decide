@@ -1,26 +1,63 @@
 
 
-## Agregar preguntas para todos los contextos
+## Incluir la pregunta contextual en el email y en la pantalla de resultado
 
-### Cambio
+### Resumen
 
-Actualizar el mapeo de preguntas en `src/types/decision.ts` para que todos los contextos tengan una pregunta opcional:
+Agregar la pregunta que origino el comentario (ej: "¿Que queres mejorar primero?") como label arriba del comentario, tanto en la web como en el email.
 
-```
-improve: '¿Qué querés mejorar primero?'     (sin cambio)
-change:  '¿Qué cambio buscás?'              (sin cambio)
-compare: '¿Qué te hace dudar?'              (NUEVO)
-burnout: '¿Qué te pesa hoy?'               (sin cambio)
-check:   '¿Algo que te haga ruido?'         (NUEVO)
-```
+### Cambios
 
-### Impacto
+#### 1. Frontend: pasar `userContext` al payload de guardado
 
-- **InputScreen** ya usa `contextQuestions[context]` y muestra el campo cuando el valor no es `null`. No necesita cambios: al dejar de ser `null`, el campo aparece automaticamente.
-- **save-result** ya recibe y guarda el `comment`. No necesita cambios.
-- **Emails**: cuando se implemente el plan pendiente (incluir la pregunta en el email), estas dos nuevas preguntas se incluiran automaticamente.
+**Archivo**: `src/components/decision/ResultScreen.tsx`
 
-### Archivo a modificar
+- `SaveSection` recibe `userContext` como nueva prop (viene del componente padre que ya lo tiene)
+- Agregar `context: userContext` al payload que se envia a `save-result` (linea ~257)
 
-- `src/types/decision.ts` -- cambiar `null` a los textos nuevos en `compare` y `check`
+#### 2. Frontend: mostrar la pregunta en la pantalla de resultado
+
+**Archivo**: `src/components/decision/ResultScreen.tsx`
+
+- Importar `contextQuestions` desde `@/types/decision`
+- En el bloque single option (linea ~538), antes del blockquote del comentario, mostrar la pregunta como label:
+  ```
+  ¿Que queres mejorar primero?
+  "poco sueldo"
+  ```
+- En el bloque comparison (linea ~557), idem para cada comentario con su pregunta
+
+#### 3. Backend: recibir `context` y usarlo en el email
+
+**Archivo**: `supabase/functions/save-result/index.ts`
+
+- Agregar `context?: string` al interface `SaveResultRequest`
+- Definir mapeo duplicado de contexto a pregunta (edge functions no pueden importar de `src/`):
+  ```typescript
+  const contextQuestions: Record<string, string> = {
+    improve: '¿Qué querés mejorar primero?',
+    change: '¿Qué cambio buscás?',
+    compare: '¿Qué te hace dudar?',
+    burnout: '¿Qué te pesa hoy?',
+    check: '¿Algo que te haga ruido?',
+  };
+  ```
+- En `buildEmailContent`, recibir `context` como parametro. Cuando hay comentario, mostrar la pregunta como label:
+  ```
+  ¿Que queres mejorar primero?
+  "poco sueldo"
+  ```
+- Pasar `context` desde el handler a `buildEmailContent`
+
+#### 4. Base de datos: guardar el contexto
+
+- Migracion SQL: agregar columna `context` (text, nullable) a `records_3d`
+- En el insert del handler, incluir `context: body.context || null`
+- Util para analytics y para los emails de recordatorio futuros
+
+### Archivos a modificar
+
+- `src/components/decision/ResultScreen.tsx` -- pasar context al payload + mostrar pregunta en UI
+- `supabase/functions/save-result/index.ts` -- recibir context, incluir pregunta en email, guardar en DB
+- SQL migration: agregar columna `context` a `records_3d`
 
