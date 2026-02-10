@@ -1,61 +1,40 @@
 
-## Detección de typos en email (flujo)
 
-### Qué se hace
+## Cambios en Comentarios y Estadísticas
 
-Agregar lógica en `ResultScreen.tsx` para detectar typos comunes en el email al hacer blur, y mostrar una sugerencia "Quisiste decir X?" que el usuario puede aceptar con un click.
+### 1. Renombrar "Pared de la Empatia" a "Muro de los Lamentos"
 
-### Cómo funciona
+Cambio de titulo en `src/pages/CommentsPage.tsx`, linea 60.
 
-1. Al hacer `onBlur` en el campo de email, se ejecuta la detección de typos
-2. Si se detecta un typo conocido, se muestra un chip debajo del input con la sugerencia
-3. El usuario clickea la sugerencia y el email se corrige automáticamente
-4. Si el usuario ignora la sugerencia y escribe otra cosa, la sugerencia desaparece
+### 2. Parametro URL para vista inicial en /comentarios
 
-### Cambios
+Leer el parametro `?vista=` de la URL para inicializar el estado de vista:
+- `/comentarios?vista=mosaico` abre directamente en mosaico
+- `/comentarios?vista=feed` o sin parametro abre en feed (default actual)
 
-**`src/components/decision/ResultScreen.tsx`**
+**Archivo**: `src/pages/CommentsPage.tsx`
+- Importar `useSearchParams` de react-router-dom
+- Leer `searchParams.get('vista')` para inicializar `view`:
+  - `"mosaico"` -> `"mosaic"`
+  - cualquier otro valor -> `"feed"`
 
-1. Agregar estado `emailSuggestion` para la sugerencia activa
-2. Agregar función `detectEmailTypo(email)` con el diccionario completo de typos
-3. Modificar `handleEmailBlur` para llamar a `detectEmailTypo` antes de validar
-4. Agregar UI de sugerencia debajo del input (chip clickeable)
+### 3. Parametro URL para periodo en /por-pais
 
-#### Diccionario de typos
+Leer el parametro `?periodo=` de la URL para inicializar el periodo:
+- `/por-pais?periodo=trimestre` abre con "Ultimo trimestre"
+- `/por-pais` sin parametro sigue abriendo en "Todo" (default actual)
 
-Dos niveles de detección:
-- **Dominio completo**: `gmial.com` -> `gmail.com`, `hotmial.com` -> `hotmail.com`, etc.
-- **TLD**: `.con` -> `.com`, `.co` -> `.com` (solo para dominios conocidos)
-- **Formato**: `gmail,com` -> `gmail.com`, `gmail..com` -> `gmail.com`, `gmailcom` -> `gmail.com`
+**Archivo**: `src/pages/StatsPage.tsx`
+- Importar `useSearchParams` de react-router-dom
+- Leer `searchParams.get('periodo')` para inicializar `period`:
+  - `"trimestre"` -> `"quarter"`
+  - cualquier otro valor -> `"all"`
 
-Se incluyen los 38 mappings proporcionados más variantes de formato (coma por punto, punto doble, falta de punto).
+### Detalle tecnico
 
-#### UI de sugerencia
-
-```
-[email input field]
-Quisiste decir nicolassaporiti12@gmail.com? [Sí, corregir]
-```
-
-- Aparece como texto pequeño debajo del input con un link clickeable
-- Se oculta automáticamente al cambiar el email
-- Si el usuario acepta, se actualiza el email y se limpia la sugerencia
-
-### Detalle técnico
-
-La función `detectEmailTypo` extrae el dominio del email y lo busca en el diccionario. Para los casos de formato (`gmail,com`, `gmail..com`, `gmailcom`), se aplican reglas de normalización antes de buscar en el diccionario.
-
-```text
-Input: "user@gmial.com"
-         ↓
-Extract domain: "gmial.com"
-         ↓
-Lookup in DOMAIN_TYPOS: "gmail.com"
-         ↓
-Suggestion: "user@gmail.com"
-```
-
-Para `mail,ru` se maneja como caso especial ya que el punto es un punto legítimo, no `.com`.
+Ambos cambios usan `useSearchParams` solo para leer el valor inicial. El estado local sigue manejando los cambios del usuario despues de la carga. No se sincroniza la URL al cambiar el toggle/filtro (es solo para el deep link de entrada).
 
 ### Archivos a modificar
-- `src/components/decision/ResultScreen.tsx` - Agregar detección y UI de sugerencia
+- `src/pages/CommentsPage.tsx` -- titulo + parametro `?vista=`
+- `src/pages/StatsPage.tsx` -- parametro `?periodo=`
+
