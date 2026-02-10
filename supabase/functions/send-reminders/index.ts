@@ -33,14 +33,14 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function buildReminderLink(email: string, record: any): string {
+function buildReminderLink(email: string, record: any, attempt: number): string {
   const params = new URLSearchParams();
   params.set('email', email);
 
   if (record.utm_source) params.set('utm_source', record.utm_source);
   if (record.utm_medium) params.set('utm_medium', record.utm_medium);
   if (record.utm_campaign) params.set('utm_campaign', record.utm_campaign);
-  if (record.utm_content) params.set('utm_content', record.utm_content);
+  params.set('utm_content', `reminder_${attempt}`);
   if (record.utm_term) params.set('utm_term', record.utm_term);
   if (record.gclid) params.set('gclid', record.gclid);
   if (record.fbclid) params.set('fbclid', record.fbclid);
@@ -63,9 +63,9 @@ function computeMonthsAgo(recordCreatedAt: string): number {
   return Math.max(1, months);
 }
 
-function buildReminderContent(record: any, monthsAgo: number): string {
+function buildReminderContent(record: any, monthsAgo: number, attempt: number): string {
   const periodLabel = monthsAgo === 1 ? '1 mes' : `${monthsAgo} meses`;
-  const link = buildReminderLink(record.email, record);
+  const link = buildReminderLink(record.email, record, attempt);
 
   let content = `Hace ${periodLabel} mediste tu 3D:\n\n`;
 
@@ -188,7 +188,8 @@ const handler = async (req: Request): Promise<Response> => {
 
         // Compute dynamic period
         const monthsAgo = computeMonthsAgo(record.created_at);
-        const emailContent = buildReminderContent(record, monthsAgo);
+        const currentAttempt = pending.reminder_attempt || 1;
+        const emailContent = buildReminderContent(record, monthsAgo, currentAttempt);
 
         const emailResponse = await resend.emails.send({
           from: SITE_CONFIG.emailFrom,
@@ -208,7 +209,6 @@ const handler = async (req: Request): Promise<Response> => {
         console.log(`Sent reminder #${pending.reminder_attempt} to ${pending.to_email}`);
 
         // Schedule follow-up if under max attempts
-        const currentAttempt = pending.reminder_attempt || 1;
         if (currentAttempt < MAX_ATTEMPTS) {
           // Check no other pending reminder exists for this email
           const { data: existingPending } = await supabase
