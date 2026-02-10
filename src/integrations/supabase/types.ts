@@ -95,6 +95,7 @@ export type Database = {
         Row: {
           comment: string | null
           comparison: Json | null
+          context: string | null
           country: string | null
           country_raw: string | null
           created_at: string | null
@@ -121,6 +122,7 @@ export type Database = {
         Insert: {
           comment?: string | null
           comparison?: Json | null
+          context?: string | null
           country?: string | null
           country_raw?: string | null
           created_at?: string | null
@@ -147,6 +149,7 @@ export type Database = {
         Update: {
           comment?: string | null
           comparison?: Json | null
+          context?: string | null
           country?: string | null
           country_raw?: string | null
           created_at?: string | null

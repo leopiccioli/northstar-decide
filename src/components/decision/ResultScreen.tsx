@@ -1,4 +1,4 @@
-import { Option, UserContext } from '@/types/decision';
+import { Option, UserContext, contextQuestions } from '@/types/decision';
 import { useState, lazy, Suspense } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
@@ -194,11 +194,13 @@ function generateOptimisticId(): string {
 function SaveSection({ 
   currentOption, 
   comparisonOption,
+  userContext,
   onSaveSuccess,
   onOptimisticSave,
 }: { 
   currentOption: Option; 
   comparisonOption: Option | null;
+  userContext: UserContext;
   onSaveSuccess: (recordId: string, email: string) => void;
   onOptimisticSave: (email: string) => void;
 }) {
@@ -260,6 +262,7 @@ function SaveSection({
       optionName: currentOption.name,
       scores: currentOption.scores,
       comment: currentOption.comment,
+      context: userContext,
       comparison: comparisonOption ? {
         name: comparisonOption.name,
         dinero: comparisonOption.scores.dinero,
@@ -537,6 +540,9 @@ export default function ResultScreen({
 
             {currentOption.comment && (
               <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                {contextQuestions[userContext] && (
+                  <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
+                )}
                 "{currentOption.comment}"
               </blockquote>
             )}
@@ -558,11 +564,17 @@ export default function ResultScreen({
               <div className="space-y-3">
                 {currentOption.comment && (
                   <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                    {contextQuestions[userContext] && (
+                      <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
+                    )}
                     <span className="font-medium not-italic">{currentOption.name}:</span> "{currentOption.comment}"
                   </blockquote>
                 )}
                 {comparisonOption.comment && (
                   <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                    {contextQuestions[userContext] && (
+                      <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
+                    )}
                     <span className="font-medium not-italic">{comparisonOption.name}:</span> "{comparisonOption.comment}"
                   </blockquote>
                 )}
@@ -585,6 +597,7 @@ export default function ResultScreen({
             <SaveSection 
               currentOption={currentOption} 
               comparisonOption={comparisonOption}
+              userContext={userContext}
               onSaveSuccess={handleSaveSuccess}
               onOptimisticSave={handleOptimisticSave}
             />
