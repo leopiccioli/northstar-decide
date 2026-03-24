@@ -195,6 +195,28 @@ export type Database = {
           record_count: number
         }[]
       }
+      get_public_comments: {
+        Args: never
+        Returns: {
+          comment: string
+          created_at: string
+          desarrollo: number
+          dinero: number
+          diversion: number
+          id: string
+        }[]
+      }
+      get_public_result: {
+        Args: { result_id: string }
+        Returns: {
+          comment: string
+          comparison: Json
+          desarrollo: number
+          dinero: number
+          diversion: number
+          option_name: string
+        }[]
+      }
       normalize_country: { Args: { input: string }; Returns: string }
       refresh_country_stats: { Args: never; Returns: undefined }
     }

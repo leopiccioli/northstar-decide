@@ -35,9 +35,9 @@ const CommentsPage = () => {
   const { data: comments, isLoading, isError, refetch } = useQuery({
     queryKey: ["comments"],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("get-comments");
+      const { data, error } = await supabase.rpc("get_public_comments");
       if (error) throw error;
-      return data.comments as Comment[];
+      return (data ?? []) as Comment[];
     },
     retry: 3,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
