@@ -3,8 +3,6 @@ project_id = "bcokciysbyuaeodnsxas"
 [functions.save-result]
 verify_jwt = false
 
-[functions.get-result]
-verify_jwt = false
 
 [functions.import-legacy-csv]
 verify_jwt = false
@@ -12,10 +10,10 @@ verify_jwt = false
 [functions.send-legacy-notification]
 verify_jwt = false
 
-[functions.get-country-stats]
+[functions.resend-measurement]
 verify_jwt = false
 
-[functions.get-comments]
+[functions.send-reminders]
 verify_jwt = false
 
 [functions.resend-measurement]
