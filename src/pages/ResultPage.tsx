@@ -117,16 +117,31 @@ export default function ResultPage() {
 
   const loadResult = async () => {
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('get-result', {
-        body: { id },
+      const { data, error: queryError } = await supabase.rpc('get_public_result', {
+        result_id: id,
       });
 
-      if (fnError || !data?.success) {
-        setError(data?.error || 'Resultado no encontrado');
+      if (queryError) {
+        setError('Error al buscar resultado');
         return;
       }
 
-      setResult(data.result);
+      if (!data || data.length === 0) {
+        setError('Resultado no encontrado');
+        return;
+      }
+
+      const row = data[0];
+      setResult({
+        optionName: row.option_name,
+        scores: {
+          dinero: row.dinero,
+          desarrollo: row.desarrollo,
+          diversion: row.diversion,
+        },
+        comment: row.comment ?? undefined,
+        comparison: row.comparison as ResultData['comparison'] ?? undefined,
+      });
     } catch (err) {
       console.error('Load error:', err);
       setError('Error al cargar el resultado');

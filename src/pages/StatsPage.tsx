@@ -40,15 +40,36 @@ export default function StatsPage() {
       setError(null);
 
       try {
-        const { data, error: fnError } = await supabase.functions.invoke('get-country-stats', {
-          body: { period },
-        });
+        const { data, error: queryError } = await supabase
+          .from('country_stats_cache')
+          .select('country, dimension, avg_value, count, updated_at')
+          .eq('period', period);
 
-        if (fnError) throw fnError;
+        if (queryError) throw queryError;
 
-        setStats(data?.stats || []);
-        if (data?.lastUpdated) {
-          setLastUpdated(data.lastUpdated);
+        // Group by country (same logic as the old edge function)
+        const byCountry = new Map<string, CountryFullStat>();
+        let latestUpdated: string | null = null;
+
+        for (const row of data || []) {
+          if (!latestUpdated || row.updated_at > latestUpdated) latestUpdated = row.updated_at;
+          if (!byCountry.has(row.country)) {
+            byCountry.set(row.country, {
+              country: row.country,
+              dinero: 0, desarrollo: 0, diversion: 0, promedio: 0,
+              count: row.count,
+            });
+          }
+          const stat = byCountry.get(row.country)!;
+          if (row.dimension === 'dinero') stat.dinero = row.avg_value ?? 0;
+          else if (row.dimension === 'desarrollo') stat.desarrollo = row.avg_value ?? 0;
+          else if (row.dimension === 'diversion') stat.diversion = row.avg_value ?? 0;
+          else if (row.dimension === 'promedio') stat.promedio = row.avg_value ?? 0;
+        }
+
+        setStats(Array.from(byCountry.values()));
+        if (latestUpdated) {
+          setLastUpdated(latestUpdated);
         }
       } catch (err) {
         console.error('Error fetching stats:', err);
