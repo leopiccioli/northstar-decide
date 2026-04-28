@@ -1,82 +1,95 @@
+## Reducir costos de Lovable Cloud — Ronda 2
 
+### Diagnóstico real (los números importan)
 
-## Reducir costos de Lovable Cloud
+La DB **no son 9 MB, son 269 MB**. El 91% es basura de cron y http logs:
 
-### Diagnóstico actual
+| Tabla | Tamaño | Qué es |
+|---|---|---|
+| `net._http_response` | **154 MB** | Respuestas HTTP de cada `net.http_post` que dispara el cron |
+| `cron.job_run_details` | **91 MB** | Historial de cada ejecución de cron |
+| `records_3d` (datos reales) | 9 MB | OK |
+| `outbound_emails` | 3 MB | OK |
+| Resto | <1 MB | OK |
 
-| Recurso | Detalle |
-|---------|---------|
-| **DB** | ~9.5 MB (`records_3d`: 12,558 rows), ~3 MB (`outbound_emails`: 10,345 rows) — chico |
-| **Storage** | 2 buckets privados (`csv`, `legacy-import`) — probablemente mínimo |
-| **Edge Functions** | 8 funciones desplegadas |
+Y la causa raíz de las invocaciones de edge functions:
 
-Los costos principales vienen de **invocaciones de Edge Functions**. Tenés 3 funciones que son puro SELECT y se pueden eliminar reemplazándolas con queries directos desde el cliente.
+| Cron | Frecuencia | Corridas en 3 meses | Estado |
+|---|---|---|---|
+| `send-legacy-notifications-batch` | **cada 1 min** | **129.405** | **Pendientes hoy: 0**. Lleva semanas invocando al pedo. |
+| `send-pending-reminders` | cada 1 hora | 1.846 | OK pero excesivo: solo 3 mediciones/día |
+| `refresh-country-stats-daily` | diario | 90 | OK |
 
-### Plan de ahorro
+Tráfico real del sitio: ~3 mediciones/día. El cron de legacy invoca la edge function **1.440 veces/día sin razón**.
 
-#### 1. Eliminar `get-country-stats` (Edge Function → query directo)
+### Plan de acción
 
-`country_stats_cache` ya tiene RLS pública. Cambiar `StatsPage.tsx` de `supabase.functions.invoke('get-country-stats')` a `supabase.from('country_stats_cache').select(...)` y hacer el agrupamiento por país en el frontend. Borrar la Edge Function.
+#### 1. Eliminar el cron de legacy notifications (ahorro masivo)
+Ya no quedan legacy pendientes (`count_pending_legacy_notifications() = 0`). Borrar el cron job `send-legacy-notifications-batch`.
+- **Ahorro**: ~43.000 invocaciones/mes de edge function + crecimiento detenido de `_http_response`.
+- Si en el futuro hace falta reactivarlo (improbable), se puede correr la función a mano una vez.
 
-#### 2. Eliminar `get-comments` (Edge Function → database function)
+#### 2. Bajar frecuencia del cron de reminders
+`send-pending-reminders` corre cada hora con 3 mediciones/día de tráfico. Pasarlo a **2 veces por día** (ej: 9:00 y 21:00 UTC) es más que suficiente.
+- **Ahorro**: ~720 invocaciones/mes → ~60/mes (12x menos).
 
-Crear una database function `get_public_comments()` con `SECURITY DEFINER` que retorne solo `id, comment, created_at, dinero, desarrollo, diversion` sin exponer email/IP. Cambiar `CommentsPage.tsx` a `supabase.rpc('get_public_comments')`. Borrar la Edge Function.
+#### 3. Limpiar las 245 MB de basura acumulada
+Truncar `net._http_response` y `cron.job_run_details` (son tablas de log, no contienen datos del negocio).
+- **Ahorro**: DB pasa de 269 MB → ~25 MB. Esto reduce costo de instancia y de backups.
 
-#### 3. Eliminar `get-result` (Edge Function → database function)
+#### 4. Configurar retention para que no vuelva a crecer
+Programar un cron diario que borre filas de `net._http_response` y `cron.job_run_details` con más de 7 días. Así nunca más vuelve a inflarse.
 
-Crear una database function `get_public_result(result_id uuid)` con `SECURITY DEFINER` que retorne solo `option_name, dinero, desarrollo, diversion, comment, comparison`. Cambiar `ResultPage.tsx` a `supabase.rpc('get_public_result', { result_id: id })`. Borrar la Edge Function.
+#### 5. Eliminar la edge function `send-legacy-notification`
+Si el cron desaparece y ya está todo notificado, la función queda muerta. Borrarla del proyecto y de `supabase/config.toml`.
+- **Ahorro adicional**: una función menos desplegada.
 
-#### 4. Funciones que SE MANTIENEN (necesitan Resend API / lógica server-side)
+### Impacto estimado total
 
-- `save-result` — inserta + envía email
-- `send-reminders` — envía emails programados
-- `resend-measurement` — reenvía email
-- `send-legacy-notification` — envía emails legacy
-- `import-legacy-csv` — acceso a storage
-
-### Impacto estimado
-
-- **~60-80% menos invocaciones** de Edge Functions (las lecturas son el tráfico más frecuente: cada visita a stats, comments o result/share page)
-- **Sin cambio en UX** — misma funcionalidad, misma velocidad (posiblemente más rápido por ser directo)
-- **Mejor seguridad** — database functions exponen solo columnas específicas, sin abrir la tabla a anon
+- **Invocaciones edge functions: -98%** (de ~44.000/mes a ~700/mes).
+- **Tamaño DB: -90%** (de 269 MB a ~25 MB).
+- **Cero cambios de UX**. Reminders siguen funcionando, solo se procesan 2x/día en vez de 24x/día.
 
 ### Detalle técnico
 
 **Migración SQL:**
 ```sql
--- Function para comments
-CREATE OR REPLACE FUNCTION public.get_public_comments()
-RETURNS TABLE(id uuid, comment text, created_at timestamptz, 
-              dinero int, desarrollo int, diversion int)
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = 'public'
-AS $$
-  SELECT id, comment, created_at, dinero, desarrollo, diversion
-  FROM records_3d
-  WHERE comment IS NOT NULL AND comment != ''
-  ORDER BY created_at DESC
-  LIMIT 100;
-$$;
+-- 1. Borrar cron muerto
+SELECT cron.unschedule('send-legacy-notifications-batch');
 
--- Function para result por ID
-CREATE OR REPLACE FUNCTION public.get_public_result(result_id uuid)
-RETURNS TABLE(option_name text, dinero int, desarrollo int, 
-              diversion int, comment text, comparison jsonb)
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = 'public'
-AS $$
-  SELECT option_name, dinero, desarrollo, diversion, comment, comparison
-  FROM records_3d
-  WHERE id = result_id;
-$$;
+-- 2. Bajar frecuencia de reminders a 2x/día
+SELECT cron.unschedule('send-pending-reminders');
+SELECT cron.schedule(
+  'send-pending-reminders',
+  '0 9,21 * * *',
+  $$ select net.http_post(
+    url:='https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/send-reminders',
+    headers:='{...}'::jsonb,
+    body:='{}'::jsonb
+  ); $$
+);
+
+-- 3. Limpiar basura acumulada
+TRUNCATE net._http_response;
+DELETE FROM cron.job_run_details WHERE start_time < now() - interval '7 days';
+
+-- 4. Cron diario de limpieza para que no vuelva a crecer
+SELECT cron.schedule(
+  'cleanup-system-logs-daily',
+  '0 4 * * *',
+  $$
+    DELETE FROM net._http_response WHERE created < now() - interval '7 days';
+    DELETE FROM cron.job_run_details WHERE start_time < now() - interval '7 days';
+  $$
+);
 ```
 
-**Cambios frontend:**
-- `StatsPage.tsx`: `supabase.from('country_stats_cache').select('country, dimension, avg_value, count, updated_at').eq('period', period)`
-- `CommentsPage.tsx`: `supabase.rpc('get_public_comments')`
-- `ResultPage.tsx`: `supabase.rpc('get_public_result', { result_id: id })`
-
 **Archivos a eliminar:**
-- `supabase/functions/get-country-stats/` (directorio completo)
-- `supabase/functions/get-comments/` (directorio completo)
-- `supabase/functions/get-result/` (directorio completo)
-- Entradas correspondientes en `supabase/config.toml`
+- `supabase/functions/send-legacy-notification/` (directorio completo)
+- Su entrada en `supabase/config.toml`
 
+### Lo que NO se toca
+- Reminders siguen funcionando (solo más espaciados).
+- `refresh_country_stats` diario sigue igual.
+- `save-result`, `resend-measurement`, `import-legacy-csv`, `send-reminders` siguen activas.
+- Ningún dato de usuarios se borra.
