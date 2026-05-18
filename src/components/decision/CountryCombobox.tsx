@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import type { Country } from '@/lib/countries';
+import { COUNTRIES } from '@/lib/countries';
 
 interface CountryComboboxProps {
   value: string;
@@ -25,21 +25,7 @@ interface CountryComboboxProps {
 
 export function CountryCombobox({ value, onChange, error }: CountryComboboxProps) {
   const [open, setOpen] = useState(false);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Lazy load countries list when dropdown opens
-  useEffect(() => {
-    if (open && countries.length === 0 && !isLoading) {
-      setIsLoading(true);
-      import('@/lib/countries').then((module) => {
-        setCountries(module.COUNTRIES);
-        setIsLoading(false);
-      });
-    }
-  }, [open, countries.length, isLoading]);
-
-  const selectedCountry = countries.find((c) => c.code === value);
+  const selectedCountry = COUNTRIES.find((c) => c.code === value);
 
   return (
     <div className="space-y-2">
@@ -64,35 +50,27 @@ export function CountryCombobox({ value, onChange, error }: CountryComboboxProps
           <Command>
             <CommandInput placeholder="Buscar país..." />
             <CommandList>
-              {isLoading ? (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  Cargando...
-                </div>
-              ) : (
-                <>
-                  <CommandEmpty>No se encontró el país.</CommandEmpty>
-                  <CommandGroup>
-                    {countries.map((country) => (
-                      <CommandItem
-                        key={country.code}
-                        value={country.name}
-                        onSelect={() => {
-                          onChange(country.code);
-                          setOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            value === country.code ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {country.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </>
-              )}
+              <CommandEmpty>No se encontró el país.</CommandEmpty>
+              <CommandGroup>
+                {COUNTRIES.map((country) => (
+                  <CommandItem
+                    key={country.code}
+                    value={country.name}
+                    onSelect={() => {
+                      onChange(country.code);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === country.code ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {country.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             </CommandList>
           </Command>
         </PopoverContent>
