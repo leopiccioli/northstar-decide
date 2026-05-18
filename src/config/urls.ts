@@ -14,6 +14,14 @@ export const SITE_CONFIG = {
   mainSiteUrl: 'https://ceoencamiseta.com',
   beehiivBaseUrl: 'https://magic.beehiiv.com/v1/9ef68cad-af28-49b0-8639-5562f3e7954e',
   beehiivRedirectUrl: 'https://www.ceoencamiseta.com/3d-dinero-desarrollo-diversion',
+
+  // Libros (referenciados en el P.S. del email de medicion, segun la D mas baja).
+  // Mantener sincronizados con supabase/functions/save-result/index.ts (BOOKS).
+  books: {
+    rajar: 'https://comorajaratujefe.com',
+    ceo: 'https://setupropioceo.com',
+    finanzas: 'https://finanzasellibro.com',
+  },
 } as const;
 
 // Helper para construir URL de Beehiiv con tracking
