@@ -50,35 +50,27 @@ export function CountryCombobox({ value, onChange, error }: CountryComboboxProps
           <Command>
             <CommandInput placeholder="Buscar país..." />
             <CommandList>
-              {isLoading ? (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  Cargando...
-                </div>
-              ) : (
-                <>
-                  <CommandEmpty>No se encontró el país.</CommandEmpty>
-                  <CommandGroup>
-                    {countries.map((country) => (
-                      <CommandItem
-                        key={country.code}
-                        value={country.name}
-                        onSelect={() => {
-                          onChange(country.code);
-                          setOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            value === country.code ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {country.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </>
-              )}
+              <CommandEmpty>No se encontró el país.</CommandEmpty>
+              <CommandGroup>
+                {COUNTRIES.map((country) => (
+                  <CommandItem
+                    key={country.code}
+                    value={country.name}
+                    onSelect={() => {
+                      onChange(country.code);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === country.code ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {country.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             </CommandList>
           </Command>
         </PopoverContent>
