@@ -133,13 +133,78 @@ function formatComment(comment: string, context?: string): string {
   return `"${comment}"`;
 }
 
+// Libros — mantener en sync con src/config/urls.ts (SITE_CONFIG.books)
+const BOOKS = {
+  rajar: 'https://comorajaratujefe.com',
+  ceo: 'https://setupropioceo.com',
+  finanzas: 'https://finanzasellibro.com',
+} as const;
+
+type Dimension = 'dinero' | 'desarrollo' | 'diversion';
+
+// Empate: prioridad Diversion > Desarrollo > Dinero (privilegia el pitch del libro estrella).
+function pickLowestDimension(
+  currentScores: Scores,
+  comparison: Comparison | null
+): { dim: Dimension; value: number } {
+  const candidates: Array<{ dim: Dimension; value: number }> = [
+    { dim: 'diversion', value: currentScores.diversion },
+    { dim: 'desarrollo', value: currentScores.desarrollo },
+    { dim: 'dinero', value: currentScores.dinero },
+  ];
+  if (comparison) {
+    candidates.push(
+      { dim: 'diversion', value: comparison.diversion },
+      { dim: 'desarrollo', value: comparison.desarrollo },
+      { dim: 'dinero', value: comparison.dinero },
+    );
+  }
+  // El orden del array ya resuelve empates segun la prioridad pedida.
+  return candidates.reduce((min, c) => (c.value < min.value ? c : min), candidates[0]);
+}
+
+function buildBookUrl(url: string, dim: Dimension, email: string): string {
+  const params = new URLSearchParams({
+    email,
+    utm_source: '3d',
+    utm_medium: 'email',
+    utm_campaign: 'measurement_ps',
+    utm_content: dim,
+  });
+  return `${url}/?${params.toString()}`;
+}
+
+// Devuelve '' si la D mas baja es >= 9 (no hay nada para vender).
+function buildBookPS(
+  currentScores: Scores,
+  comparison: Comparison | null,
+  email: string
+): string {
+  const { dim, value } = pickLowestDimension(currentScores, comparison);
+  if (value >= 9) return '';
+
+  const rajarUrl = buildBookUrl(BOOKS.rajar, dim, email);
+  const ceoUrl = buildBookUrl(BOOKS.ceo, dim, email);
+  const finanzasUrl = buildBookUrl(BOOKS.finanzas, dim, email);
+
+  if (dim === 'diversion') {
+    return `\n\nP.S. Pusiste un ${value} en Diversion. Para ese numero escribi un libro:\nComo RAJAR a tu jefe. No es lo que te imaginas.\n${rajarUrl}`;
+  }
+  if (dim === 'dinero') {
+    return `\n\nP.S. Pusiste un ${value} en Dinero. Tengo un libro para eso:\nFINANZAS. Lo que no te enseñaron en la escuela.\n${finanzasUrl}\n\nAunque si atras de ese numero hay un jefe, empeza por:\nComo RAJAR a tu jefe — ${rajarUrl}`;
+  }
+  // desarrollo
+  return `\n\nP.S. Pusiste un ${value} en Desarrollo. Tengo un libro para eso:\nSe tu propio CEO.\n${ceoUrl}\n\nAunque si lo que frena tu crecimiento tiene nombre y apellido,\nprimero lee: Como RAJAR a tu jefe — ${rajarUrl}`;
+}
+
 function buildEmailContent(
   currentName: string,
   currentScores: Scores,
   currentComment: string | undefined,
   comparison: Comparison | null,
   previousMeasurement: { dinero: number; desarrollo: number; diversion: number; created_at: string; comment?: string } | null,
-  context?: string
+  context: string | undefined,
+  email: string
 ): string {
   let content = `Tu medicion de hoy:\n\n`;
 
@@ -198,6 +263,8 @@ function buildEmailContent(
 
     content += `Listo. Lo guarde para que puedas volver cuando quieras.\n\nLeo`;
   }
+
+  content += buildBookPS(currentScores, comparison, email);
 
   return content;
 }
