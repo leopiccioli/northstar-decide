@@ -532,7 +532,8 @@ const handler = async (req: Request): Promise<Response> => {
       sanitizedComment || undefined,
       sanitizedComparison,
       previousMeasurement,
-      body.context
+      body.context,
+      body.email.toLowerCase()
     );
 
     // Fire-and-forget: send email asynchronously without blocking the response
