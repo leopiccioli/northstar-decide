@@ -33,18 +33,15 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function buildReminderLink(email: string, record: any, attempt: number): string {
-  const params = new URLSearchParams();
-  params.set('email', email);
-
-  if (record.utm_source) params.set('utm_source', record.utm_source);
-  if (record.utm_medium) params.set('utm_medium', record.utm_medium);
-  if (record.utm_campaign) params.set('utm_campaign', record.utm_campaign);
-  params.set('utm_content', `reminder_${attempt}`);
-  if (record.utm_term) params.set('utm_term', record.utm_term);
-  if (record.gclid) params.set('gclid', record.gclid);
-  if (record.fbclid) params.set('fbclid', record.fbclid);
-
+function buildReminderLink(email: string, _record: any, attempt: number): string {
+  // El recordatorio sobreescribe la atribución: la visita viene del mail, no del touch original.
+  const params = new URLSearchParams({
+    email,
+    utm_source: '3d',
+    utm_medium: 'email',
+    utm_campaign: 'reminder',
+    utm_content: `reminder_${attempt}`,
+  });
   return `${SITE_CONFIG.baseUrl}?${params.toString()}`;
 }
 

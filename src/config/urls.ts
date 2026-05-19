@@ -34,7 +34,7 @@ export function buildBeehiivUrl(options: {
   if (options.email) {
     params.set('email', options.email);
   }
-  params.set('utm_source', '3dapp');
+  params.set('utm_source', '3d');
   params.set('utm_medium', options.utmMedium);
   params.set('redirect_to', SITE_CONFIG.beehiivRedirectUrl);
   
