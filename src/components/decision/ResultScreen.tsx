@@ -1,5 +1,5 @@
 import { Option, UserContext, contextQuestions } from '@/types/decision';
-import { useState, lazy, Suspense } from 'react';
+import { useState, useRef, lazy, Suspense } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
