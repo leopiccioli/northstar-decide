@@ -8,7 +8,7 @@ import { GlobalScore } from './GlobalScore';
 import { Check, ExternalLink, Smartphone } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QRCodeSVG } from 'qrcode.react';
-import { SITE_CONFIG, buildBeehiivUrl } from '@/config/urls';
+import { SITE_CONFIG, buildBeehiivUrl, buildWhatsAppShareUrl } from '@/config/urls';
 import { trackFlowEvent } from '@/lib/analytics';
 import { detectEmailTypo } from '@/lib/emailTypo';
 
@@ -179,6 +179,36 @@ function SuccessWithShare({
           Unirme a CEO en Camiseta
           <ExternalLink className="w-4 h-4" />
         </a>
+
+        <div className="pt-2 space-y-2">
+          <p className="text-xs text-muted-foreground text-center">
+            ¿Conocés a alguien que debería hacer esto?
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={buildWhatsAppShareUrl('friend')}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackFlowEvent('whatsapp_share_friend')}
+              className="py-2.5 text-xs border border-border rounded-sm
+                         hover:border-foreground/50 transition-colors
+                         flex items-center justify-center"
+            >
+              Para un amigo
+            </a>
+            <a
+              href={buildWhatsAppShareUrl('team')}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackFlowEvent('whatsapp_share_team')}
+              className="py-2.5 text-xs border border-border rounded-sm
+                         hover:border-foreground/50 transition-colors
+                         flex items-center justify-center"
+            >
+              Para mi equipo
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
