@@ -1,24 +1,33 @@
-## Corrección al documento `3d-core-summary.md`
 
-La sección "Recomendación de libros" tiene datos incorrectos. Reemplazarla por la versión verificada contra el código (`supabase/functions/save-result/index.ts` y `resend-measurement/index.ts`).
+## Diagnóstico
 
-### Cambios
+Confirmado en DB y logs:
+- A las **19:50:10** se guardó tu medición correctamente (record `dfddb79e…`, contexto `improve`).
+- A las **19:56:36** llegó un **segundo POST** a `save-result` que devolvió **429** porque el rate limit por email es de 15 min y solo habían pasado 6.
 
-1. **Corregir los títulos de libros** según la dimensión más baja:
-   - Diversión bajo → *Cómo RAJAR a tu jefe* ("Para ese número escribí un libro")
-   - Dinero bajo → *FINANZAS. Lo que no te enseñaron en la escuela* + fallback a *Cómo RAJAR a tu jefe* si "atrás de ese número hay un jefe"
-   - Desarrollo bajo → *Sé tu propio CEO* + fallback a *Cómo RAJAR a tu jefe* si "lo que frena tu crecimiento tiene nombre y apellido"
+Como la UI es optimista (muestra éxito apenas hacés click), después del primer click ya no se ve el botón "Guardar" — así que el segundo POST vino de un **doble click** procesado en el mismo render (antes de que React swap-ee a `SuccessWithShare`). El `catch` del save en background disparó el toast "Aviso" con el mensaje genérico. **No tuvo nada que ver con WhatsApp**: el click de WhatsApp solo abre `wa.me` en otra pestaña, no toca el flujo de save.
 
-2. **Corregir dónde aparecen**: los libros se ofrecen **solo en el P.S. del email de resultado** (y en el email de re-envío `resend-measurement`). **No** aparecen en la pantalla de cierre — ahí el único CTA es "Unirme a CEO en Camiseta" (Beehiiv).
+## ¿Hay algo que arreglar? Sí, dos cosas chicas
 
-3. **Agregar regla de desempate**: cuando hay empate entre dimensiones, la prioridad es **Diversión > Desarrollo > Dinero** (privilegia el pitch del libro estrella, según comentario en el código).
+### 1. Guardia anti doble-click en `SaveSection.handleSave`
+Agregar un `useRef(false)` (`isSavingRef`) que se setea a `true` en cuanto pasa la validación y antes de llamar `onOptimisticSave`. Si `isSavingRef.current === true`, `handleSave` returnea sin hacer nada. Más robusto que `useState` porque no depende del próximo render.
 
-4. **Agregar URLs canónicas** (de `src/config/urls.ts`):
-   - `comorajaratujefe.com`
-   - `setupropioceo.com` (libro "Sé tu propio CEO")
-   - `finanzasellibro.com`
-   - Todas se enriquecen con `?email=...` y UTMs (`utm_source=3d`, `utm_medium=email`, `utm_campaign=measurement_ps`, `utm_content=dinero|desarrollo|diversion`).
+Resultado: aunque el usuario toque "Guardar" dos veces rápido, se dispara un solo POST.
 
-### Archivo afectado
+### 2. Silenciar el toast de error cuando la UI ya está en éxito
+En el `.catch()` del `supabase.functions.invoke('save-result', ...)`:
+- Si el error es un **429** (rate limit), no mostrar ningún toast — la primera medición ya quedó guardada, el segundo intento solo es ruido para el usuario.
+- Para otros errores, mantener el toast actual ("No pudimos guardar tu resultado…") porque sí queremos saber si algo falló de verdad.
 
-- `/mnt/documents/3d-core-summary.md` — reemplazar la sección "Recomendación de libros" por la versión corregida arriba. Sin cambios en código de la app.
+Para detectar 429: dentro del `if (error instanceof FunctionsHttpError)`, leer `error.context.status` (o el body parseado) y si es 429, hacer `return` antes del `toast(...)`.
+
+### Lo que NO toco
+- WhatsApp share, emails, edge functions: están funcionando bien, no hay nada para arreglar ahí.
+- `SuccessWithShare`, navegación, analytics: sin cambios.
+
+## Archivos a tocar
+- `src/components/decision/ResultScreen.tsx` (solo el componente `SaveSection`, ~20 líneas)
+
+## Verificación
+- Doble-click rápido en "Guardar" → un solo registro en DB, sin toast de error.
+- Caso real con error 5xx (simulado) → sigue mostrando el toast de aviso para no perder señal.
