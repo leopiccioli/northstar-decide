@@ -162,7 +162,7 @@ export function CountryMap({ stats, isLoading, quartileBoundaries }: CountryMapP
             ) : selectedStat ? (
               <>
                 <div className="text-sm text-muted-foreground">
-                  Datos insuficientes ({selectedStat.count} respuestas)
+                  Datos insuficientes
                 </div>
                 <a
                   href={getTwitterUrl(selectedName, selectedFlag)}
