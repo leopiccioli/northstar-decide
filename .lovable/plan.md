@@ -1,27 +1,24 @@
-## Diagnóstico
+## Corrección al documento `3d-core-summary.md`
 
-`CountryCombobox` hace un `import('@/lib/countries')` **dinámico** la primera vez que abrís el dropdown. Eso dispara:
+La sección "Recomendación de libros" tiene datos incorrectos. Reemplazarla por la versión verificada contra el código (`supabase/functions/save-result/index.ts` y `resend-measurement/index.ts`).
 
-1. Round-trip de red para bajar el chunk.
-2. Render del estado "Cargando..." mientras llega.
-3. Recién después se monta la lista.
+### Cambios
 
-El archivo `src/lib/countries.ts` tiene ~30 países (52 líneas, <2 KB). El lazy-load no ahorra prácticamente nada y agrega latencia visible en cada apertura.
+1. **Corregir los títulos de libros** según la dimensión más baja:
+   - Diversión bajo → *Cómo RAJAR a tu jefe* ("Para ese número escribí un libro")
+   - Dinero bajo → *FINANZAS. Lo que no te enseñaron en la escuela* + fallback a *Cómo RAJAR a tu jefe* si "atrás de ese número hay un jefe"
+   - Desarrollo bajo → *Sé tu propio CEO* + fallback a *Cómo RAJAR a tu jefe* si "lo que frena tu crecimiento tiene nombre y apellido"
 
-## Cambios
+2. **Corregir dónde aparecen**: los libros se ofrecen **solo en el P.S. del email de resultado** (y en el email de re-envío `resend-measurement`). **No** aparecen en la pantalla de cierre — ahí el único CTA es "Unirme a CEO en Camiseta" (Beehiiv).
 
-**`src/components/decision/CountryCombobox.tsx`**
-- Reemplazar el `import()` dinámico por `import { COUNTRIES } from '@/lib/countries'` estático.
-- Eliminar `useState<Country[]>`, `isLoading`, el `useEffect` de carga y el bloque "Cargando...".
-- `countries` queda como constante directa.
+3. **Agregar regla de desempate**: cuando hay empate entre dimensiones, la prioridad es **Diversión > Desarrollo > Dinero** (privilegia el pitch del libro estrella, según comentario en el código).
 
-**`src/hooks/usePrefetch.ts`** (opcional, refuerzo)
-- Dentro de `usePrefetchInputScreen`, agregar `import('@/lib/countries')` para que cuando estés en ContextScreen ya quede tibio en caché. Con el cambio anterior probablemente ni haga falta.
+4. **Agregar URLs canónicas** (de `src/config/urls.ts`):
+   - `comorajaratujefe.com`
+   - `setupropioceo.com` (libro "Sé tu propio CEO")
+   - `finanzasellibro.com`
+   - Todas se enriquecen con `?email=...` y UTMs (`utm_source=3d`, `utm_medium=email`, `utm_campaign=measurement_ps`, `utm_content=dinero|desarrollo|diversion`).
 
-## Resultado
+### Archivo afectado
 
-El popover abre instantáneo con la lista renderizada. Sin spinner, sin chunk extra.
-
-## Costo
-
-~30 entradas se suman al bundle del InputScreen (donde se usa el combobox). Trivial.
+- `/mnt/documents/3d-core-summary.md` — reemplazar la sección "Recomendación de libros" por la versión corregida arriba. Sin cambios en código de la app.
