@@ -316,12 +316,6 @@ export default function StatsPage() {
                     >
                       Promedio<SortIcon column="promedio" />
                     </th>
-                    <th 
-                      className={`${columnClass} text-right font-medium`}
-                      onClick={() => handleSort('count')}
-                    >
-                      Resp.<SortIcon column="count" />
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
