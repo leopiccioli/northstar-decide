@@ -331,9 +331,6 @@ export default function StatsPage() {
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.desarrollo)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.diversion)}</td>
                       <td className="px-4 py-3 text-right font-mono font-medium">{formatValue(stat.promedio)}</td>
-                      <td className="px-4 py-3 text-right font-mono text-muted-foreground">
-                        {stat.count.toLocaleString()}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
