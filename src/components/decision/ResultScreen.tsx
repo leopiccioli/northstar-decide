@@ -261,6 +261,9 @@ function SaveSection({
   };
 
   const handleSave = async () => {
+    // Guard against double-click / re-entry
+    if (isSavingRef.current) return;
+
     const trimmedEmail = email.trim();
     let hasError = false;
     
@@ -282,6 +285,9 @@ function SaveSection({
     }
 
     if (hasError) return;
+
+    // Lock to prevent duplicate POSTs from a fast second click
+    isSavingRef.current = true;
 
     // OPTIMISTIC UI: Show success immediately
     onOptimisticSave(trimmedEmail);
@@ -318,7 +324,7 @@ function SaveSection({
     supabase.functions.invoke('save-result', { body: payload })
       .then(async ({ data, error }) => {
         if (error) {
-          throw new Error(error.message || 'Error al guardar');
+          throw error;
         }
         if (data?.id) {
           // Update with real record ID for sharing
@@ -331,6 +337,11 @@ function SaveSection({
         let errorMessage = "No pudimos guardar tu resultado, pero podés seguir compartiendo.";
         
         if (error instanceof FunctionsHttpError) {
+          // 429 = rate limit: the user already saved recently, UI is already in success state.
+          // Suppress the toast — it's just noise.
+          if (error.context?.status === 429) {
+            return;
+          }
           try {
             const errorData = await error.context.json();
             if (errorData?.error) {
