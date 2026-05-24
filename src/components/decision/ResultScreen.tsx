@@ -242,6 +242,7 @@ function SaveSection({
   const [emailError, setEmailError] = useState('');
   const [countryError, setCountryError] = useState('');
   const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
+  const isSavingRef = useRef(false);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
