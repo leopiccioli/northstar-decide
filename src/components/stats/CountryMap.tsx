@@ -158,14 +158,11 @@ export function CountryMap({ stats, isLoading, quartileBoundaries }: CountryMapP
                   <span className="text-muted-foreground font-medium">Promedio:</span>
                   <span className="font-mono font-medium">{formatValue(selectedStat.promedio)}</span>
                 </div>
-                <div className="text-xs text-muted-foreground pt-1 border-t">
-                  {selectedStat.count.toLocaleString()} respuestas
-                </div>
               </>
             ) : selectedStat ? (
               <>
                 <div className="text-sm text-muted-foreground">
-                  Datos insuficientes ({selectedStat.count} respuestas)
+                  Datos insuficientes
                 </div>
                 <a
                   href={getTwitterUrl(selectedName, selectedFlag)}
