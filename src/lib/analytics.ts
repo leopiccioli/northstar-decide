@@ -15,7 +15,9 @@ export type FlowEvent =
   | 'select_context'  // Elige situación
   | 'complete_3d'     // Termina de puntuar sliders
   | 'save_result'     // Guarda con email
-  | 'share_result';   // Comparte resultado
+  | 'share_result'    // Comparte resultado propio
+  | 'whatsapp_share_friend'  // Recomienda a un amigo via WhatsApp
+  | 'whatsapp_share_team';   // Recomienda al equipo via WhatsApp
 
 // Meta Pixel event mapping
 const metaEvents: Record<FlowEvent, string> = {
@@ -24,6 +26,8 @@ const metaEvents: Record<FlowEvent, string> = {
   complete_3d: 'Lead',
   save_result: 'CompleteRegistration',
   share_result: 'Share',
+  whatsapp_share_friend: 'Share',
+  whatsapp_share_team: 'Share',
 };
 
 // X (Twitter) Pixel event mapping
@@ -33,6 +37,8 @@ const xEvents: Record<FlowEvent, string> = {
   complete_3d: 'tw-o1ve0-r2y9y',
   save_result: 'Signup',
   share_result: 'Share',
+  whatsapp_share_friend: 'Share',
+  whatsapp_share_team: 'Share',
 };
 
 // GA4 event mapping
@@ -42,6 +48,8 @@ const ga4Events: Record<FlowEvent, string> = {
   complete_3d: 'generate_lead',
   save_result: 'sign_up',
   share_result: 'share',
+  whatsapp_share_friend: 'share',
+  whatsapp_share_team: 'share',
 };
 
 /**

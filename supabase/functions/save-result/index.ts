@@ -197,6 +197,28 @@ function buildBookPS(
   return `\n\nP.S. Pusiste un ${value} en Desarrollo. Tengo un libro para eso:\nSe tu propio CEO.\n${ceoUrl}\n\nAunque si lo que frena tu crecimiento tiene nombre y apellido,\nprimero lee: Como RAJAR a tu jefe — ${rajarUrl}`;
 }
 
+// WhatsApp recommend block — mantener en sync con src/config/urls.ts
+function buildWhatsAppRecommendUrl(variant: 'email' | 'reminder_1m' | 'reminder_2m' | 'reminder_3m'): string {
+  const msgs = {
+    email: { msg: 'Te mando esto porque creo que te puede servir. Son 2 minutos y te ordena la cabeza.', campaign: 'share_email', content: 'ps_recommend' },
+    reminder_1m: { msg: 'Yo uso esto cada tanto para ver cómo estoy en el trabajo. Puede servirte.', campaign: 'share_reminder', content: '1m' },
+    reminder_2m: { msg: 'Yo uso esto cada tanto para ver cómo estoy en el trabajo. Puede servirte.', campaign: 'share_reminder', content: '2m' },
+    reminder_3m: { msg: 'Yo uso esto cada tanto para ver cómo estoy en el trabajo. Puede servirte.', campaign: 'share_reminder', content: '3m' },
+  } as const;
+  const m = msgs[variant];
+  const url = new URL('https://3d.ceoencamiseta.com');
+  url.searchParams.set('utm_source', 'whatsapp');
+  url.searchParams.set('utm_medium', 'referral');
+  url.searchParams.set('utm_campaign', m.campaign);
+  url.searchParams.set('utm_content', m.content);
+  const text = `${m.msg}\n${url.toString()}`;
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
+
+function buildWhatsAppEmailBlock(): string {
+  return `\n\n---\n¿Conocés a alguien que debería hacer esto?\nRecomendarlo por WhatsApp: ${buildWhatsAppRecommendUrl('email')}`;
+}
+
 function buildEmailContent(
   currentName: string,
   currentScores: Scores,
@@ -265,6 +287,7 @@ function buildEmailContent(
   }
 
   content += buildBookPS(currentScores, comparison, email);
+  content += buildWhatsAppEmailBlock();
 
   return content;
 }

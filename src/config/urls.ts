@@ -40,3 +40,56 @@ export function buildBeehiivUrl(options: {
   
   return `${SITE_CONFIG.beehiivBaseUrl}?${params.toString()}`;
 }
+
+// WhatsApp share — recomendar la herramienta (no el resultado propio).
+// Mantener sincronizado con duplicados en edge functions (save-result, resend-measurement, send-reminders).
+export type WhatsAppShareVariant =
+  | 'friend'
+  | 'team'
+  | 'email'
+  | 'reminder_1m'
+  | 'reminder_2m'
+  | 'reminder_3m';
+
+const WA_MESSAGES: Record<WhatsAppShareVariant, { message: string; campaign: string; content?: string }> = {
+  friend: {
+    message: 'Acabo de hacer las 3D y me quedé pensando. Hacelas vos también — si querés después me contás qué te salió.',
+    campaign: 'share_friend',
+  },
+  team: {
+    message: '¿Podés hacer esto antes de que hablemos? 2 minutos. No me mostrás el resultado, solo me decís qué te movió.',
+    campaign: 'share_team',
+  },
+  email: {
+    message: 'Te mando esto porque creo que te puede servir. Son 2 minutos y te ordena la cabeza.',
+    campaign: 'share_email',
+    content: 'ps_recommend',
+  },
+  reminder_1m: {
+    message: 'Yo uso esto cada tanto para ver cómo estoy en el trabajo. Puede servirte.',
+    campaign: 'share_reminder',
+    content: '1m',
+  },
+  reminder_2m: {
+    message: 'Yo uso esto cada tanto para ver cómo estoy en el trabajo. Puede servirte.',
+    campaign: 'share_reminder',
+    content: '2m',
+  },
+  reminder_3m: {
+    message: 'Yo uso esto cada tanto para ver cómo estoy en el trabajo. Puede servirte.',
+    campaign: 'share_reminder',
+    content: '3m',
+  },
+};
+
+export function buildWhatsAppShareUrl(variant: WhatsAppShareVariant): string {
+  const m = WA_MESSAGES[variant];
+  const url = new URL(SITE_CONFIG.baseUrl);
+  url.searchParams.set('utm_source', 'whatsapp');
+  url.searchParams.set('utm_medium', 'referral');
+  url.searchParams.set('utm_campaign', m.campaign);
+  if (m.content) url.searchParams.set('utm_content', m.content);
+  const text = `${m.message}\n${url.toString()}`;
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
+

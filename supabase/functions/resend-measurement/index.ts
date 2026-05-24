@@ -102,6 +102,18 @@ function buildBookPS(
   return `\n\nP.S. Pusiste un ${value} en Desarrollo. Tengo un libro para eso:\nSe tu propio CEO.\n${ceoUrl}\n\nAunque si lo que frena tu crecimiento tiene nombre y apellido,\nprimero lee: Como RAJAR a tu jefe — ${rajarUrl}`;
 }
 
+// WhatsApp recommend block
+function buildWhatsAppEmailBlock(): string {
+  const url = new URL('https://3d.ceoencamiseta.com');
+  url.searchParams.set('utm_source', 'whatsapp');
+  url.searchParams.set('utm_medium', 'referral');
+  url.searchParams.set('utm_campaign', 'share_email');
+  url.searchParams.set('utm_content', 'ps_recommend');
+  const text = `Te mando esto porque creo que te puede servir. Son 2 minutos y te ordena la cabeza.\n${url.toString()}`;
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  return `\n\n---\n¿Conocés a alguien que debería hacer esto?\nRecomendarlo por WhatsApp: ${waUrl}`;
+}
+
 interface Record3D {
   id: string;
   email: string;
@@ -148,6 +160,7 @@ function buildEmailContent(
   }
 
   content += buildBookPS(scores, record.comparison, record.email);
+  content += buildWhatsAppEmailBlock();
 
   return content;
 }

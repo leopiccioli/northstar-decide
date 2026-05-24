@@ -60,9 +60,20 @@ function computeMonthsAgo(recordCreatedAt: string): number {
   return Math.max(1, months);
 }
 
+function buildWhatsAppReminderLink(attempt: number): string {
+  const url = new URL(SITE_CONFIG.baseUrl);
+  url.searchParams.set('utm_source', 'whatsapp');
+  url.searchParams.set('utm_medium', 'referral');
+  url.searchParams.set('utm_campaign', 'share_reminder');
+  url.searchParams.set('utm_content', `${attempt}m`); // 1m / 2m / 3m
+  const text = `Yo uso esto cada tanto para ver cómo estoy en el trabajo. Puede servirte.\n${url.toString()}`;
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
+
 function buildReminderContent(record: any, monthsAgo: number, attempt: number): string {
   const periodLabel = monthsAgo === 1 ? '1 mes' : `${monthsAgo} meses`;
   const link = buildReminderLink(record.email, record, attempt);
+  const waLink = buildWhatsAppReminderLink(attempt);
 
   let content = `Hace ${periodLabel} mediste tu 3D:\n\n`;
 
@@ -85,6 +96,7 @@ function buildReminderContent(record: any, monthsAgo: number, attempt: number): 
     }
   }
 
+  content += `\nAntes de volver a medir, ¿se lo recomendaste a alguien?\n→ Recomendarlo por WhatsApp: ${waLink}\n`;
   content += `\nEntra para ver como cambio:\n${link}\n\nLeo`;
 
   return content;
