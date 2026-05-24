@@ -234,7 +234,7 @@ export default function StatsPage() {
           {/* Stats summary */}
           {!isLoading && (
             <div className="text-sm text-muted-foreground">
-              {totalResponses.toLocaleString()} respuestas en {stats.length} países
+              {stats.length} países
             </div>
           )}
         </div>
