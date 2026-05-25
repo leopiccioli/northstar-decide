@@ -16,6 +16,8 @@ const BOOKS = {
 
 type Dimension = 'dinero' | 'desarrollo' | 'diversion';
 
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
 const MD_LINK = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
 const BARE_URL = /https?:\/\/[^\s)]+/g;
 
