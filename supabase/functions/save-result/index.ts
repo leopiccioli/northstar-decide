@@ -214,13 +214,13 @@ function buildBookPS(
   const finanzasUrl = buildBookUrl(BOOKS.finanzas, dim, email);
 
   if (dim === 'diversion') {
-    return `\n\nP.S. Pusiste un ${value} en Diversion. Para ese numero escribi un libro:\nComo RAJAR a tu jefe. No es lo que te imaginas.\n${rajarUrl}`;
+    return `\n\nP.S. Pusiste un ${value} en Diversion. Para ese numero escribi un libro:\n[Como RAJAR a tu jefe](${rajarUrl}). No es lo que te imaginas.`;
   }
   if (dim === 'dinero') {
-    return `\n\nP.S. Pusiste un ${value} en Dinero. Tengo un libro para eso:\nFINANZAS. Lo que no te enseñaron en la escuela.\n${finanzasUrl}\n\nAunque si atras de ese numero hay un jefe, empeza por:\nComo RAJAR a tu jefe — ${rajarUrl}`;
+    return `\n\nP.S. Pusiste un ${value} en Dinero. Tengo un libro para eso:\n[FINANZAS](${finanzasUrl}). Lo que no te enseñaron en la escuela.\n\nAunque si atras de ese numero hay un jefe, empeza por:\n[Como RAJAR a tu jefe](${rajarUrl}).`;
   }
   // desarrollo
-  return `\n\nP.S. Pusiste un ${value} en Desarrollo. Tengo un libro para eso:\nSe tu propio CEO.\n${ceoUrl}\n\nAunque si lo que frena tu crecimiento tiene nombre y apellido,\nprimero lee: Como RAJAR a tu jefe — ${rajarUrl}`;
+  return `\n\nP.S. Pusiste un ${value} en Desarrollo. Tengo un libro para eso:\n[Se tu propio CEO](${ceoUrl}).\n\nAunque si lo que frena tu crecimiento tiene nombre y apellido,\nprimero lee: [Como RAJAR a tu jefe](${rajarUrl}).`;
 }
 
 // WhatsApp recommend block — mantener en sync con src/config/urls.ts
@@ -242,7 +242,7 @@ function buildWhatsAppRecommendUrl(variant: 'email' | 'reminder_1m' | 'reminder_
 }
 
 function buildWhatsAppEmailBlock(): string {
-  return `\n\n---\n¿Conocés a alguien que debería hacer esto?\nRecomendarlo por WhatsApp: ${buildWhatsAppRecommendUrl('email')}`;
+  return `\n\n---\n¿Conocés a alguien que debería hacer esto?\n[Recomendarlo por WhatsApp](${buildWhatsAppRecommendUrl('email')})`;
 }
 
 function buildEmailContent(
