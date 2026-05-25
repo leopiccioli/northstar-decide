@@ -239,8 +239,8 @@ const handler = async (req: Request): Promise<Response> => {
           to: [record.email],
           reply_to: SITE_CONFIG.emailReplyTo,
           subject: 'Tu medicion 3D',
-          text: emailContent,
-          html: textToHtml(emailContent),
+          text: richToPlainText(emailContent),
+          html: richToHtml(emailContent),
         });
 
         await supabase.from('outbound_emails').insert({
