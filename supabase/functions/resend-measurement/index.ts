@@ -16,17 +16,27 @@ const BOOKS = {
 
 type Dimension = 'dinero' | 'desarrollo' | 'diversion';
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const MD_LINK = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+const BARE_URL = /https?:\/\/[^\s)]+/g;
 
-function textToHtml(text: string): string {
+function richToPlainText(text: string): string {
+  return text.replace(MD_LINK, (_m, label, url) => `${label}: ${url}`);
+}
+
+function richToHtml(text: string): string {
   const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const urlRegex = /https?:\/\/[^\s]+/g;
-  let html = escape(text).replace(urlRegex, (escapedUrl) => {
-    const href = escapedUrl.replace(/&amp;/g, '&');
-    return `<a href="${href}" style="color:#000;text-decoration:underline">abrir →</a>`;
+  const tokens: string[] = [];
+  let working = text.replace(MD_LINK, (_m, label, url) => {
+    const i = tokens.length;
+    tokens.push(`<a href="${url}" style="color:#000;text-decoration:underline">${escape(label)}</a>`);
+    return `\u0000MDLINK${i}\u0000`;
   });
-  html = html.replace(/\n/g, '<br>');
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:24px;background:#ffffff;color:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55"><div style="max-width:480px;margin:0 auto;white-space:normal">${html}</div></body></html>`;
+  working = escape(working).replace(BARE_URL, (url) => {
+    return `<a href="${url}" style="color:#000;text-decoration:underline">abrir →</a>`;
+  });
+  working = working.replace(/\u0000MDLINK(\d+)\u0000/g, (_m, i) => tokens[Number(i)]);
+  working = working.replace(/\n/g, '<br>');
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:24px;background:#ffffff;color:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55"><div style="max-width:480px;margin:0 auto;white-space:normal">${working}</div></body></html>`;
 }
 
 const corsHeaders = {
