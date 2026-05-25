@@ -15,6 +15,17 @@ const DELAY_MS = 3000;
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+function textToHtml(text: string): string {
+  const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const urlRegex = /https?:\/\/[^\s]+/g;
+  let html = escape(text).replace(urlRegex, (escapedUrl) => {
+    const href = escapedUrl.replace(/&amp;/g, '&');
+    return `<a href="${href}" style="color:#000;text-decoration:underline">abrir →</a>`;
+  });
+  html = html.replace(/\n/g, '<br>');
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:24px;background:#ffffff;color:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55"><div style="max-width:480px;margin:0 auto;white-space:normal">${html}</div></body></html>`;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -206,6 +217,7 @@ const handler = async (req: Request): Promise<Response> => {
           reply_to: SITE_CONFIG.emailReplyTo,
           subject: 'Recordatorio: Medí tu 3D',
           text: emailContent,
+          html: textToHtml(emailContent),
         });
 
         await supabase.from('outbound_emails').update({
