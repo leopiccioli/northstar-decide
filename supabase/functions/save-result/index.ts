@@ -28,6 +28,19 @@ const SITE_CONFIG = {
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// Convierte el texto plano del email en HTML ultra-minimal:
+// escapa entidades, reemplaza URLs por anchors "abrir →" y envuelve con estilos sobrios.
+function textToHtml(text: string): string {
+  const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const urlRegex = /https?:\/\/[^\s]+/g;
+  let html = escape(text).replace(urlRegex, (escapedUrl) => {
+    const href = escapedUrl.replace(/&amp;/g, '&');
+    return `<a href="${href}" style="color:#000;text-decoration:underline">abrir →</a>`;
+  });
+  html = html.replace(/\n/g, '<br>');
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:24px;background:#ffffff;color:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55"><div style="max-width:480px;margin:0 auto;white-space:normal">${html}</div></body></html>`;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-version",
