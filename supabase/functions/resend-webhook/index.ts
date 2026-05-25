@@ -46,6 +46,16 @@ serve(async (req: Request): Promise<Response> => {
     const type = payload?.type as string | undefined;
     const data = payload?.data || {};
 
+    // Only accept events from 3d.ceoencamiseta.com domain
+    const ALLOWED_DOMAIN = '3d.ceoencamiseta.com';
+    const fromField = String(data.from || '');
+    if (!fromField.includes(`@${ALLOWED_DOMAIN}`)) {
+      return new Response(
+        JSON.stringify({ ok: true, skipped: 'foreign domain' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!type) {
       return new Response(JSON.stringify({ error: "missing type" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
