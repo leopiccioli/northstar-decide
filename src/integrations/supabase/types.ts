@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      email_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          link_url: string | null
+          raw_payload: Json
+          resend_email_id: string
+          to_email: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          link_url?: string | null
+          raw_payload: Json
+          resend_email_id: string
+          to_email?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          link_url?: string | null
+          raw_payload?: Json
+          resend_email_id?: string
+          to_email?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       outbound_emails: {
         Row: {
           created_at: string
