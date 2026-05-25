@@ -367,8 +367,8 @@ async function sendEmailAsync(
       to: [email],
       reply_to: SITE_CONFIG.emailReplyTo,
       subject: subject,
-      text: emailContent,
-      html: textToHtml(emailContent),
+      text: richToPlainText(emailContent),
+      html: richToHtml(emailContent),
     });
 
     // Update outbound_emails with success
