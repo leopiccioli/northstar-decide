@@ -3,7 +3,6 @@ project_id = "bcokciysbyuaeodnsxas"
 [functions.save-result]
 verify_jwt = false
 
-
 [functions.import-legacy-csv]
 verify_jwt = false
 
@@ -13,8 +12,5 @@ verify_jwt = false
 [functions.send-reminders]
 verify_jwt = false
 
-[functions.resend-measurement]
-verify_jwt = false
-
-[functions.send-reminders]
+[functions.resend-webhook]
 verify_jwt = false
