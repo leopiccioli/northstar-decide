@@ -355,6 +355,7 @@ async function sendEmailAsync(
       reply_to: SITE_CONFIG.emailReplyTo,
       subject: subject,
       text: emailContent,
+      html: textToHtml(emailContent),
     });
 
     // Update outbound_emails with success
