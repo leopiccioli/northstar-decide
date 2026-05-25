@@ -228,8 +228,8 @@ const handler = async (req: Request): Promise<Response> => {
           to: [pending.to_email],
           reply_to: SITE_CONFIG.emailReplyTo,
           subject: 'Recordatorio: Medí tu 3D',
-          text: emailContent,
-          html: textToHtml(emailContent),
+          text: richToPlainText(emailContent),
+          html: richToHtml(emailContent),
         });
 
         await supabase.from('outbound_emails').update({
