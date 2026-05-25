@@ -119,8 +119,8 @@ function buildReminderContent(record: any, monthsAgo: number, attempt: number): 
     }
   }
 
-  content += `\nAntes de volver a medir, ¿se lo recomendaste a alguien?\n→ Recomendarlo por WhatsApp: ${waLink}\n`;
-  content += `\nEntra para ver como cambio:\n${link}\n\nLeo`;
+  content += `\nAntes de volver a medir, ¿se lo recomendaste a alguien?\n→ [Recomendarlo por WhatsApp](${waLink})\n`;
+  content += `\n[Entra para ver como cambio](${link})\n\nLeo`;
 
   return content;
 }
