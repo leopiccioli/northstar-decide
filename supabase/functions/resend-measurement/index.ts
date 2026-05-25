@@ -134,7 +134,7 @@ function buildWhatsAppEmailBlock(): string {
   url.searchParams.set('utm_content', 'ps_recommend');
   const text = `Te mando esto porque creo que te puede servir. Son 2 minutos y te ordena la cabeza.\n${url.toString()}`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  return `\n\n---\n¿Conocés a alguien que debería hacer esto?\nRecomendarlo por WhatsApp: ${waUrl}`;
+  return `\n\n---\n¿Conocés a alguien que debería hacer esto?\n[Recomendarlo por WhatsApp](${waUrl})`;
 }
 
 interface Record3D {
