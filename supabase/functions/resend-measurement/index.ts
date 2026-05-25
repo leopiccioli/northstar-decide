@@ -18,15 +18,27 @@ type Dimension = 'dinero' | 'desarrollo' | 'diversion';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-function textToHtml(text: string): string {
+const MD_LINK = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+const BARE_URL = /https?:\/\/[^\s)]+/g;
+
+function richToPlainText(text: string): string {
+  return text.replace(MD_LINK, (_m, label, url) => `${label}: ${url}`);
+}
+
+function richToHtml(text: string): string {
   const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const urlRegex = /https?:\/\/[^\s]+/g;
-  let html = escape(text).replace(urlRegex, (escapedUrl) => {
-    const href = escapedUrl.replace(/&amp;/g, '&');
-    return `<a href="${href}" style="color:#000;text-decoration:underline">abrir →</a>`;
+  const tokens: string[] = [];
+  let working = text.replace(MD_LINK, (_m, label, url) => {
+    const i = tokens.length;
+    tokens.push(`<a href="${url}" style="color:#000;text-decoration:underline">${escape(label)}</a>`);
+    return `\u0000MDLINK${i}\u0000`;
   });
-  html = html.replace(/\n/g, '<br>');
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:24px;background:#ffffff;color:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55"><div style="max-width:480px;margin:0 auto;white-space:normal">${html}</div></body></html>`;
+  working = escape(working).replace(BARE_URL, (url) => {
+    return `<a href="${url}" style="color:#000;text-decoration:underline">abrir →</a>`;
+  });
+  working = working.replace(/\u0000MDLINK(\d+)\u0000/g, (_m, i) => tokens[Number(i)]);
+  working = working.replace(/\n/g, '<br>');
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:24px;background:#ffffff;color:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55"><div style="max-width:480px;margin:0 auto;white-space:normal">${working}</div></body></html>`;
 }
 
 const corsHeaders = {
@@ -53,7 +65,7 @@ function formatDiff(current: number, previous: number): string {
   const diff = current - previous;
   if (diff > 0) return `+${diff}`;
   if (diff < 0) return `${diff}`;
-  return '=';
+  return 'estable';
 }
 
 function formatDate(dateStr: string): string {
@@ -105,12 +117,12 @@ function buildBookPS(
   const finanzasUrl = buildBookUrl(BOOKS.finanzas, dim, email);
 
   if (dim === 'diversion') {
-    return `\n\nP.S. Pusiste un ${value} en Diversion. Para ese numero escribi un libro:\nComo RAJAR a tu jefe. No es lo que te imaginas.\n${rajarUrl}`;
+    return `\n\nP.S. Pusiste un ${value} en Diversion. Para ese numero escribi un libro:\n[Como RAJAR a tu jefe](${rajarUrl}). No es lo que te imaginas.`;
   }
   if (dim === 'dinero') {
-    return `\n\nP.S. Pusiste un ${value} en Dinero. Tengo un libro para eso:\nFINANZAS. Lo que no te enseñaron en la escuela.\n${finanzasUrl}\n\nAunque si atras de ese numero hay un jefe, empeza por:\nComo RAJAR a tu jefe — ${rajarUrl}`;
+    return `\n\nP.S. Pusiste un ${value} en Dinero. Tengo un libro para eso:\n[FINANZAS](${finanzasUrl}). Lo que no te enseñaron en la escuela.\n\nAunque si atras de ese numero hay un jefe, empeza por:\n[Como RAJAR a tu jefe](${rajarUrl}).`;
   }
-  return `\n\nP.S. Pusiste un ${value} en Desarrollo. Tengo un libro para eso:\nSe tu propio CEO.\n${ceoUrl}\n\nAunque si lo que frena tu crecimiento tiene nombre y apellido,\nprimero lee: Como RAJAR a tu jefe — ${rajarUrl}`;
+  return `\n\nP.S. Pusiste un ${value} en Desarrollo. Tengo un libro para eso:\n[Se tu propio CEO](${ceoUrl}).\n\nAunque si lo que frena tu crecimiento tiene nombre y apellido,\nprimero lee: [Como RAJAR a tu jefe](${rajarUrl}).`;
 }
 
 // WhatsApp recommend block
@@ -122,7 +134,7 @@ function buildWhatsAppEmailBlock(): string {
   url.searchParams.set('utm_content', 'ps_recommend');
   const text = `Te mando esto porque creo que te puede servir. Son 2 minutos y te ordena la cabeza.\n${url.toString()}`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  return `\n\n---\n¿Conocés a alguien que debería hacer esto?\nRecomendarlo por WhatsApp: ${waUrl}`;
+  return `\n\n---\n¿Conocés a alguien que debería hacer esto?\n[Recomendarlo por WhatsApp](${waUrl})`;
 }
 
 interface Record3D {
@@ -227,8 +239,8 @@ const handler = async (req: Request): Promise<Response> => {
           to: [record.email],
           reply_to: SITE_CONFIG.emailReplyTo,
           subject: 'Tu medicion 3D',
-          text: emailContent,
-          html: textToHtml(emailContent),
+          text: richToPlainText(emailContent),
+          html: richToHtml(emailContent),
         });
 
         await supabase.from('outbound_emails').insert({
