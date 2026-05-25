@@ -65,7 +65,7 @@ function formatDiff(current: number, previous: number): string {
   const diff = current - previous;
   if (diff > 0) return `+${diff}`;
   if (diff < 0) return `${diff}`;
-  return '=';
+  return 'estable';
 }
 
 function formatDate(dateStr: string): string {
