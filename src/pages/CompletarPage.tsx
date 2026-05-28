@@ -208,16 +208,19 @@ export default function CompletarPage() {
               <div className="grid grid-cols-2 gap-2">
                 <a
                   href={`${SITE_BASE}/por-edad?utm_source=completar&utm_medium=app&utm_campaign=demographics_backfill&utm_content=por_edad`}
+                  onClick={() => trackFlowEvent('open_stats', { surface: 'completar', target: 'age' })}
                   className="text-center py-2.5 text-xs border border-border rounded-sm hover:border-foreground/50 transition-colors"
                 >
                   Por edad
                 </a>
                 <a
                   href={`${SITE_BASE}/por-sector?utm_source=completar&utm_medium=app&utm_campaign=demographics_backfill&utm_content=por_sector`}
+                  onClick={() => trackFlowEvent('open_stats', { surface: 'completar', target: 'sector' })}
                   className="text-center py-2.5 text-xs border border-border rounded-sm hover:border-foreground/50 transition-colors"
                 >
                   Por sector
                 </a>
+
               </div>
             </div>
 
