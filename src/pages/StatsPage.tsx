@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getCountryName, getCountryFlag } from '@/lib/countries';
 import { CountryMap } from '@/components/stats/CountryMap';
 import { StatsLegend } from '@/components/stats/StatsLegend';
+import { StatsNav } from '@/components/stats/StatsNav';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
 import logoImage from '@/assets/3d-logo.svg';
@@ -205,6 +206,8 @@ export default function StatsPage() {
           )}
         </div>
       </header>
+
+      <StatsNav active="country" />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
         {/* Filters */}
