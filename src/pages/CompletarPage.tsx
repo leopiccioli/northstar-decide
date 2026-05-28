@@ -66,6 +66,7 @@ export default function CompletarPage() {
             body: { token, ageRange: urlAge },
           });
           if (!upErr && upd && !upd.error) {
+            trackFlowEvent('complete_demographics', { source: 'url_auto', has_age: true, has_sector: false });
             const updatedRecord = { ...record, age_range: urlAge };
             if (!missingSector) {
               setState({ kind: 'done', record: updatedRecord });
@@ -80,6 +81,7 @@ export default function CompletarPage() {
             return;
           }
         }
+
 
         setState({ kind: 'form', record, missingAge, missingSector });
       } catch (e) {
