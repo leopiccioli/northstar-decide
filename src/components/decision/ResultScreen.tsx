@@ -11,6 +11,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { SITE_CONFIG, buildBeehiivUrl, buildWhatsAppShareUrl } from '@/config/urls';
 import { trackFlowEvent } from '@/lib/analytics';
 import { detectEmailTypo } from '@/lib/emailTypo';
+import { CompareWithOthers } from './CompareWithOthers';
 
 // Lazy load CountryCombobox - only needed at save step
 const CountryCombobox = lazy(() => import('./CountryCombobox').then(m => ({ default: m.CountryCombobox })));
@@ -636,6 +637,9 @@ export default function ResultScreen({
             )}
           </div>
         )}
+
+        {/* Comparate con otros — links a /por-pais, /por-sector, /por-edad */}
+        <CompareWithOthers />
 
         {/* Post-save: show success with share options (optimistic UI) */}
         {showSuccess && savedRecordId ? (
