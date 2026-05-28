@@ -1,42 +1,42 @@
-## 1. Nav superior en páginas de stats (`/por-pais`, `/por-sector`, `/por-edad`)
 
-Nuevo componente `src/components/stats/StatsNav.tsx` con 3 pills:
-- "Por país" → `/por-pais`
-- "Por sector" → `/por-sector`
-- "Por edad" → `/por-edad`
+## Cambios al popup de comentarios
 
-La pill activa se muestra resaltada (border/foreground), las otras dos como links neutros. Se renderiza arriba de todo en `StatsPage.tsx`, `SectorStatsPage.tsx` y `AgeStatsPage.tsx` (debajo del header existente / antes del selector de período). Sigue la estética monocromática actual: Space Grotesk, sin colores semánticos positivos/negativos.
+### 1. Filename con ID rastreable
+- `CommentShareCard` recibe `id` del comentario (ya disponible en `Comment`).
+- Nombre del archivo: `3d-comentario-{shortId}.png` (primeros 8 chars del uuid).
+- También se usa como `utm_content` si agregamos share.
 
-## 2. Comentarios: modal compartible al clickear una tarjeta
+### 2. Imagen compacta + metadata visible
+Problema actual: canvas 1080×1350 con mucho aire abajo y sin fecha/país/sector/edad.
 
-Nuevo componente `src/components/comments/CommentShareCard.tsx` + modal usando `Dialog` de shadcn.
+Cambios en `generateCommentImage.ts`:
+- Recibir `createdAt`, `country`, `sector`, `ageRange` además de los actuales.
+- Reducir altura a un canvas **auto-ajustable**: calcular alto según líneas del comentario + meta. Mantener ancho 1080, alto entre 1080 y 1350 según contenido (alto mínimo 1080 para que quede cuadrado-ish y compartible en stories/feed).
+- Layout:
+  - Título "3D para Decidir" (top, 90px padding)
+  - 3 sliders (Dinero / Desarrollo / Diversión)
+  - Divider
+  - Comentario (`"..."`) en cuerpo
+  - **Línea de metadata** (debajo del comentario, gris pequeño): `28 may 2026 · 🇦🇷 Argentina · Tecnología / Software · 35-44` — solo muestra los que existen, separados por ` · `.
+  - Footer `3d.ceoencamiseta.com` cerca del final, no flotando lejos.
+- Reducir `padding` y huecos para evitar espacio muerto.
+- Si el comentario es corto, el canvas queda más bajo (no se rellena con vacío).
 
-**Comportamiento:**
-- En `CommentsPage.tsx`, tanto en vista feed como mosaico, hacer cada `<article>` clickeable (no envolver con `<Link>` para no romper navegación). Al click → abre Dialog con el contenido.
-- Para hacerlo, la query necesita los nombres reales de las dimensiones del comentario (ya vienen: `dinero`, `desarrollo`, `diversion`). No requiere nuevos datos del backend.
+Bandera de UTF-8 (emoji) en canvas: usar font stack que soporte emojis (`"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"`) o omitir la bandera en la imagen y usar solo el nombre del país (más seguro cross-browser). **Decisión:** omitir bandera en la imagen, mantenerla solo en el dialog. Más limpio y evita problemas de render.
 
-**Contenido del modal (la "imagen compartible"):**
-Un card cuadrado/4:5 con fondo `bg-background`, padding generoso, pensado para captura/screenshot:
-1. Título pequeño arriba: "3D para Decidir"
-2. Las 3 dimensiones renderizadas con `DimensionSlider` en modo **read-only** (sin interacción) mostrando los valores de esa persona — Dinero (rojo), Desarrollo (navy), Diversión (gris). Se reutiliza `DimensionSlider` pasándole `onChange={() => {}}` y deshabilitando pointer-events vía wrapper `pointer-events-none`.
-3. El comentario en texto grande debajo.
-4. Footer: `3d.ceoencamiseta.com` (desde `SITE_CONFIG.domain`) en tipografía discreta.
+### 3. Compartir por WhatsApp — sí, vale la pena
+Razón: la persona que comenta puede querer compartir su propio testimonio, y otros lectores pueden querer compartir un comentario que les resonó. Es coherente con la estrategia de distribución viral existente (`buildWhatsAppShareUrl`).
 
-**Acciones bajo la card (fuera de la zona "compartible"):**
-- Botón "Descargar imagen" → usa el patrón de `ShareImageGenerator.ts` (Canvas API) para generar PNG 1080x1350 con sliders dibujados a mano y el comentario + dominio. Se descarga directo (no share nativo, porque el caso de uso es "pegarlo en un artículo").
-- Cerrar.
+Implementación:
+- Botón secundario "Compartir" al lado de "Descargar imagen" en `CommentShareCard`.
+- En mobile (con `navigator.share` y `canShare({ files })`): share nativo con el PNG + texto.
+- Fallback: abrir `wa.me` con texto + link al sitio (sin imagen, WhatsApp Web no soporta files vía URL).
+- Texto: `"Un comentario de las 3D que me quedó dando vueltas:\n\n\"{comentario corto}\"\n\n{baseUrl}?utm_source=whatsapp&utm_medium=referral&utm_campaign=share_comment&utm_content={shortId}"`.
+- Trackear con `trackFlowEvent('share_result', { surface: 'comment', id: shortId })` (reutilizar evento existente, no agregar nuevo tipo).
 
-**Generación PNG:** Nuevo helper `src/components/comments/generateCommentImage.ts` siguiendo el estilo de `ShareImageGenerator.ts` — dibuja título, 3 barras horizontales monocromáticas con labels Dinero/Desarrollo/Diversión y valor X/10, comentario centrado (con wrap), dominio al pie.
+### Archivos a editar
+- `src/components/comments/CommentShareCard.tsx` — recibir `id`, pasar meta a generador, agregar botón share, naming del archivo.
+- `src/components/comments/generateCommentImage.ts` — aceptar meta, calcular alto dinámico, dibujar línea de metadata, layout más compacto.
+- `src/pages/CommentsPage.tsx` — pasar `id={selected.id}` al `CommentShareCard`.
 
-## Archivos
-
-**Nuevos:**
-- `src/components/stats/StatsNav.tsx`
-- `src/components/comments/CommentShareCard.tsx`
-- `src/components/comments/generateCommentImage.ts`
-
-**Editados:**
-- `src/pages/StatsPage.tsx`, `SectorStatsPage.tsx`, `AgeStatsPage.tsx` — montar `<StatsNav active="..." />`
-- `src/pages/CommentsPage.tsx` — `onClick` en cada `<article>` que abre `Dialog` con `<CommentShareCard>`
-
-Sin cambios de base de datos, edge functions ni memorias nuevas (la memoria de comentarios sigue válida).
+Sin cambios en DB ni edge functions.
