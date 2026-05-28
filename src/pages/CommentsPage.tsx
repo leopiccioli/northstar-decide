@@ -32,6 +32,7 @@ const CommentsPage = () => {
     searchParams.get("vista") === "mosaico" ? "mosaic" : "feed"
   );
   const ctaPosition = useMemo(() => Math.floor(Math.random() * 13) + 3, []);
+  const [selected, setSelected] = useState<Comment | null>(null);
 
   const { data: comments, isLoading, isError, refetch } = useQuery({
     queryKey: ["comments"],
