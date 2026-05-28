@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CommentShareCard } from "@/components/comments/CommentShareCard";
 
 interface Comment {
   id: string;
