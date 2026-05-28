@@ -118,11 +118,22 @@ const CommentsPage = () => {
             </button>
           </div>
         ) : view === "feed" ? (
-          <FeedView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} />
+          <FeedView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} onSelect={setSelected} />
         ) : (
-          <MosaicView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} />
+          <MosaicView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} onSelect={setSelected} />
         )}
       </main>
+
+      {selected && (
+        <CommentShareCard
+          open={!!selected}
+          onOpenChange={(o) => !o && setSelected(null)}
+          dinero={selected.dinero}
+          desarrollo={selected.desarrollo}
+          diversion={selected.diversion}
+          comment={selected.comment}
+        />
+      )}
     </div>
   );
 };
@@ -131,6 +142,7 @@ interface ViewProps {
   comments: Comment[];
   formatDate: (date: string) => string;
   ctaPosition: number;
+  onSelect: (c: Comment) => void;
 }
 
 const FeedSkeleton = () => (
