@@ -162,42 +162,31 @@ serve(async (req) => {
       }
       toSend = [{ ...rec, email: testEmail }];
     } else {
-      const { data: notified } = await supabase
-        .from('outbound_emails')
-        .select('to_email')
-        .eq('email_type', 'demographics_backfill');
-
-      const notifiedSet = new Set((notified || []).map((r: any) => r.to_email.toLowerCase()));
-
-      const { data: candidates, error } = await supabase
-        .from('records_3d')
-        .select('id, email, sector, age_range, dinero, desarrollo, diversion, created_at')
-        .or('sector.is.null,age_range.is.null')
-        .order('created_at', { ascending: false })
-        .limit(2000);
+      const { data: pending, error } = await supabase
+        .rpc('get_pending_demographics_backfill', { batch_limit: batchLimit });
 
       if (error) {
-        console.error('Fetch error:', error);
+        console.error('RPC error:', error);
         return new Response(JSON.stringify({ error: error.message }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      const seen = new Set<string>();
-      for (const r of (candidates || [])) {
-        const e = r.email.toLowerCase();
-        if (seen.has(e)) continue;
-        seen.add(e);
-        if (notifiedSet.has(e)) continue;
-        toSend.push(r);
-        if (toSend.length >= batchLimit) break;
-      }
+      toSend = (pending || []).map((r: any) => ({
+        id: r.record_id,
+        email: r.email,
+        dinero: r.dinero,
+        desarrollo: r.desarrollo,
+        diversion: r.diversion,
+        created_at: r.created_at,
+      }));
 
       if (!toSend.length) {
         return new Response(JSON.stringify({ sent: 0, failed: 0, message: 'No pending backfill emails' }), {
           status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
     }
 
     let sent = 0;
