@@ -116,6 +116,12 @@ export default function CompletarPage() {
           age_range: payload.ageRange || state.record.age_range,
         },
       });
+      trackFlowEvent('complete_demographics', {
+        source: 'form',
+        has_sector: Boolean(payload.sector),
+        has_age: Boolean(payload.ageRange),
+      });
+
     } catch (e) {
       console.error(e);
       setSaving(false);
