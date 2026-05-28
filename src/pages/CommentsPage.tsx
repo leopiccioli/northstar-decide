@@ -22,6 +22,9 @@ interface Comment {
   dinero: number;
   desarrollo: number;
   diversion: number;
+  country: string | null;
+  sector: string | null;
+  age_range: string | null;
 }
 
 type ViewMode = "feed" | "mosaic";
@@ -132,6 +135,10 @@ const CommentsPage = () => {
           desarrollo={selected.desarrollo}
           diversion={selected.diversion}
           comment={selected.comment}
+          createdAt={selected.created_at}
+          country={selected.country}
+          sector={selected.sector}
+          ageRange={selected.age_range}
         />
       )}
     </div>
