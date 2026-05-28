@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import logoImage from '@/assets/3d-logo.svg';
+import { StatsNav } from '@/components/stats/StatsNav';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'sector' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
@@ -160,6 +161,8 @@ export default function SectorStatsPage() {
           )}
         </div>
       </header>
+
+      <StatsNav active="sector" />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
         <div className="flex flex-wrap gap-4 items-center justify-between">

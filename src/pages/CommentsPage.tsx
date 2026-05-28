@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CommentShareCard } from "@/components/comments/CommentShareCard";
 
 interface Comment {
   id: string;
@@ -31,6 +32,7 @@ const CommentsPage = () => {
     searchParams.get("vista") === "mosaico" ? "mosaic" : "feed"
   );
   const ctaPosition = useMemo(() => Math.floor(Math.random() * 13) + 3, []);
+  const [selected, setSelected] = useState<Comment | null>(null);
 
   const { data: comments, isLoading, isError, refetch } = useQuery({
     queryKey: ["comments"],
@@ -116,11 +118,22 @@ const CommentsPage = () => {
             </button>
           </div>
         ) : view === "feed" ? (
-          <FeedView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} />
+          <FeedView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} onSelect={setSelected} />
         ) : (
-          <MosaicView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} />
+          <MosaicView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} onSelect={setSelected} />
         )}
       </main>
+
+      {selected && (
+        <CommentShareCard
+          open={!!selected}
+          onOpenChange={(o) => !o && setSelected(null)}
+          dinero={selected.dinero}
+          desarrollo={selected.desarrollo}
+          diversion={selected.diversion}
+          comment={selected.comment}
+        />
+      )}
     </div>
   );
 };
@@ -129,6 +142,7 @@ interface ViewProps {
   comments: Comment[];
   formatDate: (date: string) => string;
   ctaPosition: number;
+  onSelect: (c: Comment) => void;
 }
 
 const FeedSkeleton = () => (
@@ -199,7 +213,7 @@ const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
   );
 };
 
-const FeedView = ({ comments, formatDate, ctaPosition }: ViewProps) => (
+const FeedView = ({ comments, formatDate, ctaPosition, onSelect }: ViewProps) => (
   <div className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl overflow-hidden">
     <div className="divide-y divide-zinc-800">
       {comments.map((comment, index) => (
@@ -207,7 +221,8 @@ const FeedView = ({ comments, formatDate, ctaPosition }: ViewProps) => (
           {index === ctaPosition && <CTACard key="cta" variant="feed" />}
           <article
             key={comment.id}
-            className="flex gap-3 p-4 hover:bg-zinc-800/50 transition-colors"
+            onClick={() => onSelect(comment)}
+            className="flex gap-3 p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer"
           >
             {/* Avatar placeholder */}
             <div className="w-10 h-10 rounded-full bg-zinc-700 flex-shrink-0" />
@@ -271,7 +286,7 @@ const cardColors = [
   "bg-slate-100 dark:bg-slate-800/30",
 ];
 
-const MosaicView = ({ comments, formatDate, ctaPosition }: ViewProps) => (
+const MosaicView = ({ comments, formatDate, ctaPosition, onSelect }: ViewProps) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {comments.map((comment, index) => {
       const isShort = comment.comment.length < 80;
@@ -284,8 +299,9 @@ const MosaicView = ({ comments, formatDate, ctaPosition }: ViewProps) => (
           {index === ctaPosition && <CTACard key="cta-mosaic" variant="mosaic" />}
           <article
             key={comment.id}
+            onClick={() => onSelect(comment)}
             className={cn(
-              "rounded-xl shadow-sm opacity-0 animate-fade-up",
+              "rounded-xl shadow-sm opacity-0 animate-fade-up cursor-pointer hover:scale-[1.02] transition-transform",
               colorClass,
               isShort ? "p-5" : isLong ? "p-3" : "p-4",
               isLong ? "flex flex-col gap-3" : "flex gap-3"
