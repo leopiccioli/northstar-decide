@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CommentShareCard } from "@/components/comments/CommentShareCard";
+import { StatsNav } from "@/components/stats/StatsNav";
 
 interface Comment {
   id: string;
@@ -105,6 +106,8 @@ const CommentsPage = () => {
           </div>
         </div>
       </header>
+
+      <StatsNav active="comments" />
 
       {/* Content */}
       <main className="p-4 md:p-6">

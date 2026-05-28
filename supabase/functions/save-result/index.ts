@@ -267,6 +267,19 @@ function buildWhatsAppEmailBlock(): string {
   return `\n\n---\n¿Conocés a alguien que debería hacer esto?\n[Recomendarlo por WhatsApp](${buildWhatsAppRecommendUrl('email')})`;
 }
 
+function buildCompareWithOthersBlock(): string {
+  const base = 'https://3d.ceoencamiseta.com';
+  const utm = 'utm_source=3d&utm_medium=email&utm_campaign=stats_discovery';
+  return [
+    '',
+    '---',
+    'Compará tu 3D con otros:',
+    `[Por país](${base}/por-pais?${utm}&utm_content=country)`,
+    `[Por sector](${base}/por-sector?${utm}&utm_content=sector)`,
+    `[Por edad](${base}/por-edad?${utm}&utm_content=age)`,
+  ].join('\n');
+}
+
 function buildEmailContent(
   currentName: string,
   currentScores: Scores,
@@ -335,6 +348,7 @@ function buildEmailContent(
   }
 
   content += buildBookPS(currentScores, comparison, email);
+  content += buildCompareWithOthersBlock();
   content += buildWhatsAppEmailBlock();
 
   return content;
