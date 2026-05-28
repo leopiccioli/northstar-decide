@@ -137,48 +137,67 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const batchLimit = Math.min(Math.max(Number(body.batch_limit) || 100, 1), 500);
+    const testEmail: string | undefined = body.test_email;
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: notified } = await supabase
-      .from('outbound_emails')
-      .select('to_email')
-      .eq('email_type', 'demographics_backfill');
+    let toSend: any[] = [];
 
-    const notifiedSet = new Set((notified || []).map((r: any) => r.to_email.toLowerCase()));
+    if (testEmail) {
+      // Test mode: pick latest record for any email, ignore notified set
+      const { data: rec, error } = await supabase
+        .from('records_3d')
+        .select('id, email, sector, age_range, dinero, desarrollo, diversion, created_at')
+        .ilike('email', testEmail)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error || !rec) {
+        return new Response(JSON.stringify({ error: error?.message || 'No record found for test_email' }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      toSend = [{ ...rec, email: testEmail }];
+    } else {
+      const { data: notified } = await supabase
+        .from('outbound_emails')
+        .select('to_email')
+        .eq('email_type', 'demographics_backfill');
 
-    const { data: candidates, error } = await supabase
-      .from('records_3d')
-      .select('id, email, sector, age_range, dinero, desarrollo, diversion, created_at')
-      .or('sector.is.null,age_range.is.null')
-      .order('created_at', { ascending: false })
-      .limit(2000);
+      const notifiedSet = new Set((notified || []).map((r: any) => r.to_email.toLowerCase()));
 
-    if (error) {
-      console.error('Fetch error:', error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+      const { data: candidates, error } = await supabase
+        .from('records_3d')
+        .select('id, email, sector, age_range, dinero, desarrollo, diversion, created_at')
+        .or('sector.is.null,age_range.is.null')
+        .order('created_at', { ascending: false })
+        .limit(2000);
 
-    const seen = new Set<string>();
-    const toSend: any[] = [];
-    for (const r of (candidates || [])) {
-      const e = r.email.toLowerCase();
-      if (seen.has(e)) continue;
-      seen.add(e);
-      if (notifiedSet.has(e)) continue;
-      toSend.push(r);
-      if (toSend.length >= batchLimit) break;
-    }
+      if (error) {
+        console.error('Fetch error:', error);
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-    if (!toSend.length) {
-      return new Response(JSON.stringify({ sent: 0, failed: 0, message: 'No pending backfill emails' }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const seen = new Set<string>();
+      for (const r of (candidates || [])) {
+        const e = r.email.toLowerCase();
+        if (seen.has(e)) continue;
+        seen.add(e);
+        if (notifiedSet.has(e)) continue;
+        toSend.push(r);
+        if (toSend.length >= batchLimit) break;
+      }
+
+      if (!toSend.length) {
+        return new Response(JSON.stringify({ sent: 0, failed: 0, message: 'No pending backfill emails' }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     let sent = 0;
