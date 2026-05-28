@@ -280,6 +280,19 @@ export type Database = {
     }
     Functions: {
       count_pending_legacy_notifications: { Args: never; Returns: number }
+      get_pending_demographics_backfill: {
+        Args: { batch_limit?: number }
+        Returns: {
+          created_at: string
+          desarrollo: number
+          dinero: number
+          diversion: number
+          email: string
+          has_age: boolean
+          has_sector: boolean
+          record_id: string
+        }[]
+      }
       get_pending_legacy_notifications: {
         Args: { batch_limit?: number }
         Returns: {

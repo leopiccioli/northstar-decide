@@ -1,116 +1,80 @@
 
-# Backfill demographics — email con CTA inline
+# Backfill demográfico — Plan de ejecución
 
-## Idea central
+El flujo de email + `/completar` ya está testeado y funcionando (confirmado con `leopiccioli@gmail.com`: edad y sector quedaron guardados). Falta decidir cómo activar el envío masivo.
 
-El mail no manda a un form: ofrece 2 caminos.
-1. Rehacer las 3D (medirse de nuevo).
-2. Tocar un chip de edad → la landing guarda esa edad automáticamente y solo pide el sector.
+## 1. Universo objetivo
 
-## Copy del email
+Un email entra al backfill si cumple **todas** estas condiciones:
 
-**From:** `3D, de CEO en Camiseta <3d@3d.ceoencamiseta.com>`
-**Asunto:** `Hace 3 meses hiciste las 3D — ¿cómo te comparás por edad?`
-(el tiempo se calcula por record; ej. "Hace 12 días", "Hace 1 año")
+- Tiene al menos un registro en `records_3d` (reales **o** legacy).
+- Su registro **más reciente** no tiene ni `sector` ni `age_range` (le falta al menos uno).
+- Nunca recibió un `demographics_backfill` (no existe en `outbound_emails` con ese `email_type`).
+- No tuvo bounce/complaint/unsubscribe en `email_events`.
 
-**Cuerpo (HTML minimal, mismo estilo receipt):**
+Usamos el registro **más reciente** como base del email (scores, fecha, token = `record_id`).
 
-```
-Hace 3 meses (15/02/2026) completaste las 3D:
+## 2. Ritmo y ventana
 
-Dinero        6
-Desarrollo    8
-Diversión     4
+- **100 emails/día**, todos los días.
+- Cron: `0 13 * * *` (UTC) → **10:00 AR**.
+- Edge function: `send-demographics-backfill` con `{ batch_limit: 100 }` (ya soporta el parámetro).
+- Estimado: con ~N pendientes, el backfill termina en ~N/100 días. Antes de activar te muestro el número exacto.
 
-Sumamos comparaciones por sector y edad (como ya hacemos por país: 
-https://3d.ceoencamiseta.com/por-pais).
+## 3. Infraestructura a agregar
 
-Para que tu medición aparezca en esas comparaciones, faltan dos datos.
+### a) Migration: `pg_cron` job
 
-Dos opciones:
-
-1. Hacé las 3D de nuevo — te evaluás hoy y completamos los datos:
-   https://3d.ceoencamiseta.com/?email=...&utm_campaign=demographics_backfill&utm_content=redo
-
-2. Tocá tu edad y la sumamos ahora:
-   [18-24]  [25-34]  [35-44]  [45-54]  [55-64]  [65+]
-   
-   (cada chip es un link a /completar?token=XXX&age=25-34)
-
-Después te pido el sector en 1 click más.
-
-Leo
-```
-
-- Si el record ya tiene sector o edad, mostramos los dos caminos igual (mail unificado). La landing detecta qué falta.
-- Sin reintentos.
-
-## Landing `/completar?token=XXX&age=YY`
-
-Componente nuevo `CompletarPage.tsx`. Flujo de 2 pasos según qué falta:
-
-**Paso 1 — guardar edad automáticamente (si vino `age` en URL y el record no tenía):**
-- Al montar, llama `update-demographics { token, ageRange }`.
-- Muestra: "Listo, gracias. 35-44 guardado."
-- Si todavía falta sector → pasa a Paso 2.
-
-**Paso 2 — pedir sector:**
-- "Solo falta tu sector:" + `<SectorCombobox />`.
-- Al elegir, guarda automáticamente (sin botón submit).
-
-**Paso 3 — confirmación:**
-```
-Listo. Gracias.
-
-Mirá cómo te comparás:
-[Por edad]  [Por sector]
-
-¿Pasaron unos meses? Hacé las 3D de nuevo:
-[Medirme otra vez]
+```sql
+SELECT cron.schedule(
+  'demographics-backfill-daily',
+  '0 13 * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/send-demographics-backfill',
+    headers := jsonb_build_object(
+      'Content-Type','application/json',
+      'Authorization','Bearer <SERVICE_ROLE_KEY>'
+    ),
+    body := jsonb_build_object('batch_limit', 100)
+  ) AS request_id;
+  $$
+);
 ```
 
-Casos borde:
-- Si no vino `age` en URL → Paso 1 = chips de edad inline en la landing + combobox de sector debajo (form completo).
-- Si ya tenía edad y sector → "Ya teníamos tus datos. Gracias." + links a /por-edad, /por-sector.
-- Token inválido o expirado → "Link no válido" + link al home.
+(El service role key se inyecta vía secret `SUPABASE_SERVICE_ROLE_KEY`.)
 
-## Backend
+### b) Función SQL `get_pending_demographics_backfill(batch_limit int)`
 
-### Migration
-- Add `'demographics_backfill'` al CHECK constraint de `outbound_emails.email_type`.
+Para que la edge function tome el batch con una sola query, en vez de filtrar en JS:
 
-### Edge functions (3 nuevas)
+- Devuelve `email`, `record_id` (el más reciente), `dinero`, `desarrollo`, `diversion`, `created_at`, `has_sector`, `has_age`.
+- Excluye: ya notificados (`demographics_backfill`), bounces/complaints/unsubscribes.
+- `LIMIT batch_limit`.
 
-1. **`get-record-for-backfill`** — POST `{ token }` → devuelve `{ email_masked, sector, age_range, days_since, dinero, desarrollo, diversion, created_at }`. Rate limit 10/min/IP.
+Esto reemplaza la lógica actual de la edge function (que hoy filtra en memoria y no escala bien).
 
-2. **`update-demographics`** — POST `{ token, sector?, ageRange? }` → valida contra `SECTORS` / `AGE_RANGES`, hace UPDATE del record asociado al token. Rate limit 10/min/IP.
+### c) Ajuste en `send-demographics-backfill`
 
-3. **`send-demographics-backfill`** — POST `{ batch_limit: 100 }`. Query: `records_3d` con `sector IS NULL OR age_range IS NULL`, último por email, excluyendo emails ya en `outbound_emails` con `email_type='demographics_backfill'`. Renderiza HTML con chips de edad (links a `/completar?token=<id>&age=<range>&utm_*`), envía vía Resend, registra en `outbound_emails`.
+- Si **no** viene `test_email`, llamar a `get_pending_demographics_backfill(batch_limit)` en vez del flujo actual.
+- Registrar cada envío en `outbound_emails` con `email_type='demographics_backfill'` y `record_id` (clave para no re-enviar).
+- Mantener el modo `test_email` para QA puntual.
 
-### Cron
-- `pg_cron` diario a las 10:00 UTC (7am AR) llamando `send-demographics-backfill` con `batch_limit: 100`. **No se activa todavía** — primero test manual con `batch_limit: 5`.
+## 4. Salvaguardas
 
-### Ruta
-- Agregar `/completar` en `App.tsx` (lazy).
+- **Idempotencia**: `outbound_emails` actúa como ledger. Si la función corre dos veces el mismo día, el segundo batch excluye los ya notificados.
+- **Pausa de emergencia**: `SELECT cron.unschedule('demographics-backfill-daily');`
+- **Throttle Resend**: 100/día queda muy por debajo del límite del plan.
+- **Observabilidad**: cada corrida loguea `{ sent, skipped, errors }`. Podemos consultar `outbound_emails` filtrando por `email_type` y fecha.
 
-## Tracking
-- UTMs en todos los links del mail: `utm_source=3d&utm_medium=email&utm_campaign=demographics_backfill&utm_content=age_chip|redo|por_pais`.
-- `trackFlowEvent('demographics_backfill_completed', { source: 'age_chip'|'form', has_sector, has_age })` en la landing.
+## 5. Orden de ejecución propuesto
 
-## Orden de ejecución
-1. Migration (CHECK constraint).
-2. Edge functions + deploy.
-3. `CompletarPage.tsx` + ruta.
-4. Test manual con `batch_limit: 5` a emails de prueba.
-5. Revisar copy + rendering en gmail/outlook.
-6. Activar cron diario.
+1. Crear la función SQL `get_pending_demographics_backfill` + un `SELECT count(*)` para ver el universo real.
+2. Te muestro el número (ej.: "hay 1.247 pendientes, ~13 días").
+3. Refactor de `send-demographics-backfill` para usar la nueva función.
+4. Correr 1 batch manual con `batch_limit: 5` como dry-run (a emails reales pero pequeño).
+5. Si OK, agendar el cron diario.
 
-## Archivos a crear/tocar
-- `supabase/migrations/<ts>_demographics_backfill_constraint.sql`
-- `supabase/functions/get-record-for-backfill/index.ts`
-- `supabase/functions/update-demographics/index.ts`
-- `supabase/functions/send-demographics-backfill/index.ts`
-- `src/pages/CompletarPage.tsx`
-- `src/components/decision/CompleteDemographicsForm.tsx` (chips + combobox reutilizable)
-- `src/App.tsx` (ruta nueva)
-- `.lovable/backfill-demographics.md` (actualizar con copy final)
+## 6. Decisión pendiente
+
+¿Arrancamos por el paso 1 (crear la función SQL + contar el universo) y con ese número decidimos si 100/día está bien o lo ajustamos?
