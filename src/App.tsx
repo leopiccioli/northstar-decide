@@ -10,6 +10,7 @@ const StatsPage = lazy(() => import("./pages/StatsPage"));
 const SectorStatsPage = lazy(() => import("./pages/SectorStatsPage"));
 const AgeStatsPage = lazy(() => import("./pages/AgeStatsPage"));
 const CommentsPage = lazy(() => import("./pages/CommentsPage"));
+const CompletarPage = lazy(() => import("./pages/CompletarPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Lazy load toasters - not needed for initial render
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/por-sector" element={<SectorStatsPage />} />
             <Route path="/por-edad" element={<AgeStatsPage />} />
             <Route path="/comentarios" element={<CommentsPage />} />
+            <Route path="/completar" element={<CompletarPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
