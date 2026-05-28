@@ -14,6 +14,8 @@ import { detectEmailTypo } from '@/lib/emailTypo';
 
 // Lazy load CountryCombobox - only needed at save step
 const CountryCombobox = lazy(() => import('./CountryCombobox').then(m => ({ default: m.CountryCombobox })));
+const SectorCombobox = lazy(() => import('./SectorCombobox').then(m => ({ default: m.SectorCombobox })));
+import { AgeRangeChips } from './AgeRangeChips';
 
 // Dynamic imports for share functionality - loaded on demand
 const loadShareUtils = () => import('./ShareImageGenerator');
@@ -238,6 +240,8 @@ function SaveSection({
   
   const [email, setEmail] = useState(trackingData.email || '');
   const [country, setCountry] = useState('');
+  const [sector, setSector] = useState('');
+  const [ageRange, setAgeRange] = useState('');
   const [reminder, setReminder] = useState<ReminderPeriod>('1m');
   const [emailError, setEmailError] = useState('');
   const [countryError, setCountryError] = useState('');
@@ -296,6 +300,8 @@ function SaveSection({
     const payload = {
       email: trimmedEmail,
       country,
+      sector: sector || undefined,
+      ageRange: ageRange || undefined,
       optionName: currentOption.name,
       scores: currentOption.scores,
       comment: currentOption.comment,
@@ -415,6 +421,12 @@ function SaveSection({
           error={countryError}
         />
       </Suspense>
+
+      <Suspense fallback={<div className="h-[72px] bg-secondary animate-pulse rounded-sm" />}>
+        <SectorCombobox value={sector} onChange={setSector} />
+      </Suspense>
+
+      <AgeRangeChips value={ageRange} onChange={setAgeRange} />
 
       <div className="space-y-2">
         <label className="text-sm text-muted-foreground">Recordatorio</label>
