@@ -131,6 +131,7 @@ const CommentsPage = () => {
         <CommentShareCard
           open={!!selected}
           onOpenChange={(o) => !o && setSelected(null)}
+          id={selected.id}
           dinero={selected.dinero}
           desarrollo={selected.desarrollo}
           diversion={selected.diversion}
@@ -141,6 +142,7 @@ const CommentsPage = () => {
           ageRange={selected.age_range}
         />
       )}
+
     </div>
   );
 };
