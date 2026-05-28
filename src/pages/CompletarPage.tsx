@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { SECTORS, AGE_RANGES, isValidAgeRange, isValidSector } from '@/lib/demographics';
 import { SectorCombobox } from '@/components/decision/SectorCombobox';
 import { AgeRangeChips } from '@/components/decision/AgeRangeChips';
+import { trackFlowEvent, trackCustomEvent } from '@/lib/analytics';
+
 
 type State =
   | { kind: 'loading' }
@@ -64,6 +66,7 @@ export default function CompletarPage() {
             body: { token, ageRange: urlAge },
           });
           if (!upErr && upd && !upd.error) {
+            trackFlowEvent('complete_demographics', { source: 'url_auto', has_age: true, has_sector: false });
             const updatedRecord = { ...record, age_range: urlAge };
             if (!missingSector) {
               setState({ kind: 'done', record: updatedRecord });
@@ -78,6 +81,7 @@ export default function CompletarPage() {
             return;
           }
         }
+
 
         setState({ kind: 'form', record, missingAge, missingSector });
       } catch (e) {
@@ -112,6 +116,12 @@ export default function CompletarPage() {
           age_range: payload.ageRange || state.record.age_range,
         },
       });
+      trackFlowEvent('complete_demographics', {
+        source: 'form',
+        has_sector: Boolean(payload.sector),
+        has_age: Boolean(payload.ageRange),
+      });
+
     } catch (e) {
       console.error(e);
       setSaving(false);
@@ -198,16 +208,19 @@ export default function CompletarPage() {
               <div className="grid grid-cols-2 gap-2">
                 <a
                   href={`${SITE_BASE}/por-edad?utm_source=completar&utm_medium=app&utm_campaign=demographics_backfill&utm_content=por_edad`}
+                  onClick={() => trackFlowEvent('open_stats', { surface: 'completar', target: 'age' })}
                   className="text-center py-2.5 text-xs border border-border rounded-sm hover:border-foreground/50 transition-colors"
                 >
                   Por edad
                 </a>
                 <a
                   href={`${SITE_BASE}/por-sector?utm_source=completar&utm_medium=app&utm_campaign=demographics_backfill&utm_content=por_sector`}
+                  onClick={() => trackFlowEvent('open_stats', { surface: 'completar', target: 'sector' })}
                   className="text-center py-2.5 text-xs border border-border rounded-sm hover:border-foreground/50 transition-colors"
                 >
                   Por sector
                 </a>
+
               </div>
             </div>
 
