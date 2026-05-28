@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Download } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { SITE_CONFIG } from '@/config/urls';
+import { getCountryName, getCountryFlag } from '@/lib/countries';
 import { generateCommentImage } from './generateCommentImage';
 
 interface ReadOnlySliderProps {
@@ -39,6 +40,19 @@ interface CommentShareCardProps {
   desarrollo: number;
   diversion: number;
   comment: string;
+  createdAt: string;
+  country: string | null;
+  sector: string | null;
+  ageRange: string | null;
+}
+
+function formatShortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'America/Argentina/Buenos_Aires',
+  });
 }
 
 export function CommentShareCard({
@@ -48,8 +62,21 @@ export function CommentShareCard({
   desarrollo,
   diversion,
   comment,
+  createdAt,
+  country,
+  sector,
+  ageRange,
 }: CommentShareCardProps) {
   const [downloading, setDownloading] = useState(false);
+
+  const metaParts: string[] = [formatShortDate(createdAt)];
+  if (country) {
+    const flag = getCountryFlag(country);
+    const name = getCountryName(country) || country;
+    metaParts.push(`${flag ? flag + ' ' : ''}${name}`);
+  }
+  if (sector) metaParts.push(sector);
+  if (ageRange) metaParts.push(ageRange);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -85,8 +112,11 @@ export function CommentShareCard({
             <ReadOnlySlider label="Diversión" value={diversion} color="#9CA3AF" />
           </div>
 
-          <div className="border-t border-border pt-5">
+          <div className="border-t border-border pt-5 space-y-2">
             <p className="text-base leading-relaxed text-foreground">"{comment}"</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">
+              {metaParts.join(' · ')}
+            </p>
           </div>
 
           <div className="text-center text-xs text-muted-foreground pt-2">

@@ -294,12 +294,15 @@ export type Database = {
       get_public_comments: {
         Args: never
         Returns: {
+          age_range: string
           comment: string
+          country: string
           created_at: string
           desarrollo: number
           dinero: number
           diversion: number
           id: string
+          sector: string
         }[]
       }
       get_public_result: {
