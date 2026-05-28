@@ -2,12 +2,13 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type StatsTab = 'country' | 'sector' | 'age';
+type StatsTab = 'country' | 'sector' | 'age' | 'comments';
 
 const TABS: { id: StatsTab; label: string; path: string }[] = [
   { id: 'country', label: 'Por país', path: '/por-pais' },
   { id: 'sector', label: 'Por sector', path: '/por-sector' },
   { id: 'age', label: 'Por edad', path: '/por-edad' },
+  { id: 'comments', label: 'Comentarios', path: '/comentarios' },
 ];
 
 export function StatsNav({ active }: { active: StatsTab }) {
