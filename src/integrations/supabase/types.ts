@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      age_range_stats_cache: {
+        Row: {
+          age_range: string
+          avg_value: number | null
+          count: number
+          dimension: string
+          period: string
+          updated_at: string
+        }
+        Insert: {
+          age_range: string
+          avg_value?: number | null
+          count?: number
+          dimension: string
+          period: string
+          updated_at?: string
+        }
+        Update: {
+          age_range?: string
+          avg_value?: number | null
+          count?: number
+          dimension?: string
+          period?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       country_stats_cache: {
         Row: {
           avg_value: number | null
@@ -132,6 +159,7 @@ export type Database = {
       }
       records_3d: {
         Row: {
+          age_range: string | null
           comment: string | null
           comparison: Json | null
           context: string | null
@@ -151,6 +179,7 @@ export type Database = {
           referrer: string | null
           reminder_date: string | null
           reminder_period: string | null
+          sector: string | null
           user_agent: string | null
           utm_campaign: string | null
           utm_content: string | null
@@ -159,6 +188,7 @@ export type Database = {
           utm_term: string | null
         }
         Insert: {
+          age_range?: string | null
           comment?: string | null
           comparison?: Json | null
           context?: string | null
@@ -178,6 +208,7 @@ export type Database = {
           referrer?: string | null
           reminder_date?: string | null
           reminder_period?: string | null
+          sector?: string | null
           user_agent?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
@@ -186,6 +217,7 @@ export type Database = {
           utm_term?: string | null
         }
         Update: {
+          age_range?: string | null
           comment?: string | null
           comparison?: Json | null
           context?: string | null
@@ -205,12 +237,40 @@ export type Database = {
           referrer?: string | null
           reminder_date?: string | null
           reminder_period?: string | null
+          sector?: string | null
           user_agent?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+        }
+        Relationships: []
+      }
+      sector_stats_cache: {
+        Row: {
+          avg_value: number | null
+          count: number
+          dimension: string
+          period: string
+          sector: string
+          updated_at: string
+        }
+        Insert: {
+          avg_value?: number | null
+          count?: number
+          dimension: string
+          period: string
+          sector: string
+          updated_at?: string
+        }
+        Update: {
+          avg_value?: number | null
+          count?: number
+          dimension?: string
+          period?: string
+          sector?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -254,7 +314,10 @@ export type Database = {
         }[]
       }
       normalize_country: { Args: { input: string }; Returns: string }
+      refresh_age_range_stats: { Args: never; Returns: undefined }
+      refresh_all_stats: { Args: never; Returns: undefined }
       refresh_country_stats: { Args: never; Returns: undefined }
+      refresh_sector_stats: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

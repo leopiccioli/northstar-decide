@@ -85,6 +85,8 @@ const contextQuestions: Record<string, string> = {
 interface SaveResultRequest {
   email: string;
   country?: string;
+  sector?: string;
+  ageRange?: string;
   optionName: string;
   scores: Scores;
   comment?: string;
@@ -103,6 +105,26 @@ interface SaveResultRequest {
     referrer?: string;
   };
 }
+
+// Allowed demographics — keep in sync with src/lib/demographics.ts and DB trigger
+const ALLOWED_SECTORS = new Set([
+  'Tecnología / Software',
+  'Finanzas / Banca / Seguros',
+  'Consultoría',
+  'Salud',
+  'Educación',
+  'Retail / Comercio',
+  'Industria / Manufactura',
+  'Construcción',
+  'Gobierno / Sector público',
+  'Medios / Comunicación',
+  'Agro',
+  'Energía',
+  'Hospitalidad / Turismo',
+  'ONG / Tercer sector',
+  'Otro',
+]);
+const ALLOWED_AGE_RANGES = new Set(['18-24','25-34','35-44','45-54','55-64','65+']);
 
 // Sanitize text input: trim, limit length, strip HTML tags
 function sanitizeText(text: string | undefined | null, maxLength: number): string | null {
@@ -537,12 +559,18 @@ const handler = async (req: Request): Promise<Response> => {
       comment: sanitizeText(body.comparison.comment, 500) || undefined,
     } : null;
 
+    // Validate optional demographics — silently drop invalid values
+    const validSector = body.sector && ALLOWED_SECTORS.has(body.sector) ? body.sector : null;
+    const validAgeRange = body.ageRange && ALLOWED_AGE_RANGES.has(body.ageRange) ? body.ageRange : null;
+
     // Insert record into records_3d (email_sent defaults to false)
     const { data: insertedRecord, error: insertError } = await supabase
       .from('records_3d')
       .insert({
         email: body.email.toLowerCase(),
         country: body.country || null,
+        sector: validSector,
+        age_range: validAgeRange,
         option_name: sanitizedOptionName,
         dinero: body.scores.dinero,
         desarrollo: body.scores.desarrollo,

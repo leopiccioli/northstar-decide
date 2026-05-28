@@ -1,93 +1,95 @@
+# Sector y edad: captura + páginas de comparación
 
-## Objetivo
+## 1. Captura (en el flujo nuevo)
 
-Convertir los emails actuales (texto plano con URLs visibles) a HTML ultra-minimal con links como anchors underline, manteniendo la estética calculadora. Activar click tracking de Resend y recibir webhooks para guardar cada click en la DB.
+Ambos campos **opcionales**, ubicados en el **Result Screen**, junto a email y país (no en el InputScreen para no recargarlo).
 
-## Cambios
+UI consistente con la estética monocromática:
+- **Sector**: combobox buscable (15 opciones) — patrón clon de `CountryCombobox`.
+- **Edad**: 6 chips inline (`18-24`, `25-34`, `35-44`, `45-54`, `55-64`, `65+`) — más rápido que un select en mobile.
+- Microcopy: `Opcional — para comparar con perfiles parecidos.`
 
-### 1. HTML ultra-minimal en los 2 emails
+Listas exactas (consistencia con Quiz Master Pro), en `src/lib/demographics.ts`:
+- `SECTORS`: Tecnología / Software, Finanzas / Banca / Seguros, Consultoría, Salud, Educación, Retail / Comercio, Industria / Manufactura, Construcción, Gobierno / Sector público, Medios / Comunicación, Agro, Energía, Hospitalidad / Turismo, ONG / Tercer sector, Otro.
+- `AGE_RANGES`: 18-24, 25-34, 35-44, 45-54, 55-64, 65+.
 
-Estilo: fondo blanco, texto negro `#000`, font-family system (`-apple-system, Segoe UI, sans-serif` — Google Fonts no carga confiable en Gmail), `font-size: 15px`, `line-height: 1.5`, ancho máx 480px. Cada URL pelada se convierte en `<a href="..." style="color:#000;text-decoration:underline">texto descriptivo</a>`. Saltos de línea preservados con `<br>` o `<p>`. Sin imágenes, sin tablas decorativas, sin botones de color.
+## 2. Schema y guardado
 
-**Mapeo de links:**
-- URL completa de "volver a medir" → `Entrá para ver cómo cambió` (anchor)
-- WhatsApp share → `Recomendar por WhatsApp` (anchor)
-- Libros P.S. → `Cómo RAJAR a tu jefe`, `Sé tu propio CEO`, `FINANZAS` (anchors con el título del libro)
+Migration sobre `records_3d`:
+- `sector text` (nullable)
+- `age_range text` (nullable)
+- Índices: `idx_records_sector`, `idx_records_age_range` para las stats.
+- Validación con trigger (no CHECK, para poder evolucionar listas sin romper restore).
 
-Se mantiene `text` plain como fallback (mejora deliverability, lo lee Gmail si HTML falla). El plain mantiene URLs visibles como hoy.
+`save-result` edge function:
+- Acepta `sector` y `age_range` opcionales; valida contra las listas; si vienen inválidos, los ignora silenciosamente (no rompe el guardado).
 
-**Archivos:**
-- `supabase/functions/resend-measurement/index.ts` — agregar función `buildEmailHTML()` paralela a la existente `buildEmailContent()`, pasar ambas a `resend.emails.send({ html, text })`.
-- `supabase/functions/send-reminders/index.ts` — idem con `buildReminderHTMLContent()`.
+## 3. Páginas de comparación (espejo de `/por-pais`)
 
-### 2. Click tracking de Resend
+Dos páginas nuevas privadas (mismo nivel de privacidad que `/por-pais`):
 
-Activar `click_tracking: true` y `open_tracking: true` por email enviado (Resend lo soporta vía parámetro). También se puede activar globalmente en el dashboard del dominio — preferible hacerlo por código para tener control explícito.
+### `/por-sector`
+- Tabla con: Sector | Dinero | Desarrollo | Diversión | Promedio | Cantidad.
+- Selector de período: **Todo** / **Último trimestre** (mismo patrón actual).
+- Mismo umbral mínimo de respuestas (`MIN_RESPONSES_THRESHOLD`) para mostrar fila.
+- Sin mapa (no aplica) — solo tabla ordenable + leyenda + última actualización.
+- Visual: idéntico estilo a `StatsPage`, sin banderas/emoji; el "ícono" puede ser solo texto.
 
-Resend reescribe los `href` a `https://...resend-links.com/CLICK_ID` y al hacer click hace 302 al original (UTMs se mantienen intactos en la URL final). Open tracking inserta un pixel 1x1.
+### `/por-edad`
+- Misma tabla, columna izquierda: rango etáreo, ordenado naturalmente (18-24 → 65+) por defecto.
+- Mismas dimensiones, mismos períodos, mismo umbral.
 
-### 3. Nueva tabla `email_events` + webhook
+### Infra de cache (igual patrón que `country_stats_cache`)
 
-**Migración:**
-```sql
-CREATE TABLE public.email_events (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  resend_email_id text NOT NULL,         -- correlaciona con outbound_emails.provider_id
-  event_type text NOT NULL,              -- 'sent','delivered','opened','clicked','bounced','complained','delivery_delayed'
-  to_email text,
-  link_url text,                         -- solo para 'clicked'
-  user_agent text,
-  ip_address text,
-  raw_payload jsonb NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-CREATE INDEX idx_email_events_resend_id ON public.email_events(resend_email_id);
-CREATE INDEX idx_email_events_type_created ON public.email_events(event_type, created_at DESC);
-ALTER TABLE public.email_events ENABLE ROW LEVEL SECURITY;
--- bloqueo público + service role full access (mismo patrón que outbound_emails)
-```
+Dos tablas nuevas:
+- `sector_stats_cache(sector, period, dimension, avg_value, count, updated_at)`
+- `age_range_stats_cache(age_range, period, dimension, avg_value, count, updated_at)`
 
-**Nueva edge function `resend-webhook`** (`verify_jwt = false` en `supabase/config.toml` porque la llama Resend, no usuarios):
-- Recibe POST de Resend con eventos `email.sent`, `email.delivered`, `email.opened`, `email.clicked`, `email.bounced`, `email.complained`.
-- Verifica firma con `Svix-Signature` header usando secret `RESEND_WEBHOOK_SECRET`.
-- Inserta una fila por evento en `email_events`.
-- Devuelve 200 rápido (idempotente si llega 2 veces, no es crítico).
+Con RLS público de solo lectura, idéntico a `country_stats_cache`.
 
-**Setup manual del usuario (te lo digo cuando termine):**
-1. Ir al dashboard de Resend → Webhooks → crear endpoint apuntando a `https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/resend-webhook`.
-2. Suscribirse a los eventos listados.
-3. Copiar el signing secret y pegarlo cuando te pida `RESEND_WEBHOOK_SECRET` con `add_secret`.
-4. (Opcional) Activar click/open tracking a nivel dominio en Resend, aunque el código ya lo manda explícito.
+Dos funciones DB nuevas (espejo de `refresh_country_stats`):
+- `refresh_sector_stats()`
+- `refresh_age_range_stats()`
 
-### 4. Cómo se ven las queries de tracking después
+Y una función paraguas `refresh_all_stats()` que llama a las tres, para simplificar el cron.
 
-Para saber CTR de un email puntual:
-```sql
-SELECT oe.to_email, oe.email_type, oe.sent_at,
-       EXISTS(SELECT 1 FROM email_events WHERE resend_email_id = oe.provider_id AND event_type = 'opened') AS opened,
-       EXISTS(SELECT 1 FROM email_events WHERE resend_email_id = oe.provider_id AND event_type = 'clicked') AS clicked
-FROM outbound_emails oe
-WHERE oe.email_type = 'reminder' AND oe.status = 'sent';
-```
+Cron: si ya hay job para `refresh_country_stats`, lo cambio a llamar `refresh_all_stats`. Si no hay, lo creo (cada 1h, ajustable).
 
-## Lo que NO cambia
+## 4. Navegación
 
-- Lógica de queue/reminders/retry intacta.
-- Plain text fallback se mantiene idéntico a hoy.
-- UTMs intactos (Resend hace 302 preservando query string).
-- `outbound_emails` no se modifica (sigue siendo el registro de envío; `email_events` es el log de qué pasó después).
-- Estética: monocromático, sobrio, sin colores. Sigue siendo "calculadora fría".
+Agregar links a las páginas privadas — mantengo el patrón actual de URLs no listadas públicamente. Si querés algún ingreso desde footer/menú, lo definimos aparte.
 
-## Orden de ejecución
+## 5. Campaña retroactiva → diferida
 
-1. Migración: tabla `email_events`.
-2. Edge function nueva `resend-webhook` + entrada en `config.toml` con `verify_jwt = false`.
-3. Pedir secret `RESEND_WEBHOOK_SECRET` (te bloqueo hasta que lo configures en Resend y me lo des).
-4. Modificar `resend-measurement` y `send-reminders` para mandar HTML + activar tracking.
-5. Deploy las 3 funciones.
-6. Test: mando un measurement de prueba y verifico que el evento `delivered` y `opened` lleguen a `email_events`.
+La dejo documentada en `.lovable/backfill-demographics.md` con todo listo para ejecutar después:
+- Asunto: **¡Novedades en 3D! ¿Cómo te comparás con otros sectores?**
+- Audiencia: emails únicos en `records_3d` sin `sector` o `age_range`.
+- Mecánica: email único (no reintentos), link a `/completar?token=<id>` con landing minimal que actualiza el último record.
+- Edge functions a crear cuando se ejecute: `get-record-for-backfill`, `update-demographics`, `send-demographics-backfill`.
+- Registro en `outbound_emails` con `email_type = 'demographics_backfill'` (sumar al CHECK constraint en ese momento).
+- UTMs: `utm_source=3d&utm_medium=email&utm_campaign=demographics_backfill`.
 
-## Memorias a actualizar al terminar
+No se crean edge functions, ni schema, ni emails para esta campaña ahora. Solo el documento.
 
-- `mem://features/email-system-logic` — agregar que se manda HTML+text, con click/open tracking guardado en `email_events`.
-- `mem://technical/email-infrastructure` — sumar `email_events` + webhook al stack.
+## Detalle técnico (resumen)
+
+**Archivos nuevos:**
+- `src/lib/demographics.ts`
+- `src/components/decision/SectorCombobox.tsx`
+- `src/components/decision/AgeRangeChips.tsx`
+- `src/pages/SectorStatsPage.tsx`
+- `src/pages/AgeStatsPage.tsx`
+- `.lovable/backfill-demographics.md`
+
+**Archivos editados:**
+- `src/components/decision/ResultScreen.tsx` (sumar inputs sector/edad al bloque de guardado)
+- `src/App.tsx` (rutas `/por-sector`, `/por-edad`)
+- `supabase/functions/save-result/index.ts` (aceptar + validar)
+
+**Migrations:**
+1. ALTER `records_3d` + índices + trigger de validación.
+2. CREATE `sector_stats_cache`, `age_range_stats_cache` (con GRANTs y RLS).
+3. CREATE `refresh_sector_stats`, `refresh_age_range_stats`, `refresh_all_stats`.
+4. (Vía insert tool) actualizar/crear cron job para `refresh_all_stats`.
+
+Memoria a crear al final: `mem://features/demographics` con criterios de captura y páginas de stats.
