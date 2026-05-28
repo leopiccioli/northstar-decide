@@ -18,7 +18,8 @@ export type FlowEvent =
   | 'share_result'    // Comparte resultado propio
   | 'whatsapp_share_friend'  // Recomienda a un amigo via WhatsApp
   | 'whatsapp_share_team'    // Recomienda al equipo via WhatsApp
-  | 'open_stats';     // Abre una página de stats (país/sector/edad) desde otra surface
+  | 'open_stats'      // Abre una página de stats (país/sector/edad) desde otra surface
+  | 'complete_demographics'; // Completa sector y/o edad en /completar (backfill)
 
 // Meta Pixel event mapping
 const metaEvents: Record<FlowEvent, string> = {
@@ -30,6 +31,7 @@ const metaEvents: Record<FlowEvent, string> = {
   whatsapp_share_friend: 'Share',
   whatsapp_share_team: 'Share',
   open_stats: 'ViewContent',
+  complete_demographics: 'CompleteRegistration',
 };
 
 // X (Twitter) Pixel event mapping
@@ -42,6 +44,7 @@ const xEvents: Record<FlowEvent, string> = {
   whatsapp_share_friend: 'Share',
   whatsapp_share_team: 'Share',
   open_stats: 'ViewContent',
+  complete_demographics: 'Signup',
 };
 
 // GA4 event mapping
@@ -54,7 +57,9 @@ const ga4Events: Record<FlowEvent, string> = {
   whatsapp_share_friend: 'share',
   whatsapp_share_team: 'share',
   open_stats: 'select_content',
+  complete_demographics: 'complete_demographics',
 };
+
 
 /**
  * Track a flow event across all configured analytics platforms
