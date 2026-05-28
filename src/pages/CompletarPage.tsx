@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { SECTORS, AGE_RANGES, isValidAgeRange, isValidSector } from '@/lib/demographics';
 import { SectorCombobox } from '@/components/decision/SectorCombobox';
 import { AgeRangeChips } from '@/components/decision/AgeRangeChips';
+import { trackFlowEvent, trackCustomEvent } from '@/lib/analytics';
+
 
 type State =
   | { kind: 'loading' }
