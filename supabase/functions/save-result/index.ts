@@ -348,6 +348,7 @@ function buildEmailContent(
   }
 
   content += buildBookPS(currentScores, comparison, email);
+  content += buildCompareWithOthersBlock();
   content += buildWhatsAppEmailBlock();
 
   return content;
