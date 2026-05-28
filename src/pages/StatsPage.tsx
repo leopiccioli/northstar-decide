@@ -6,6 +6,7 @@ import { getCountryName, getCountryFlag } from '@/lib/countries';
 import { CountryMap } from '@/components/stats/CountryMap';
 import { StatsLegend } from '@/components/stats/StatsLegend';
 import { StatsNav } from '@/components/stats/StatsNav';
+import { StatsFreshness } from '@/components/stats/StatsFreshness';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
 import logoImage from '@/assets/3d-logo.svg';
@@ -167,20 +168,6 @@ export default function StatsPage() {
 
   const columnClass = "px-4 py-3 cursor-pointer hover:bg-secondary/80 transition-colors select-none";
 
-  // Format last updated date for display
-  const formattedLastUpdated = useMemo(() => {
-    if (!lastUpdated) return null;
-    const date = new Date(lastUpdated);
-    return date.toLocaleString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'America/Argentina/Buenos_Aires',
-    });
-  }, [lastUpdated]);
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -199,17 +186,13 @@ export default function StatsPage() {
               <h1 className="text-lg font-semibold">3D para Decidir</h1>
             </div>
           </div>
-          {formattedLastUpdated && (
-            <div className="text-xs text-muted-foreground">
-              Actualizado: {formattedLastUpdated}
-            </div>
-          )}
         </div>
       </header>
 
       <StatsNav active="country" />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        <StatsFreshness updatedAt={lastUpdated} />
         {/* Filters */}
         <div className="flex flex-wrap gap-4 items-center justify-between">
           <div className="flex flex-wrap gap-4">

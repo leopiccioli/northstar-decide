@@ -6,6 +6,7 @@ import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import { AGE_RANGES } from '@/lib/demographics';
 import logoImage from '@/assets/3d-logo.svg';
 import { StatsNav } from '@/components/stats/StatsNav';
+import { StatsFreshness } from '@/components/stats/StatsFreshness';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'age_range' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
@@ -139,15 +140,6 @@ export default function AgeStatsPage() {
 
   const columnClass = "px-4 py-3 cursor-pointer hover:bg-secondary/80 transition-colors select-none";
 
-  const formattedLastUpdated = useMemo(() => {
-    if (!lastUpdated) return null;
-    return new Date(lastUpdated).toLocaleString('es-AR', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-      timeZone: 'America/Argentina/Buenos_Aires',
-    });
-  }, [lastUpdated]);
-
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
@@ -162,15 +154,13 @@ export default function AgeStatsPage() {
               <h1 className="text-lg font-semibold">3D por edad</h1>
             </div>
           </div>
-          {formattedLastUpdated && (
-            <div className="text-xs text-muted-foreground">Actualizado: {formattedLastUpdated}</div>
-          )}
         </div>
       </header>
 
       <StatsNav active="age" />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        <StatsFreshness updatedAt={lastUpdated} />
         <div className="flex flex-wrap gap-4 items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Período:</span>
