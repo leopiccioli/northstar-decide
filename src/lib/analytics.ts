@@ -10,27 +10,31 @@ declare global {
 }
 
 // Flow events that map to platform-specific events
-export type FlowEvent = 
+export type FlowEvent =
   | 'start_flow'      // Click "Empezar"
   | 'select_context'  // Elige situación
+  | 'slider_first_move' // Primer drag de un slider (funnel signal)
   | 'complete_3d'     // Termina de puntuar sliders
   | 'save_result'     // Guarda con email
   | 'share_result'    // Comparte resultado propio
   | 'whatsapp_share_friend'  // Recomienda a un amigo via WhatsApp
   | 'whatsapp_share_team'    // Recomienda al equipo via WhatsApp
   | 'open_stats'      // Abre una página de stats (país/sector/edad) desde otra surface
+  | 'view_global_compare' // Carga la comparación inline con promedio global en resultado
   | 'complete_demographics'; // Completa sector y/o edad en /completar (backfill)
 
 // Meta Pixel event mapping
 const metaEvents: Record<FlowEvent, string> = {
   start_flow: 'InitiateCheckout',
   select_context: 'ViewContent',
+  slider_first_move: 'ViewContent',
   complete_3d: 'Lead',
   save_result: 'CompleteRegistration',
   share_result: 'Share',
   whatsapp_share_friend: 'Share',
   whatsapp_share_team: 'Share',
   open_stats: 'ViewContent',
+  view_global_compare: 'ViewContent',
   complete_demographics: 'CompleteRegistration',
 };
 
@@ -38,12 +42,14 @@ const metaEvents: Record<FlowEvent, string> = {
 const xEvents: Record<FlowEvent, string> = {
   start_flow: 'StartTrial',
   select_context: 'ViewContent',
+  slider_first_move: 'ViewContent',
   complete_3d: 'tw-o1ve0-r2y9y',
   save_result: 'Signup',
   share_result: 'Share',
   whatsapp_share_friend: 'Share',
   whatsapp_share_team: 'Share',
   open_stats: 'ViewContent',
+  view_global_compare: 'ViewContent',
   complete_demographics: 'Signup',
 };
 
@@ -51,12 +57,14 @@ const xEvents: Record<FlowEvent, string> = {
 const ga4Events: Record<FlowEvent, string> = {
   start_flow: 'begin_checkout',
   select_context: 'select_content',
+  slider_first_move: 'select_content',
   complete_3d: 'generate_lead',
   save_result: 'sign_up',
   share_result: 'share',
   whatsapp_share_friend: 'share',
   whatsapp_share_team: 'share',
   open_stats: 'select_content',
+  view_global_compare: 'select_content',
   complete_demographics: 'complete_demographics',
 };
 
