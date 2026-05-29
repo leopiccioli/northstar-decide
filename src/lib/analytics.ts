@@ -16,6 +16,7 @@ export type FlowEvent =
   | 'slider_first_move' // Primer drag de un slider (funnel signal)
   | 'complete_3d'     // Termina de puntuar sliders
   | 'save_result'     // Guarda con email
+  | 'complete_3d_signup' // Guarda con email (evento custom dedicado de X Sales con scores)
   | 'share_result'    // Comparte resultado propio
   | 'whatsapp_share_friend'  // Recomienda a un amigo via WhatsApp
   | 'whatsapp_share_team'    // Recomienda al equipo via WhatsApp
@@ -30,6 +31,7 @@ const metaEvents: Record<FlowEvent, string> = {
   slider_first_move: 'ViewContent',
   complete_3d: 'Lead',
   save_result: 'CompleteRegistration',
+  complete_3d_signup: 'CompleteRegistration',
   share_result: 'Share',
   whatsapp_share_friend: 'Share',
   whatsapp_share_team: 'Share',
@@ -45,6 +47,7 @@ const xEvents: Record<FlowEvent, string> = {
   slider_first_move: 'ViewContent',
   complete_3d: 'tw-o1ve0-r2y9y',
   save_result: 'Signup',
+  complete_3d_signup: 'tw-o1ve0-rcoua',
   share_result: 'Share',
   whatsapp_share_friend: 'Share',
   whatsapp_share_team: 'Share',
@@ -60,6 +63,7 @@ const ga4Events: Record<FlowEvent, string> = {
   slider_first_move: 'select_content',
   complete_3d: 'generate_lead',
   save_result: 'sign_up',
+  complete_3d_signup: 'sign_up',
   share_result: 'share',
   whatsapp_share_friend: 'share',
   whatsapp_share_team: 'share',
@@ -90,6 +94,31 @@ export function trackFlowEvent(event: FlowEvent, data?: Record<string, unknown>)
       const xData: Record<string, unknown> = {};
       if (data?.email) {
         xData.email_address = data.email;
+      }
+      // Si vienen scores, los mandamos como `contents` (formato X) para poder
+      // usarlos en optimización/segmentación de campañas Sales.
+      if (
+        typeof data?.dinero === 'number' ||
+        typeof data?.desarrollo === 'number' ||
+        typeof data?.diversion === 'number'
+      ) {
+        const d = data.dinero as number | undefined;
+        const de = data.desarrollo as number | undefined;
+        const di = data.diversion as number | undefined;
+        const avg =
+          typeof d === 'number' && typeof de === 'number' && typeof di === 'number'
+            ? Math.round(((d + de + di) / 3) * 10) / 10
+            : null;
+        xData.contents = [
+          {
+            content_type: '3d_scores',
+            content_id: avg !== null ? `avg_${avg}` : null,
+            content_name: `D${d ?? '-'}_Dev${de ?? '-'}_Div${di ?? '-'}`,
+            content_price: avg,
+            num_items: 1,
+            content_group_id: null,
+          },
+        ];
       }
       window.twq('event', xEvents[event], xData);
     } catch (e) {
