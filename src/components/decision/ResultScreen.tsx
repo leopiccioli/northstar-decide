@@ -638,17 +638,18 @@ export default function ResultScreen({
           </div>
         )}
 
-        {/* Comparate con otros — links a /por-pais, /por-sector, /por-edad */}
-        <CompareWithOthers />
-
         {/* Post-save: show success with share options (optimistic UI) */}
         {showSuccess && savedRecordId ? (
-          <SuccessWithShare 
-            recordId={savedRecordId}
-            isMobile={isMobile}
-            onShare={handleShare}
-            email={savedEmail}
-          />
+          <>
+            <SuccessWithShare 
+              recordId={savedRecordId}
+              isMobile={isMobile}
+              onShare={handleShare}
+              email={savedEmail}
+            />
+            {/* Comparate con otros — links a /por-pais, /por-sector, /por-edad (post-save) */}
+            <CompareWithOthers />
+          </>
         ) : (
           /* Pre-save: show save form as primary CTA */
           <div className="animate-fade-up opacity-0 stagger-1">
@@ -661,6 +662,7 @@ export default function ResultScreen({
             />
           </div>
         )}
+
       </div>
     </div>
   );
