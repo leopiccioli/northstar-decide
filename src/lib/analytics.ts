@@ -16,6 +16,7 @@ export type FlowEvent =
   | 'slider_first_move' // Primer drag de un slider (funnel signal)
   | 'complete_3d'     // Termina de puntuar sliders
   | 'save_result'     // Guarda con email
+  | 'complete_3d_signup' // Guarda con email (evento custom dedicado de X Sales con scores)
   | 'share_result'    // Comparte resultado propio
   | 'whatsapp_share_friend'  // Recomienda a un amigo via WhatsApp
   | 'whatsapp_share_team'    // Recomienda al equipo via WhatsApp
@@ -30,6 +31,7 @@ const metaEvents: Record<FlowEvent, string> = {
   slider_first_move: 'ViewContent',
   complete_3d: 'Lead',
   save_result: 'CompleteRegistration',
+  complete_3d_signup: 'CompleteRegistration',
   share_result: 'Share',
   whatsapp_share_friend: 'Share',
   whatsapp_share_team: 'Share',
@@ -45,6 +47,7 @@ const xEvents: Record<FlowEvent, string> = {
   slider_first_move: 'ViewContent',
   complete_3d: 'tw-o1ve0-r2y9y',
   save_result: 'Signup',
+  complete_3d_signup: 'tw-o1ve0-rcoua',
   share_result: 'Share',
   whatsapp_share_friend: 'Share',
   whatsapp_share_team: 'Share',
@@ -60,6 +63,7 @@ const ga4Events: Record<FlowEvent, string> = {
   slider_first_move: 'select_content',
   complete_3d: 'generate_lead',
   save_result: 'sign_up',
+  complete_3d_signup: 'sign_up',
   share_result: 'share',
   whatsapp_share_friend: 'share',
   whatsapp_share_team: 'share',
