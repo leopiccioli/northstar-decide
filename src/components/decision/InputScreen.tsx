@@ -138,11 +138,6 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
           </div>
         </div>
 
-        {/* Hint */}
-        <p className="text-subtle text-center animate-fade-up opacity-0 stagger-4">
-          Respondé intuitivo. No lo pienses mucho.
-        </p>
-
         {/* Optional comment - only show if context has a question */}
         {questionText && (
           <div className="space-y-2 animate-fade-up opacity-0 stagger-4">
