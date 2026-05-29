@@ -17,7 +17,7 @@ export default function CloseScreen({ onRestart }: CloseScreenProps) {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 pb-32 sm:pb-6">
         <div className="max-w-md w-full text-center space-y-8 animate-fade-up">
           <div className="space-y-2">
             <p className="text-2xl font-semibold">Listo</p>
@@ -35,7 +35,7 @@ export default function CloseScreen({ onRestart }: CloseScreenProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 pb-32 sm:pb-6">
       <div className="max-w-md w-full space-y-8 animate-fade-up">
         <div className="space-y-2 text-center">
           <p className="text-lg font-medium">

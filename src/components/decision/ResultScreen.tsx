@@ -636,7 +636,7 @@ export default function ResultScreen({
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 pt-12 pb-32 sm:pb-12">
       <div className="max-w-md w-full space-y-10">
         
         {/* Single option result */}

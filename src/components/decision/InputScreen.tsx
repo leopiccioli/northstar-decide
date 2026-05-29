@@ -43,7 +43,7 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
     : 'Ahora cargá la otra opción';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 pb-16">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 pt-12 pb-32 sm:pb-16">
       <div className="max-w-md w-full space-y-10">
         {/* Header for comparison */}
         {showNameInput && (
