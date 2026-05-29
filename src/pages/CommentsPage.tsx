@@ -5,6 +5,7 @@ import { es } from "date-fns/locale";
 import { List, LayoutGrid, ArrowRight } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { getCountryName, getCountryFlag } from "@/lib/countries";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -66,7 +67,7 @@ const CommentsPage = () => {
           {/* Title + CTA */}
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-foreground">
-              Muro de los Lamentos
+              Comentarios
             </h1>
             <Link 
               to="/?utm_source=comentarios&utm_medium=header"
@@ -242,8 +243,22 @@ const FeedView = ({ comments, formatDate, ctaPosition, onSelect }: ViewProps) =>
             {/* Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1 text-sm">
-                <span className="font-semibold text-zinc-100">Anónimo</span>
-                <span className="text-zinc-500">·</span>
+                {(() => {
+                  const parts: string[] = [];
+                  if (comment.country) {
+                    const flag = getCountryFlag(comment.country);
+                    const name = getCountryName(comment.country) || comment.country;
+                    parts.push(`${flag ? flag + ' ' : ''}${name}`);
+                  }
+                  if (comment.sector) parts.push(comment.sector);
+                  if (comment.age_range) parts.push(comment.age_range);
+                  return parts.length > 0 ? (
+                    <span className="font-semibold text-zinc-100">{parts.join(' · ')}</span>
+                  ) : null;
+                })()}
+                {(comment.country || comment.sector || comment.age_range) && (
+                  <span className="text-zinc-500">·</span>
+                )}
                 <time className="text-zinc-500">{formatDate(comment.created_at)}</time>
               </div>
               <p className="mt-1 text-zinc-100">{comment.comment}</p>

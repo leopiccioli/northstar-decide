@@ -1,18 +1,17 @@
-Actualizar eventos de GA4 para cubrir los cambios recientes del flujo de backfill de datos demográficos.
+## Cambios en /comentarios
 
-## Cambios
+### 1. Título
+Reemplazar el `<h1>` del header de "Muro de los Lamentos" a **"Comentarios"**.
 
-### 1. CompletarPage — evento de conversión
-Agregar `trackCustomEvent('complete_demographics', { has_sector, has_age })` cuando el usuario guarda sector y/o edad exitosamente en `/completar`. Esto permite medir la tasa de respuesta del backfill en GA4.
+### 2. Quitar "Anónimo"
+En la vista Feed, reemplazar el span "Anónimo" por un helper que muestre:
+- Si hay `country`: nombre del país (con bandera si disponible)
+- Si hay `sector`: el sector
+- Si hay `ageRange`: el rango de edad
+- Prioridad: país > sector > edad (o concatenar los que existan)
+- Si no hay ninguno: mostrar nada o un guion corto (ej: "—")
 
-### 2. CompletarPage — links a stats
-Los links "Por edad" y "Por sector" en la pantalla de éxito de `/completar` deben usar `trackFlowEvent('open_stats')` igual que el bloque `CompareWithOthers` en resultados.
+Mantener el timestamp y el separador (·) tal como están.
 
-### 3. Analytics.ts — nuevo evento
-Extender `FlowEvent` o usar `trackCustomEvent` para registrar `complete_demographics` en GA4, Meta Pixel y X Pixel.
-
-## Detalles técnicos
-
-- Archivos a tocar: `src/pages/CompletarPage.tsx`, `src/lib/analytics.ts`
-- No requiere cambios de backend ni migraciones.
-- Estimado: 10 minutos.
+### Archivo a modificar
+- `src/pages/CommentsPage.tsx`
