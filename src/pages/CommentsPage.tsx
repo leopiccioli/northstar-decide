@@ -5,6 +5,7 @@ import { es } from "date-fns/locale";
 import { List, LayoutGrid, ArrowRight } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { getCountryName, getCountryFlag } from "@/lib/countries";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
