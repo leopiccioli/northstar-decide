@@ -203,6 +203,15 @@
            hover:opacity-90 active:scale-[0.98];
   }
 
+  /* Inverted primary button - for dark backgrounds (entry screen) */
+  .btn-primary-inverted {
+    @apply inline-flex items-center justify-center
+           px-8 py-4 text-base font-medium
+           bg-background text-foreground
+           rounded-sm transition-all duration-150
+           hover:opacity-90 active:scale-[0.98];
+  }
+
   /* Ghost button */
   .btn-ghost {
     @apply inline-flex items-center justify-center
