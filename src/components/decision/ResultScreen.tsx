@@ -635,10 +635,14 @@ export default function ResultScreen({
     }
   };
 
+  // Mobile: collapse the per-dimension detail by default so the save form is
+  // visible without scrolling past 3 bars (in-app browsers eat ~120px of viewport).
+  const [showDetail, setShowDetail] = useState(!isMobile);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 pt-12 pb-32 sm:pb-12">
       <div className="max-w-md w-full space-y-10">
-        
+
         {/* Single option result */}
         {!comparisonOption && (() => {
           // Double bolding: highest and lowest dimension stand out together.
@@ -668,92 +672,128 @@ export default function ResultScreen({
               {/* Option name (subordinate to the hero number) */}
               <p className="text-sm text-muted-foreground text-center">{currentOption.name}</p>
 
-              {/* Per-dimension bars with inline global comparison */}
-              <div className="space-y-5">
-                {dims.map(d => (
-                  <ScoreBar
-                    key={d.key}
-                    label={d.label}
-                    value={d.value}
-                    globalAvg={d.global}
-                    emphasize={allEqual ? null : d.value === max ? 'high' : d.value === min ? 'low' : null}
+              {/* Save / Success block — moved up so it is visible without scrolling past dimension bars */}
+              {showSuccess && savedRecordId ? (
+                <SuccessWithShare
+                  recordId={savedRecordId}
+                  isMobile={isMobile}
+                  onShare={handleShare}
+                  email={savedEmail}
+                />
+              ) : (
+                <div className="animate-fade-up opacity-0 stagger-1">
+                  <SaveSection
+                    currentOption={currentOption}
+                    comparisonOption={comparisonOption}
+                    userContext={userContext}
+                    onSaveSuccess={handleSaveSuccess}
+                    onOptimisticSave={handleOptimisticSave}
                   />
-                ))}
+                </div>
+              )}
+
+              {/* Per-dimension detail — collapsed by default on mobile */}
+              <div className="space-y-5">
+                <button
+                  type="button"
+                  onClick={() => setShowDetail(v => !v)}
+                  className="w-full flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors py-1 sm:hidden"
+                  aria-expanded={showDetail}
+                >
+                  <span>Ver detalle por dimensión</span>
+                  <span className="tabular-nums">{showDetail ? '–' : '+'}</span>
+                </button>
+
+                {showDetail && (
+                  <div className="space-y-5">
+                    {dims.map(d => (
+                      <ScoreBar
+                        key={d.key}
+                        label={d.label}
+                        value={d.value}
+                        globalAvg={d.global}
+                        emphasize={allEqual ? null : d.value === max ? 'high' : d.value === min ? 'low' : null}
+                      />
+                    ))}
+
+                    {currentOption.comment && (
+                      <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                        {contextQuestions[userContext] && (
+                          <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
+                        )}
+                        "{currentOption.comment}"
+                      </blockquote>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {currentOption.comment && (
-                <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
-                  {contextQuestions[userContext] && (
-                    <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
-                  )}
-                  "{currentOption.comment}"
-                </blockquote>
-              )}
+              {/* CompareWithOthers only after save */}
+              {showSuccess && savedRecordId && <CompareWithOthers />}
             </div>
           );
         })()}
 
-        {/* Comparison result */}
+        {/* Comparison result — unchanged layout (save form stays at bottom for this branch) */}
         {comparisonOption && (
-          <div className="space-y-6 animate-fade-up">
-            <ComparisonTable a={currentOption} b={comparisonOption} />
+          <>
+            <div className="space-y-6 animate-fade-up">
+              <ComparisonTable a={currentOption} b={comparisonOption} />
 
-            {/* Global scores for comparison (compact side-by-side) */}
-            <div className="grid grid-cols-2 gap-3">
-              <GlobalScore scores={currentOption.scores} label={currentOption.name} compact />
-              <GlobalScore scores={comparisonOption.scores} label={comparisonOption.name} compact />
+              {/* Global scores for comparison (compact side-by-side) */}
+              <div className="grid grid-cols-2 gap-3">
+                <GlobalScore scores={currentOption.scores} label={currentOption.name} compact />
+                <GlobalScore scores={comparisonOption.scores} label={comparisonOption.name} compact />
+              </div>
+
+              {(currentOption.comment || comparisonOption.comment) && (
+                <div className="space-y-3">
+                  {currentOption.comment && (
+                    <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                      {contextQuestions[userContext] && (
+                        <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
+                      )}
+                      <span className="font-medium not-italic">{currentOption.name}:</span> "{currentOption.comment}"
+                    </blockquote>
+                  )}
+                  {comparisonOption.comment && (
+                    <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                      {contextQuestions[userContext] && (
+                        <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
+                      )}
+                      <span className="font-medium not-italic">{comparisonOption.name}:</span> "{comparisonOption.comment}"
+                    </blockquote>
+                  )}
+                </div>
+              )}
             </div>
 
-            
-            {(currentOption.comment || comparisonOption.comment) && (
-              <div className="space-y-3">
-                {currentOption.comment && (
-                  <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
-                    {contextQuestions[userContext] && (
-                      <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
-                    )}
-                    <span className="font-medium not-italic">{currentOption.name}:</span> "{currentOption.comment}"
-                  </blockquote>
-                )}
-                {comparisonOption.comment && (
-                  <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
-                    {contextQuestions[userContext] && (
-                      <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
-                    )}
-                    <span className="font-medium not-italic">{comparisonOption.name}:</span> "{comparisonOption.comment}"
-                  </blockquote>
-                )}
+            {showSuccess && savedRecordId ? (
+              <>
+                <SuccessWithShare
+                  recordId={savedRecordId}
+                  isMobile={isMobile}
+                  onShare={handleShare}
+                  email={savedEmail}
+                />
+                <CompareWithOthers />
+              </>
+            ) : (
+              <div className="animate-fade-up opacity-0 stagger-1">
+                <SaveSection
+                  currentOption={currentOption}
+                  comparisonOption={comparisonOption}
+                  userContext={userContext}
+                  onSaveSuccess={handleSaveSuccess}
+                  onOptimisticSave={handleOptimisticSave}
+                />
               </div>
             )}
-          </div>
-        )}
-
-        {/* Post-save: show success with share options (optimistic UI) */}
-        {showSuccess && savedRecordId ? (
-          <>
-            <SuccessWithShare 
-              recordId={savedRecordId}
-              isMobile={isMobile}
-              onShare={handleShare}
-              email={savedEmail}
-            />
-            {/* Comparate con otros — links a /por-pais, /por-sector, /por-edad (post-save) */}
-            <CompareWithOthers />
           </>
-        ) : (
-          /* Pre-save: show save form as primary CTA */
-          <div className="animate-fade-up opacity-0 stagger-1">
-            <SaveSection 
-              currentOption={currentOption} 
-              comparisonOption={comparisonOption}
-              userContext={userContext}
-              onSaveSuccess={handleSaveSuccess}
-              onOptimisticSave={handleOptimisticSave}
-            />
-          </div>
         )}
 
       </div>
     </div>
   );
 }
+
