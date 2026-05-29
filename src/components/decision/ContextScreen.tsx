@@ -13,7 +13,7 @@ export default function ContextScreen({ onSelect }: ContextScreenProps) {
   // Prefetch next screen while user chooses context
   usePrefetchInputScreen();
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 pt-12 pb-32 sm:pb-12">
       <div className="max-w-md w-full space-y-8">
         {/* Persuasive hook (also primary entry for mobile users) */}
         <p className="text-base sm:text-lg text-center text-foreground/80 leading-relaxed animate-fade-up">

@@ -41,7 +41,7 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-foreground text-background flex flex-col items-center justify-center px-6 pb-16">
+    <div className="min-h-screen bg-foreground text-background flex flex-col items-center justify-center px-6 pt-12 pb-32 sm:pb-16">
       <div className="max-w-lg w-full text-center space-y-10 animate-fade-up">
         {/* Main title with one-shot compass tick */}
         <div className="space-y-2">
