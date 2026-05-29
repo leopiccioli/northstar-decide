@@ -4,6 +4,7 @@ interface GlobalScoreProps {
   scores: Scores;
   globalAvg?: number | null;
   label?: string;
+  compact?: boolean;
 }
 
 function getScoreLevel(average: number): { level: 'low' | 'medium' | 'high'; color: string } {
@@ -13,13 +14,41 @@ function getScoreLevel(average: number): { level: 'low' | 'medium' | 'high'; col
 }
 
 /**
- * Hero score for the result screen.
- * Shows the weighted average as a giant tabular number with a 3-step grayscale
- * traffic light, and (optionally) the global median for context.
+ * Score summary used in two modes:
+ *  - hero (default): giant tabular number with traffic light + optional global avg
+ *  - compact: row card used in side-by-side comparison view
  */
-export function GlobalScore({ scores, globalAvg, label }: GlobalScoreProps) {
+export function GlobalScore({ scores, globalAvg, label, compact = false }: GlobalScoreProps) {
   const average = Math.round(((scores.dinero + scores.desarrollo + scores.diversion) / 3) * 10) / 10;
   const { level, color } = getScoreLevel(average);
+
+  if (compact) {
+    return (
+      <div className="flex items-center justify-between p-4 bg-secondary rounded-sm border border-border">
+        <div className="space-y-1">
+          {label && <p className="text-sm text-muted-foreground">{label}</p>}
+          <p className="text-sm font-medium">Promedio</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className={`w-3 h-3 rounded-full transition-colors ${
+                  (level === 'low' && i === 1) ||
+                  (level === 'medium' && i <= 2) ||
+                  (level === 'high')
+                    ? color
+                    : 'bg-border'
+                }`}
+              />
+            ))}
+          </div>
+          <span className="font-mono text-lg tabular-nums">{average.toFixed(1)}</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center text-center space-y-3 py-2">
@@ -58,3 +87,4 @@ export function GlobalScore({ scores, globalAvg, label }: GlobalScoreProps) {
     </div>
   );
 }
+
