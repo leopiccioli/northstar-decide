@@ -294,7 +294,7 @@ function SaveSection({
   const [country, setCountry] = useState('');
   const [sector, setSector] = useState('');
   const [ageRange, setAgeRange] = useState('');
-  const [reminder, setReminder] = useState<ReminderPeriod>('1m');
+  const [reminder, setReminder] = useState<ReminderPeriod>('3m');
   const [emailError, setEmailError] = useState('');
   const [countryError, setCountryError] = useState('');
   const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
@@ -422,11 +422,11 @@ function SaveSection({
     <div className="space-y-5 p-4 bg-secondary rounded-sm border border-border animate-fade-up">
       {/* Microcopy */}
       <p className="text-subtle text-center">
-        Esto queda guardado para cuando quieras volver a mirarlo.
+        Gratis. Te avisamos para que vuelvas a medir y veas si mejoraste.
       </p>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Guardá este resultado para más adelante</label>
+        <label className="text-sm font-medium">Guardá tu 3D gratis</label>
         <input
           type="email"
           value={email}
@@ -481,7 +481,7 @@ function SaveSection({
       <AgeRangeChips value={ageRange} onChange={setAgeRange} />
 
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground">Recordatorio</label>
+        <label className="text-sm text-muted-foreground">¿Cuándo querés volver a medir?</label>
         <div className="flex gap-1.5">
           {reminderOptions.map((option) => (
             <button
