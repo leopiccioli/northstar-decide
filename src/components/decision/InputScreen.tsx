@@ -20,10 +20,6 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
   const [name, setName] = useState(optionName || (showNameInput ? '' : 'Situación actual'));
   const [comment, setComment] = useState('');
   const [honeypot, setHoneypot] = useState(''); // Anti-bot honeypot field
-  const showNameInput = isComparison || isFirstComparison;
-  const [name, setName] = useState(optionName || (showNameInput ? '' : 'Situación actual'));
-  const [comment, setComment] = useState('');
-  const [honeypot, setHoneypot] = useState(''); // Anti-bot honeypot field
   const [scores, setScores] = useState<Scores>({
     dinero: 1,
     desarrollo: 1,
