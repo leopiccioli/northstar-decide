@@ -1,11 +1,11 @@
 import { Option, UserContext, contextQuestions } from '@/types/decision';
-import { useState, useRef, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
-import { Check, ExternalLink, Smartphone } from 'lucide-react';
+import { Check, ExternalLink, Smartphone, ArrowUp, ArrowDown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QRCodeSVG } from 'qrcode.react';
 import { SITE_CONFIG, buildBeehiivUrl, buildWhatsAppShareUrl } from '@/config/urls';
@@ -35,28 +35,79 @@ const reminderOptions: { id: ReminderPeriod; label: string }[] = [
   { id: 'none', label: 'Sin recordatorio' },
 ];
 
-function ScoreBar({ label, value, maxValue = 10 }: { 
-  label: string; 
-  value: number; 
+interface GlobalStats {
+  avg_dinero: number;
+  avg_desarrollo: number;
+  avg_diversion: number;
+  avg_global: number;
+}
+
+/**
+ * Score row with optional inline global comparison.
+ * - Animates fill from 0 on mount to create a small reveal moment.
+ * - Bolds when this dimension is the highest or lowest of the trio (see double-bolding).
+ */
+function ScoreBar({
+  label,
+  value,
+  globalAvg,
+  emphasize,
+  maxValue = 10,
+}: {
+  label: string;
+  value: number;
+  globalAvg?: number | null;
+  emphasize?: 'high' | 'low' | null;
   maxValue?: number;
 }) {
-  const percentage = (value / maxValue) * 100;
-  
+  const targetPercentage = (value / maxValue) * 100;
+  const [renderedPct, setRenderedPct] = useState(0);
+
+  useEffect(() => {
+    // Start at 0 on mount, then animate to target on the next frame.
+    const id = requestAnimationFrame(() => setRenderedPct(targetPercentage));
+    return () => cancelAnimationFrame(id);
+  }, [targetPercentage]);
+
+  const diff =
+    globalAvg != null ? Math.round((value - globalAvg) * 10) / 10 : null;
+  const showArrow = diff != null && Math.abs(diff) >= 1;
+
+  const labelClass = emphasize ? 'font-semibold' : 'font-medium';
+
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
-        <span className="text-sm font-medium">{label}</span>
-        <span className="text-sm text-muted-foreground tabular-nums">{value}/10</span>
+        <span className={`text-sm ${labelClass}`}>{label}</span>
+        <span className={`text-sm tabular-nums ${emphasize ? 'font-semibold' : 'text-muted-foreground'}`}>
+          {value}/10
+        </span>
       </div>
       <div className="h-3 bg-secondary rounded-sm overflow-hidden">
-        <div 
+        <div
           className="result-bar bg-foreground"
-          style={{ width: `${percentage}%` }}
+          style={{ width: `${renderedPct}%` }}
         />
       </div>
+      {globalAvg != null && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground tabular-nums">
+          <span>Global: {globalAvg.toFixed(1)}</span>
+          {showArrow && (
+            <span className="flex items-center gap-1">
+              {diff! > 0 ? (
+                <ArrowUp className="w-3 h-3" />
+              ) : (
+                <ArrowDown className="w-3 h-3" />
+              )}
+              <span>{diff! > 0 ? `+${diff!.toFixed(1)}` : diff!.toFixed(1)}</span>
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
 
 function ComparisonTable({ a, b }: { a: Option; b: Option }) {
   const getDiff = (key: keyof typeof a.scores) => {
