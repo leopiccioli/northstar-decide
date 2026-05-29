@@ -242,8 +242,22 @@ const FeedView = ({ comments, formatDate, ctaPosition, onSelect }: ViewProps) =>
             {/* Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1 text-sm">
-                <span className="font-semibold text-zinc-100">Anónimo</span>
-                <span className="text-zinc-500">·</span>
+                {(() => {
+                  const parts: string[] = [];
+                  if (comment.country) {
+                    const flag = getCountryFlag(comment.country);
+                    const name = getCountryName(comment.country) || comment.country;
+                    parts.push(`${flag ? flag + ' ' : ''}${name}`);
+                  }
+                  if (comment.sector) parts.push(comment.sector);
+                  if (comment.age_range) parts.push(comment.age_range);
+                  return parts.length > 0 ? (
+                    <span className="font-semibold text-zinc-100">{parts.join(' · ')}</span>
+                  ) : null;
+                })()}
+                {(comment.country || comment.sector || comment.age_range) && (
+                  <span className="text-zinc-500">·</span>
+                )}
                 <time className="text-zinc-500">{formatDate(comment.created_at)}</time>
               </div>
               <p className="mt-1 text-zinc-100">{comment.comment}</p>
