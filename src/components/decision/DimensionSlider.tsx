@@ -1,6 +1,8 @@
+import { useRef } from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { cn } from '@/lib/utils';
 import { HelpCircle } from 'lucide-react';
+import { trackFlowEvent } from '@/lib/analytics';
 import {
   Tooltip,
   TooltipContent,
