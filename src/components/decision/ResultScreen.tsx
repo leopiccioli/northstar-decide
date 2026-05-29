@@ -640,49 +640,70 @@ export default function ResultScreen({
       <div className="max-w-md w-full space-y-10">
         
         {/* Single option result */}
-        {!comparisonOption && (
-          <div className="space-y-6 animate-fade-up">
-            <h2 className="text-xl font-semibold">{currentOption.name}</h2>
-            
-            <div className="space-y-5">
-              <ScoreBar 
-                label="Dinero" 
-                value={currentOption.scores.dinero} 
+        {!comparisonOption && (() => {
+          // Double bolding: highest and lowest dimension stand out together.
+          const dims = [
+            { key: 'dinero' as const, label: 'Dinero', value: currentOption.scores.dinero, global: globalStats?.avg_dinero ?? null },
+            { key: 'desarrollo' as const, label: 'Desarrollo', value: currentOption.scores.desarrollo, global: globalStats?.avg_desarrollo ?? null },
+            { key: 'diversion' as const, label: 'Diversión', value: currentOption.scores.diversion, global: globalStats?.avg_diversion ?? null },
+          ];
+          const max = Math.max(...dims.map(d => d.value));
+          const min = Math.min(...dims.map(d => d.value));
+          const allEqual = max === min;
+
+          return (
+            <div className="space-y-8 animate-fade-up">
+              {/* Emotional headline that closes the loop with the entry hook */}
+              <div className="space-y-1 text-center">
+                <p className="text-base text-muted-foreground">Ya te detuviste.</p>
+                <h2 className="text-2xl font-semibold">Esto es lo que tenés.</h2>
+              </div>
+
+              {/* Hero score */}
+              <GlobalScore
+                scores={currentOption.scores}
+                globalAvg={globalStats?.avg_global ?? null}
               />
-              <ScoreBar 
-                label="Desarrollo" 
-                value={currentOption.scores.desarrollo} 
-              />
-              <ScoreBar 
-                label="Diversión" 
-                value={currentOption.scores.diversion}
-              />
+
+              {/* Option name (subordinate to the hero number) */}
+              <p className="text-sm text-muted-foreground text-center">{currentOption.name}</p>
+
+              {/* Per-dimension bars with inline global comparison */}
+              <div className="space-y-5">
+                {dims.map(d => (
+                  <ScoreBar
+                    key={d.key}
+                    label={d.label}
+                    value={d.value}
+                    globalAvg={d.global}
+                    emphasize={allEqual ? null : d.value === max ? 'high' : d.value === min ? 'low' : null}
+                  />
+                ))}
+              </div>
+
+              {currentOption.comment && (
+                <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                  {contextQuestions[userContext] && (
+                    <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
+                  )}
+                  "{currentOption.comment}"
+                </blockquote>
+              )}
             </div>
-
-            {/* Global score */}
-            <GlobalScore scores={currentOption.scores} />
-
-            {currentOption.comment && (
-              <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
-                {contextQuestions[userContext] && (
-                  <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
-                )}
-                "{currentOption.comment}"
-              </blockquote>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {/* Comparison result */}
         {comparisonOption && (
           <div className="space-y-6 animate-fade-up">
             <ComparisonTable a={currentOption} b={comparisonOption} />
-            
-            {/* Global scores for comparison */}
+
+            {/* Global scores for comparison (compact side-by-side) */}
             <div className="grid grid-cols-2 gap-3">
-              <GlobalScore scores={currentOption.scores} label={currentOption.name} />
-              <GlobalScore scores={comparisonOption.scores} label={comparisonOption.name} />
+              <GlobalScore scores={currentOption.scores} label={currentOption.name} compact />
+              <GlobalScore scores={comparisonOption.scores} label={comparisonOption.name} compact />
             </div>
+
             
             {(currentOption.comment || comparisonOption.comment) && (
               <div className="space-y-3">
