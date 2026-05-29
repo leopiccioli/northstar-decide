@@ -1,7 +1,9 @@
-import { useState, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { DecisionState, UserContext, Scores } from '@/types/decision';
 import { EntryScreen } from './EntryScreen';
 import { ProgressIndicator } from './ProgressIndicator';
+import { trackFlowEvent } from '@/lib/analytics';
+
 
 // Lazy load screens that are not shown initially
 const ContextScreen = lazy(() => import('./ContextScreen'));
@@ -16,12 +18,18 @@ const ScreenLoader = () => (
   </div>
 );
 
-const initialState: DecisionState = {
+// Mobile users skip the entry screen entirely — analytics showed it was a hard
+// drop-off. Desktop keeps it (with QR for mobile handoff). Computed synchronously
+// from viewport width to avoid flicker.
+const isMobileViewport = () =>
+  typeof window !== 'undefined' && window.innerWidth < 768;
+
+const getInitialState = (): DecisionState => ({
   context: null,
   currentOption: null,
   comparisonOption: null,
-  step: 'entry',
-};
+  step: isMobileViewport() ? 'context' : 'entry',
+});
 
 function getStepNumber(step: DecisionState['step'], isCompare: boolean): number {
   if (step === 'entry') return 0;
@@ -37,7 +45,14 @@ function getTotalSteps(isCompare: boolean): number {
 }
 
 export function DecisionFlow() {
-  const [state, setState] = useState<DecisionState>(initialState);
+  const [state, setState] = useState<DecisionState>(getInitialState);
+
+  // Mobile entry: still fire start_flow once on mount since the entry button is skipped
+  useEffect(() => {
+    if (isMobileViewport()) {
+      trackFlowEvent('start_flow');
+    }
+  }, []);
 
   const handleStart = () => {
     setState(prev => ({ ...prev, step: 'context' }));
@@ -77,7 +92,7 @@ export function DecisionFlow() {
   };
 
   const handleRestart = () => {
-    setState(initialState);
+    setState(getInitialState());
   };
 
   const handleBack = () => {

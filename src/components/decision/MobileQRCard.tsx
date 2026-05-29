@@ -42,15 +42,15 @@ export function MobileQRCard({
   
   if (compact) {
     return (
-      <div className="p-4 bg-secondary rounded-sm border border-border text-center space-y-3">
-        <div className="flex items-center justify-center gap-2 text-sm">
+      <div className="p-4 bg-background text-foreground rounded-sm text-center space-y-3">
+        <div className="flex items-center justify-center gap-2 text-sm font-medium">
           <Smartphone className="w-4 h-4" />
-          <span>Para compartir, escaneá desde tu celular</span>
+          <span>Escaneá para seguir en tu celular</span>
         </div>
         <div className="p-2 bg-white rounded-lg inline-block">
           <QRCodeSVG
             value={qrUrl}
-            size={80}
+            size={96}
             level="M"
             bgColor="white"
             fgColor="black"
