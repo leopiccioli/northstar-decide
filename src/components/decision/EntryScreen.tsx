@@ -1,14 +1,12 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 
-import { useIsMobile } from '@/hooks/use-mobile';
 import { usePrefetchContextScreen } from '@/hooks/usePrefetch';
 import { supabase } from '@/integrations/supabase/client';
-
-// Lazy load QR code - only needed on desktop
-const MobileQRCard = lazy(() => import('./MobileQRCard').then(m => ({ default: m.MobileQRCard })));
 import { useTrackingData } from '@/hooks/useTrackingData';
-import { buildBeehiivUrl } from '@/config/urls';
 import { trackFlowEvent } from '@/lib/analytics';
+
+// Lazy load QR code - only rendered on desktop entry
+const MobileQRCard = lazy(() => import('./MobileQRCard').then(m => ({ default: m.MobileQRCard })));
 
 interface EntryScreenProps {
   onStart: () => void;
@@ -17,17 +15,11 @@ interface EntryScreenProps {
 export function EntryScreen({ onStart }: EntryScreenProps) {
   const [didTick, setDidTick] = useState(false);
   const [count, setCount] = useState<number | null>(null);
-  const isMobile = useIsMobile();
   const trackingData = useTrackingData();
-
-  // Build Beehiiv URL with tracking
-  const beehiivUrl = buildBeehiivUrl({
-    email: trackingData.email || undefined,
-    utmMedium: 'home',
-  });
 
   // Prefetch next screen while user reads entry
   usePrefetchContextScreen();
+
 
   // One-shot "D" tick (no infinite loop — faster perceived load on slow WebViews)
   useEffect(() => {
@@ -90,27 +82,13 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
           Empezar
         </button>
 
-        {/* QR Card - only on desktop, compact, secondary */}
-        {!isMobile && (
-          <Suspense fallback={<div className="h-[160px]" />}>
-            <div className="pt-4 opacity-70 hover:opacity-100 transition-opacity">
-              <MobileQRCard originalTracking={trackingData} compact />
-            </div>
-          </Suspense>
-        )}
+        {/* QR Card - desktop only (parent skips entry on mobile) */}
+        <Suspense fallback={<div className="h-[160px]" />}>
+          <div className="pt-4">
+            <MobileQRCard originalTracking={trackingData} compact />
+          </div>
+        </Suspense>
       </div>
-
-      {/* Footer */}
-      <footer className="absolute bottom-6 flex flex-col items-center gap-2">
-        <a
-          href={beehiivUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-background/40 hover:text-background transition-colors"
-        >
-          Hecho con ❤️ para la comunidad de CEO en Camiseta
-        </a>
-      </footer>
     </div>
   );
 }

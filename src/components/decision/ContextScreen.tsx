@@ -15,11 +15,19 @@ export default function ContextScreen({ onSelect }: ContextScreenProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-md w-full space-y-8">
+        {/* Persuasive hook (also primary entry for mobile users) */}
+        <p className="text-base sm:text-lg text-center text-foreground/80 leading-relaxed animate-fade-up">
+          La mayoría tolera un trabajo mediocre<br className="hidden sm:inline" />
+          {' '}porque nunca se detiene a medirlo.
+        </p>
+
         {/* Hook header */}
         <div className="space-y-2 text-center animate-fade-up">
           <h2 className="text-2xl font-semibold">¿Cuál es tu situación hoy?</h2>
           <p className="text-subtle">Elegí la que más se parezca. No hay respuesta correcta.</p>
         </div>
+
+
 
         <div className="space-y-3">
           {orderedIds.map((id, index) => (
