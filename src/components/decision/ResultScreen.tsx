@@ -522,7 +522,25 @@ export default function ResultScreen({
   const [savedEmail, setSavedEmail] = useState<string>('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const isMobile = useIsMobile();
+
+  // Fetch global averages (non-blocking, fire-and-forget)
+  useEffect(() => {
+    let cancelled = false;
+    supabase.rpc('get_global_stats').then(({ data, error }) => {
+      if (cancelled || error || !data || !Array.isArray(data) || data.length === 0) return;
+      const row = data[0] as Record<string, number | string | null>;
+      setGlobalStats({
+        avg_dinero: Number(row.avg_dinero),
+        avg_desarrollo: Number(row.avg_desarrollo),
+        avg_diversion: Number(row.avg_diversion),
+        avg_global: Number(row.avg_global),
+      });
+      trackFlowEvent('view_global_compare');
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // Optimistic save: show success UI immediately
   const handleOptimisticSave = (email: string) => {
