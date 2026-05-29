@@ -24,6 +24,7 @@ interface DimensionSliderProps {
 }
 
 export function DimensionSlider({ label, value, onChange, colorClass, tooltip }: DimensionSliderProps) {
+  const firstMoveTracked = useRef(false);
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between">
