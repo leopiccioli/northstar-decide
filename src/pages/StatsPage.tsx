@@ -10,6 +10,7 @@ import { StatsFreshness } from '@/components/stats/StatsFreshness';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
 import logoImage from '@/assets/3d-logo.svg';
+import { SEO } from '@/components/SEO';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'country' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
@@ -170,6 +171,11 @@ export default function StatsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="3D por país — comparativa global de trabajo"
+        description="Cómo puntúan Dinero, Desarrollo y Diversión en el trabajo según el país. Datos de la comunidad CEO en Camiseta."
+        path="/por-pais"
+      />
       {/* Header */}
       <header className="border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">

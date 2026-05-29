@@ -9,6 +9,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Smartphone, ExternalLink, Loader2 } from 'lucide-react';
 import { Option, Scores } from '@/types/decision';
 import { SITE_CONFIG, buildBeehiivUrl } from '@/config/urls';
+import { SEO } from '@/components/SEO';
 
 interface ResultData {
   optionName: string;
@@ -276,6 +277,7 @@ export default function ResultPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+      <SEO title="Mi resultado 3D" path={`/r/${id}`} noIndex />
       <div className="max-w-md w-full space-y-10">
         
         {/* Single option result */}

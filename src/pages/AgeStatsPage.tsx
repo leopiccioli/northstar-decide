@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import { AGE_RANGES } from '@/lib/demographics';
 import logoImage from '@/assets/3d-logo.svg';
+import { SEO } from '@/components/SEO';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
 
@@ -142,6 +143,11 @@ export default function AgeStatsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="3D por edad — satisfacción laboral por rango etario"
+        description="Cómo cambian Dinero, Desarrollo y Diversión en el trabajo según la edad. Datos de la comunidad."
+        path="/por-edad"
+      />
       <header className="border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
