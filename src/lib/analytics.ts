@@ -95,6 +95,31 @@ export function trackFlowEvent(event: FlowEvent, data?: Record<string, unknown>)
       if (data?.email) {
         xData.email_address = data.email;
       }
+      // Si vienen scores, los mandamos como `contents` (formato X) para poder
+      // usarlos en optimización/segmentación de campañas Sales.
+      if (
+        typeof data?.dinero === 'number' ||
+        typeof data?.desarrollo === 'number' ||
+        typeof data?.diversion === 'number'
+      ) {
+        const d = data.dinero as number | undefined;
+        const de = data.desarrollo as number | undefined;
+        const di = data.diversion as number | undefined;
+        const avg =
+          typeof d === 'number' && typeof de === 'number' && typeof di === 'number'
+            ? Math.round(((d + de + di) / 3) * 10) / 10
+            : null;
+        xData.contents = [
+          {
+            content_type: '3d_scores',
+            content_id: avg !== null ? `avg_${avg}` : null,
+            content_name: `D${d ?? '-'}_Dev${de ?? '-'}_Div${di ?? '-'}`,
+            content_price: avg,
+            num_items: 1,
+            content_group_id: null,
+          },
+        ];
+      }
       window.twq('event', xEvents[event], xData);
     } catch (e) {
       console.warn('X Pixel error:', e);
