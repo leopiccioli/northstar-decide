@@ -552,6 +552,13 @@ export default function ResultScreen({
       diversion: currentOption.scores.diversion 
     });
     trackFlowEvent('save_result', { email });
+    // Evento dedicado para X Ads Sales (con scores + email para optimización)
+    trackFlowEvent('complete_3d_signup', {
+      email,
+      dinero: currentOption.scores.dinero,
+      desarrollo: currentOption.scores.desarrollo,
+      diversion: currentOption.scores.diversion,
+    });
     const optimisticId = generateOptimisticId();
     setSavedRecordId(optimisticId);
     setSavedEmail(email);
