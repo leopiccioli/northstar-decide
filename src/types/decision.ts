@@ -1,4 +1,4 @@
-export type UserContext = 
+export type UserContext =
   | 'improve'    // Mejorar trabajo actual
   | 'change'     // Cambiar de trabajo
   | 'compare'    // Comparar opciones
@@ -23,6 +23,15 @@ export interface DecisionState {
   comparisonOption: Option | null;
   step: 'entry' | 'context' | 'input' | 'input-comparison' | 'result' | 'close';
 }
+
+// User-facing labels for each context (visceral, in-voice)
+export const contextLabels: Record<UserContext, string> = {
+  improve: 'Estoy bien, pero podría estar mejor',
+  change: 'Estoy mirando para otro lado',
+  compare: 'Tengo que elegir entre dos caminos',
+  burnout: 'Estoy quemado',
+  check: 'Solo quiero ver cómo estoy parado',
+};
 
 // Prompts for optional comments (null = no comment field)
 export const contextQuestions: Record<UserContext, string | null> = {

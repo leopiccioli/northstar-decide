@@ -280,6 +280,17 @@ export type Database = {
     }
     Functions: {
       count_pending_legacy_notifications: { Args: never; Returns: number }
+      get_global_stats: {
+        Args: never
+        Returns: {
+          avg_desarrollo: number
+          avg_dinero: number
+          avg_diversion: number
+          avg_global: number
+          total: number
+        }[]
+      }
+      get_measurement_count: { Args: never; Returns: number }
       get_pending_demographics_backfill: {
         Args: { batch_limit?: number }
         Returns: {

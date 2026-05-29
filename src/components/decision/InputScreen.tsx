@@ -21,9 +21,9 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
   const [comment, setComment] = useState('');
   const [honeypot, setHoneypot] = useState(''); // Anti-bot honeypot field
   const [scores, setScores] = useState<Scores>({
-    dinero: 5,
-    desarrollo: 5,
-    diversion: 5,
+    dinero: 1,
+    desarrollo: 1,
+    diversion: 1,
   });
 
   const handleSubmit = () => {
@@ -79,6 +79,11 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
           aria-hidden="true"
         />
 
+        {/* Honesty primer — frames the gesture before the sliders */}
+        <p className="text-base font-medium text-center animate-fade-up opacity-0">
+          Respondé lo que sentís hoy,<br />no lo que quisieras sentir.
+        </p>
+
         {/* Sliders */}
         <div className="space-y-8">
           <div className="animate-fade-up opacity-0 stagger-1">
@@ -132,11 +137,6 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
             />
           </div>
         </div>
-
-        {/* Hint */}
-        <p className="text-subtle text-center animate-fade-up opacity-0 stagger-4">
-          Respondé intuitivo. No lo pienses mucho.
-        </p>
 
         {/* Optional comment - only show if context has a question */}
         {questionText && (

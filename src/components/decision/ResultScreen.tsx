@@ -1,11 +1,11 @@
 import { Option, UserContext, contextQuestions } from '@/types/decision';
-import { useState, useRef, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { GlobalScore } from './GlobalScore';
-import { Check, ExternalLink, Smartphone } from 'lucide-react';
+import { Check, ExternalLink, Smartphone, ArrowUp, ArrowDown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QRCodeSVG } from 'qrcode.react';
 import { SITE_CONFIG, buildBeehiivUrl, buildWhatsAppShareUrl } from '@/config/urls';
@@ -35,28 +35,79 @@ const reminderOptions: { id: ReminderPeriod; label: string }[] = [
   { id: 'none', label: 'Sin recordatorio' },
 ];
 
-function ScoreBar({ label, value, maxValue = 10 }: { 
-  label: string; 
-  value: number; 
+interface GlobalStats {
+  avg_dinero: number;
+  avg_desarrollo: number;
+  avg_diversion: number;
+  avg_global: number;
+}
+
+/**
+ * Score row with optional inline global comparison.
+ * - Animates fill from 0 on mount to create a small reveal moment.
+ * - Bolds when this dimension is the highest or lowest of the trio (see double-bolding).
+ */
+function ScoreBar({
+  label,
+  value,
+  globalAvg,
+  emphasize,
+  maxValue = 10,
+}: {
+  label: string;
+  value: number;
+  globalAvg?: number | null;
+  emphasize?: 'high' | 'low' | null;
   maxValue?: number;
 }) {
-  const percentage = (value / maxValue) * 100;
-  
+  const targetPercentage = (value / maxValue) * 100;
+  const [renderedPct, setRenderedPct] = useState(0);
+
+  useEffect(() => {
+    // Start at 0 on mount, then animate to target on the next frame.
+    const id = requestAnimationFrame(() => setRenderedPct(targetPercentage));
+    return () => cancelAnimationFrame(id);
+  }, [targetPercentage]);
+
+  const diff =
+    globalAvg != null ? Math.round((value - globalAvg) * 10) / 10 : null;
+  const showArrow = diff != null && Math.abs(diff) >= 1;
+
+  const labelClass = emphasize ? 'font-semibold' : 'font-medium';
+
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
-        <span className="text-sm font-medium">{label}</span>
-        <span className="text-sm text-muted-foreground tabular-nums">{value}/10</span>
+        <span className={`text-sm ${labelClass}`}>{label}</span>
+        <span className={`text-sm tabular-nums ${emphasize ? 'font-semibold' : 'text-muted-foreground'}`}>
+          {value}/10
+        </span>
       </div>
       <div className="h-3 bg-secondary rounded-sm overflow-hidden">
-        <div 
+        <div
           className="result-bar bg-foreground"
-          style={{ width: `${percentage}%` }}
+          style={{ width: `${renderedPct}%` }}
         />
       </div>
+      {globalAvg != null && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground tabular-nums">
+          <span>Global: {globalAvg.toFixed(1)}</span>
+          {showArrow && (
+            <span className="flex items-center gap-1">
+              {diff! > 0 ? (
+                <ArrowUp className="w-3 h-3" />
+              ) : (
+                <ArrowDown className="w-3 h-3" />
+              )}
+              <span>{diff! > 0 ? `+${diff!.toFixed(1)}` : diff!.toFixed(1)}</span>
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
 
 function ComparisonTable({ a, b }: { a: Option; b: Option }) {
   const getDiff = (key: keyof typeof a.scores) => {
@@ -471,7 +522,25 @@ export default function ResultScreen({
   const [savedEmail, setSavedEmail] = useState<string>('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const isMobile = useIsMobile();
+
+  // Fetch global averages (non-blocking, fire-and-forget)
+  useEffect(() => {
+    let cancelled = false;
+    supabase.rpc('get_global_stats').then(({ data, error }) => {
+      if (cancelled || error || !data || !Array.isArray(data) || data.length === 0) return;
+      const row = data[0] as Record<string, number | string | null>;
+      setGlobalStats({
+        avg_dinero: Number(row.avg_dinero),
+        avg_desarrollo: Number(row.avg_desarrollo),
+        avg_diversion: Number(row.avg_diversion),
+        avg_global: Number(row.avg_global),
+      });
+      trackFlowEvent('view_global_compare');
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // Optimistic save: show success UI immediately
   const handleOptimisticSave = (email: string) => {
@@ -571,49 +640,70 @@ export default function ResultScreen({
       <div className="max-w-md w-full space-y-10">
         
         {/* Single option result */}
-        {!comparisonOption && (
-          <div className="space-y-6 animate-fade-up">
-            <h2 className="text-xl font-semibold">{currentOption.name}</h2>
-            
-            <div className="space-y-5">
-              <ScoreBar 
-                label="Dinero" 
-                value={currentOption.scores.dinero} 
+        {!comparisonOption && (() => {
+          // Double bolding: highest and lowest dimension stand out together.
+          const dims = [
+            { key: 'dinero' as const, label: 'Dinero', value: currentOption.scores.dinero, global: globalStats?.avg_dinero ?? null },
+            { key: 'desarrollo' as const, label: 'Desarrollo', value: currentOption.scores.desarrollo, global: globalStats?.avg_desarrollo ?? null },
+            { key: 'diversion' as const, label: 'Diversión', value: currentOption.scores.diversion, global: globalStats?.avg_diversion ?? null },
+          ];
+          const max = Math.max(...dims.map(d => d.value));
+          const min = Math.min(...dims.map(d => d.value));
+          const allEqual = max === min;
+
+          return (
+            <div className="space-y-8 animate-fade-up">
+              {/* Emotional headline that closes the loop with the entry hook */}
+              <div className="space-y-1 text-center">
+                <p className="text-base text-muted-foreground">Ya te detuviste.</p>
+                <h2 className="text-2xl font-semibold">Esto es lo que tenés.</h2>
+              </div>
+
+              {/* Hero score */}
+              <GlobalScore
+                scores={currentOption.scores}
+                globalAvg={globalStats?.avg_global ?? null}
               />
-              <ScoreBar 
-                label="Desarrollo" 
-                value={currentOption.scores.desarrollo} 
-              />
-              <ScoreBar 
-                label="Diversión" 
-                value={currentOption.scores.diversion}
-              />
+
+              {/* Option name (subordinate to the hero number) */}
+              <p className="text-sm text-muted-foreground text-center">{currentOption.name}</p>
+
+              {/* Per-dimension bars with inline global comparison */}
+              <div className="space-y-5">
+                {dims.map(d => (
+                  <ScoreBar
+                    key={d.key}
+                    label={d.label}
+                    value={d.value}
+                    globalAvg={d.global}
+                    emphasize={allEqual ? null : d.value === max ? 'high' : d.value === min ? 'low' : null}
+                  />
+                ))}
+              </div>
+
+              {currentOption.comment && (
+                <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+                  {contextQuestions[userContext] && (
+                    <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
+                  )}
+                  "{currentOption.comment}"
+                </blockquote>
+              )}
             </div>
-
-            {/* Global score */}
-            <GlobalScore scores={currentOption.scores} />
-
-            {currentOption.comment && (
-              <blockquote className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
-                {contextQuestions[userContext] && (
-                  <span className="block not-italic text-xs text-muted-foreground/70 mb-1">{contextQuestions[userContext]}</span>
-                )}
-                "{currentOption.comment}"
-              </blockquote>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {/* Comparison result */}
         {comparisonOption && (
           <div className="space-y-6 animate-fade-up">
             <ComparisonTable a={currentOption} b={comparisonOption} />
-            
-            {/* Global scores for comparison */}
+
+            {/* Global scores for comparison (compact side-by-side) */}
             <div className="grid grid-cols-2 gap-3">
-              <GlobalScore scores={currentOption.scores} label={currentOption.name} />
-              <GlobalScore scores={comparisonOption.scores} label={comparisonOption.name} />
+              <GlobalScore scores={currentOption.scores} label={currentOption.name} compact />
+              <GlobalScore scores={comparisonOption.scores} label={comparisonOption.name} compact />
             </div>
+
             
             {(currentOption.comment || comparisonOption.comment) && (
               <div className="space-y-3">

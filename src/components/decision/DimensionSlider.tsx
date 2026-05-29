@@ -1,6 +1,8 @@
+import { useRef } from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { cn } from '@/lib/utils';
 import { HelpCircle } from 'lucide-react';
+import { trackFlowEvent } from '@/lib/analytics';
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +24,7 @@ interface DimensionSliderProps {
 }
 
 export function DimensionSlider({ label, value, onChange, colorClass, tooltip }: DimensionSliderProps) {
+  const firstMoveTracked = useRef(false);
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between">
@@ -70,19 +73,24 @@ export function DimensionSlider({ label, value, onChange, colorClass, tooltip }:
           if ('vibrate' in navigator) {
             navigator.vibrate(10);
           }
+          // Track first-ever slider move per dimension instance (funnel signal)
+          if (!firstMoveTracked.current) {
+            firstMoveTracked.current = true;
+            trackFlowEvent('slider_first_move', { dimension: label.toLowerCase() });
+          }
           onChange(v);
         }}
         max={10}
         min={1}
         step={1}
       >
-        <SliderPrimitive.Track className="slider-track relative grow h-1.5">
-          <SliderPrimitive.Range 
-            className={cn("absolute h-full rounded-full", colorClass.replace('text-', 'bg-'))} 
+        <SliderPrimitive.Track className="relative grow h-2 bg-secondary rounded-full overflow-hidden">
+          <SliderPrimitive.Range
+            className={cn("absolute h-full rounded-full", colorClass.replace('text-', 'bg-'))}
           />
         </SliderPrimitive.Track>
-        <SliderPrimitive.Thumb 
-          className="block w-5 h-5 bg-foreground rounded-full shadow-md
+        <SliderPrimitive.Thumb
+          className="block w-6 h-6 bg-foreground rounded-full shadow-lg
                      hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring
                      transition-transform cursor-grab active:cursor-grabbing"
         />
