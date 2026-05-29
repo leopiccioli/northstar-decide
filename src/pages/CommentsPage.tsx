@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { CommentShareCard } from "@/components/comments/CommentShareCard";
 import { StatsNav } from "@/components/stats/StatsNav";
+import { SEO } from "@/components/SEO";
 
 interface Comment {
   id: string;
@@ -61,6 +62,11 @@ const CommentsPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Muro de los lamentos — comentarios sobre el trabajo"
+        description="Qué dice la gente sobre su trabajo: comentarios anónimos junto a sus 3D (Dinero, Desarrollo, Diversión)."
+        path="/comentarios"
+      />
       {/* Header with title and toggle */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="flex flex-col items-center py-4 px-4 gap-3">

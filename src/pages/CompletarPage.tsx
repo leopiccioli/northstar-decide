@@ -5,6 +5,7 @@ import { SECTORS, AGE_RANGES, isValidAgeRange, isValidSector } from '@/lib/demog
 import { SectorCombobox } from '@/components/decision/SectorCombobox';
 import { AgeRangeChips } from '@/components/decision/AgeRangeChips';
 import { trackFlowEvent, trackCustomEvent } from '@/lib/analytics';
+import { SEO } from '@/components/SEO';
 
 
 type State =
@@ -139,6 +140,7 @@ export default function CompletarPage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-start justify-center px-4 py-12">
+      <SEO title="Completar tu medición 3D" path="/completar" noIndex />
       <div className="w-full max-w-md space-y-8">
         <header className="space-y-1">
           <h1 className="text-2xl font-display tracking-tight">3D para Decidir</h1>

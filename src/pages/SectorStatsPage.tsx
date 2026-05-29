@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import logoImage from '@/assets/3d-logo.svg';
+import { SEO } from '@/components/SEO';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
 
@@ -136,6 +137,11 @@ export default function SectorStatsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="3D por sector — Dinero, Desarrollo y Diversión por industria"
+        description="Comparativa de satisfacción laboral (3D) por sector: tech, salud, finanzas, educación y más."
+        path="/por-sector"
+      />
       <header className="border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
