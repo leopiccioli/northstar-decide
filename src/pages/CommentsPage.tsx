@@ -66,7 +66,7 @@ const CommentsPage = () => {
           {/* Title + CTA */}
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-foreground">
-              Muro de los Lamentos
+              Comentarios
             </h1>
             <Link 
               to="/?utm_source=comentarios&utm_medium=header"
