@@ -79,6 +79,11 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
           aria-hidden="true"
         />
 
+        {/* Honesty primer — frames the gesture before the sliders */}
+        <p className="text-base font-medium text-center animate-fade-up opacity-0">
+          Respondé lo que sentís hoy,<br />no lo que quisieras sentir.
+        </p>
+
         {/* Sliders */}
         <div className="space-y-8">
           <div className="animate-fade-up opacity-0 stagger-1">
