@@ -1,50 +1,72 @@
-## Diagnóstico
+## Objetivo
 
-Hoy todas las rutas comparten el `<title>` y `<meta description>` estáticos de `index.html` ("3D para Decidir - CEO en Camiseta"). Eso significa:
+Subir la conversión de `complete_3d_signup` en tráfico de la campaña de X, especialmente en WKWebView (in-app browser de Twitter/IG/FB/TikTok) donde no funciona el autofill ni el llavero de iCloud.
 
-- `/por-pais`, `/por-sector`, `/por-edad`, `/comentarios` no tienen títulos propios → pierden potencial SEO y se ven raras al compartirlas (preview idéntico al home).
-- `/r/:id` (resultado compartido) y `/completar` (link privado por email) son privadas y **deberían tener `noindex`** para no contaminar el índice de Google.
-- Falta `<link rel="canonical">` en `index.html`.
+## Cambios
 
-## Solución
+### 1. Atributos de autofill en el input de email (ResultScreen.tsx)
 
-Instalar `react-helmet-async` y agregar `<Helmet>` por página. Mantener el head estático en `index.html` como fallback para crawlers sociales (LinkedIn, Slack) que no ejecutan JS.
+Envolver el input + botón en un `<form onSubmit>` y agregar:
+- `name="email"`
+- `autoComplete="email"`
+- `inputMode="email"`
+- `enterKeyHint="go"`
+- `autoCapitalize="off"`, `spellCheck={false}`
 
-### 1. Setup
-- `npm install react-helmet-async`
-- Envolver `<App />` en `<HelmetProvider>` en `src/main.tsx`.
-- Agregar `<link rel="canonical" href="https://3d.ceoencamiseta.com/" />` en `index.html` (canonical sitewide; cada ruta lo sobrescribe).
+Esto activa el chip "From iCloud Keychain" arriba del teclado en iOS WKWebView y permite submit con Enter desde el teclado del celu.
 
-### 2. Meta por ruta
+### 2. Banner "Abrir en navegador" para in-app browsers
 
-Crear un componente helper `src/components/SEO.tsx` que reciba `{ title, description, path, noIndex? }` y emita `<Helmet>` con title, description, canonical, og:title, og:description, og:url.
+Nuevo componente `InAppBrowserBanner.tsx` que se monta en `ResultScreen` (solo cuando aparece el form de email, no antes — para no agregar fricción al `complete_3d`).
 
-Aplicar en cada página:
+Detección por user-agent: Twitter, Instagram, FBAN/FBAV (Facebook), Line, TikTok, LinkedInApp. Chrome/Safari quedan afuera aunque sean iOS.
 
-| Ruta | Title | Description | Index |
-|---|---|---|---|
-| `/` | `3D para Decidir — Dinero, Desarrollo, Diversión` | `Tomá mejores decisiones laborales en 20 segundos midiendo tus 3D: Dinero, Desarrollo y Diversión.` | ✅ (ya en index.html, no hace falta Helmet) |
-| `/por-pais` | `3D por país — comparativa global de trabajo` | `Cómo puntúan Dinero, Desarrollo y Diversión en el trabajo según el país. Datos de la comunidad CEO en Camiseta.` | ✅ |
-| `/por-sector` | `3D por sector — Dinero, Desarrollo y Diversión por industria` | `Comparativa de satisfacción laboral (3D) por sector: tech, salud, finanzas, educación y más.` | ✅ |
-| `/por-edad` | `3D por edad — cómo varía la satisfacción laboral por rango etario` | `Cómo cambian Dinero, Desarrollo y Diversión en el trabajo según la edad. Datos de la comunidad.` | ✅ |
-| `/comentarios` | `Muro de los lamentos — comentarios sobre el trabajo` | `Qué dice la gente sobre su trabajo: comentarios anónimos junto a sus 3D (Dinero, Desarrollo, Diversión).` | ✅ |
-| `/r/:id` | `Mi resultado 3D` | (sin description útil) | ❌ `noindex,nofollow` |
-| `/completar` | `Completar tu medición 3D` | — | ❌ `noindex,nofollow` |
-| `*` (404) | `Página no encontrada — 3D para Decidir` | — | ❌ `noindex` |
+UI minimalista, consistente con el resto: una línea de texto + link "Abrir en Safari/Chrome →" arriba del form. Al tocarlo:
+- iOS: abre `x-safari-https://3d.ceoencamiseta.com/?...` (deep link a Safari) con fallback a la URL normal.
+- Android: usa `intent://` para forzar Chrome con fallback.
 
-### 3. Otros detalles
-- `og:image` queda como está (sitewide en `index.html`) — no inventamos imagen por ruta.
-- En `index.html` también agregar `<meta property="og:locale" content="es_AR" />` (faltante).
-- No tocamos rutas con datos sensibles (`/r/:id`, `/completar`) más allá del noindex.
+La URL incluye los params actuales (UTMs preservados) + `email=` si ya lo escribieron + un flag `from=inapp` para tracking.
 
-## Archivos a modificar
-- `index.html` — canonical + og:locale
-- `src/main.tsx` — `<HelmetProvider>`
-- `src/components/SEO.tsx` — nuevo helper
-- `src/pages/StatsPage.tsx`, `SectorStatsPage.tsx`, `AgeStatsPage.tsx`, `CommentsPage.tsx`, `ResultPage.tsx`, `CompletarPage.tsx`, `NotFound.tsx` — agregar `<SEO ... />`
+Tracking: `trackFlowEvent` nuevo `inapp_banner_shown` y `inapp_banner_click` (mapeados a `ViewContent` en pixels, no consumen Event ID de X).
 
-## Lo que **no** voy a tocar
-- Funcionalidad, RLS, edge functions, estilos.
-- `Index.tsx` (el title/description del home ya están bien en `index.html`).
+### 3. Persistir scores entre sesiones para "abrir en Safari"
 
-¿Avanzo con esto, o querés ajustar algún título/description antes?
+Si el usuario clickea el banner, perdería el progreso al saltar de navegador. Guardar los scores actuales en `localStorage` con TTL de 10 min y, al cargar la app, si existen y no hay `step` previo, saltar directo al resultado con esos scores (mismo email prefill por URL ya existe).
+
+Clave: `3d:pending_result` con `{currentOption, comparisonOption, context, email?, ts}`.
+
+### 4. Mejoras chicas que también ayudan en in-app
+
+- En el otro `<input>` de email/name de InputScreen (option name) y CloseScreen, agregar `autoComplete`/`enterKeyHint` apropiados.
+- `enterKeyHint="next"` en el input de nombre de opción para que el teclado muestre "Siguiente" en vez de "OK".
+- Verificar que el form de email no quede tapado por el teclado: agregar `scroll-margin-bottom: 120px` al input para que el scroll automático de iOS lo deje visible arriba del teclado.
+
+### 5. Tracking adicional para diagnosticar
+
+Agregar property `is_inapp_browser: true/false` y `inapp_browser_name` ('twitter'|'instagram'|...) en todos los `trackFlowEvent` (vía PostHog `register_once`). Así en PostHog podés segmentar `complete_3d` vs `complete_3d_signup` por WKWebView y ver el lift real del cambio.
+
+## Detalles técnicos
+
+- Util nuevo `src/lib/inAppBrowser.ts` con `detectInAppBrowser()` que devuelve `{ isInApp, name, os }`.
+- Util `openInExternalBrowser(url)` con la lógica de `x-safari-https://` / `intent://` y fallback.
+- Persistencia en `src/lib/pendingResult.ts` con `save/load/clear` y TTL.
+- DecisionFlow.tsx: al montar, leer `pendingResult`; si existe y es < 10min, hidratar el state y saltar a `step: 'result'`.
+- analytics.ts: agregar `inapp_banner_shown` e `inapp_banner_click` al `FlowEvent` union y a los 3 mappings.
+- Memoria nueva: `mem://features/inapp-browser-conversion` con la estrategia.
+
+## Archivos a tocar
+
+- `src/components/decision/ResultScreen.tsx` — form wrapper + atributos + banner + scroll-margin
+- `src/components/decision/InputScreen.tsx` — atributos en input de nombre
+- `src/components/decision/CloseScreen.tsx` — atributos en input de email
+- `src/components/decision/DecisionFlow.tsx` — hidratar pendingResult al montar
+- `src/components/InAppBrowserBanner.tsx` (nuevo)
+- `src/lib/inAppBrowser.ts` (nuevo)
+- `src/lib/pendingResult.ts` (nuevo)
+- `src/lib/analytics.ts` — eventos + property `is_inapp_browser`
+
+## Lo que NO va a hacer
+
+- No agrega "Continuar con Google" (otra decisión, requiere OAuth setup).
+- No fuerza nada al usuario de Chrome o Safari nativo — el banner solo aparece en WKWebView in-app.
+- No toca el flujo si no estás en WKWebView: cero cambios visibles para el 100% del tráfico desktop y para mobile fuera de in-app.
