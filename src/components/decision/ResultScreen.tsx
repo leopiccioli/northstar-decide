@@ -595,6 +595,7 @@ export default function ResultScreen({
   const handleSaveSuccess = (realId: string, email: string) => {
     setSavedRecordId(realId);
     setSavedEmail(email);
+    clearPendingResult();
   };
 
   const handleShare = async () => {
