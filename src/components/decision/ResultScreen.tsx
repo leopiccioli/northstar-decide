@@ -421,16 +421,27 @@ function SaveSection({
   };
 
   return (
-    <div className="space-y-5 p-4 bg-secondary rounded-sm border border-border animate-fade-up">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSave();
+      }}
+      className="space-y-5 p-4 bg-secondary rounded-sm border border-border animate-fade-up"
+    >
       {/* Microcopy */}
       <p className="text-subtle text-center">
         Gratis. Te avisamos para que vuelvas a medir y veas si mejoraste.
       </p>
 
+      {/* In-app browser banner — only renders on Twitter/IG/FB/etc */}
+      <InAppBrowserBanner email={email} />
+
       <div className="space-y-2">
-        <label className="text-sm font-medium">Guardá tu 3D gratis</label>
+        <label htmlFor="result-email" className="text-sm font-medium">Guardá tu 3D gratis</label>
         <input
+          id="result-email"
           type="email"
+          name="email"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
@@ -439,6 +450,13 @@ function SaveSection({
           }}
           onBlur={handleEmailBlur}
           placeholder="email@ejemplo.com"
+          autoComplete="email"
+          inputMode="email"
+          enterKeyHint="go"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          style={{ scrollMarginBottom: '120px' }}
           className={`w-full px-4 py-3 bg-background border rounded-sm
                      text-foreground placeholder:text-muted-foreground
                      focus:outline-none focus:ring-1 focus:ring-foreground
@@ -488,6 +506,7 @@ function SaveSection({
           {reminderOptions.map((option) => (
             <button
               key={option.id}
+              type="button"
               onClick={() => setReminder(option.id)}
               className={`px-2.5 py-1.5 text-sm rounded-sm border transition-all whitespace-nowrap
                 ${reminder === option.id 
@@ -503,14 +522,14 @@ function SaveSection({
 
       <div className="flex gap-3 pt-2">
         <button
-          onClick={handleSave}
+          type="submit"
           disabled={!email.trim()}
           className="btn-primary flex-1 text-sm py-2 disabled:opacity-40"
         >
           {reminder === 'none' ? 'Guardar' : 'Guardar y avisarme'}
         </button>
       </div>
-    </div>
+    </form>
   );
 }
 
