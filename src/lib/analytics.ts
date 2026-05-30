@@ -22,7 +22,9 @@ export type FlowEvent =
   | 'whatsapp_share_team'    // Recomienda al equipo via WhatsApp
   | 'open_stats'      // Abre una página de stats (país/sector/edad) desde otra surface
   | 'view_global_compare' // Carga la comparación inline con promedio global en resultado
-  | 'complete_demographics'; // Completa sector y/o edad en /completar (backfill)
+  | 'complete_demographics' // Completa sector y/o edad en /completar (backfill)
+  | 'inapp_banner_shown'    // Banner "Abrir en navegador" se mostró
+  | 'inapp_banner_click';   // Usuario tocó "Abrir en Safari/Chrome"
 
 // Meta Pixel event mapping
 const metaEvents: Record<FlowEvent, string> = {
