@@ -49,9 +49,17 @@ export default function CloseScreen({ onRestart }: CloseScreenProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
+            name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
+            autoComplete="email"
+            inputMode="email"
+            enterKeyHint="go"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            style={{ scrollMarginBottom: '120px' }}
             className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
                        text-foreground placeholder:text-muted-foreground text-center
                        focus:outline-none focus:ring-1 focus:ring-foreground"
