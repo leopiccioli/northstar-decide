@@ -76,6 +76,8 @@ const ga4Events: Record<FlowEvent, string> = {
   open_stats: 'select_content',
   view_global_compare: 'select_content',
   complete_demographics: 'complete_demographics',
+  inapp_banner_shown: 'select_content',
+  inapp_banner_click: 'select_content',
 };
 
 
