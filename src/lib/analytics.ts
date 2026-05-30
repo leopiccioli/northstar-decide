@@ -40,6 +40,8 @@ const metaEvents: Record<FlowEvent, string> = {
   open_stats: 'ViewContent',
   view_global_compare: 'ViewContent',
   complete_demographics: 'CompleteRegistration',
+  inapp_banner_shown: 'ViewContent',
+  inapp_banner_click: 'ViewContent',
 };
 
 // X (Twitter) Pixel event mapping
