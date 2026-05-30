@@ -1,6 +1,7 @@
 // PostHog initialization — loaded after page load to not affect LCP.
 // Public project API key + host are safe to ship in client code.
 import posthog from 'posthog-js';
+import { detectInAppBrowser } from './inAppBrowser';
 
 const POSTHOG_KEY = 'phc_trVH4CdGyvfoakPZuQkMkT6A943zrbJHup7hLXHX4GCr';
 const POSTHOG_HOST = 'https://us.i.posthog.com';
