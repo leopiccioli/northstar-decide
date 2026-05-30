@@ -546,6 +546,11 @@ export default function ResultScreen({
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const isMobile = useIsMobile();
 
+  // Persist current scores so a Safari/Chrome jump preserves progress
+  useEffect(() => {
+    savePendingResult({ context: userContext, currentOption, comparisonOption });
+  }, [userContext, currentOption, comparisonOption]);
+
   // Fetch global averages (non-blocking, fire-and-forget)
   useEffect(() => {
     let cancelled = false;
