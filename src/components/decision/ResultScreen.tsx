@@ -12,6 +12,8 @@ import { SITE_CONFIG, buildBeehiivUrl, buildWhatsAppShareUrl } from '@/config/ur
 import { trackFlowEvent } from '@/lib/analytics';
 import { detectEmailTypo } from '@/lib/emailTypo';
 import { CompareWithOthers } from './CompareWithOthers';
+import { InAppBrowserBanner } from '@/components/InAppBrowserBanner';
+import { savePendingResult, clearPendingResult } from '@/lib/pendingResult';
 
 // Lazy load CountryCombobox - only needed at save step
 const CountryCombobox = lazy(() => import('./CountryCombobox').then(m => ({ default: m.CountryCombobox })));
