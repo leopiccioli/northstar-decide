@@ -22,7 +22,9 @@ export type FlowEvent =
   | 'whatsapp_share_team'    // Recomienda al equipo via WhatsApp
   | 'open_stats'      // Abre una página de stats (país/sector/edad) desde otra surface
   | 'view_global_compare' // Carga la comparación inline con promedio global en resultado
-  | 'complete_demographics'; // Completa sector y/o edad en /completar (backfill)
+  | 'complete_demographics' // Completa sector y/o edad en /completar (backfill)
+  | 'inapp_banner_shown'    // Banner "Abrir en navegador" se mostró
+  | 'inapp_banner_click';   // Usuario tocó "Abrir en Safari/Chrome"
 
 // Meta Pixel event mapping
 const metaEvents: Record<FlowEvent, string> = {
@@ -38,6 +40,8 @@ const metaEvents: Record<FlowEvent, string> = {
   open_stats: 'ViewContent',
   view_global_compare: 'ViewContent',
   complete_demographics: 'CompleteRegistration',
+  inapp_banner_shown: 'ViewContent',
+  inapp_banner_click: 'ViewContent',
 };
 
 // X (Twitter) Pixel event mapping
@@ -54,6 +58,8 @@ const xEvents: Record<FlowEvent, string> = {
   open_stats: 'ViewContent',
   view_global_compare: 'ViewContent',
   complete_demographics: 'Signup',
+  inapp_banner_shown: 'ViewContent',
+  inapp_banner_click: 'ViewContent',
 };
 
 // GA4 event mapping
@@ -70,6 +76,8 @@ const ga4Events: Record<FlowEvent, string> = {
   open_stats: 'select_content',
   view_global_compare: 'select_content',
   complete_demographics: 'complete_demographics',
+  inapp_banner_shown: 'select_content',
+  inapp_banner_click: 'select_content',
 };
 
 

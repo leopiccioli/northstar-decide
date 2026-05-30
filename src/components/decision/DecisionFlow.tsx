@@ -3,6 +3,7 @@ import { DecisionState, UserContext, Scores } from '@/types/decision';
 import { EntryScreen } from './EntryScreen';
 import { ProgressIndicator } from './ProgressIndicator';
 import { trackFlowEvent } from '@/lib/analytics';
+import { loadPendingResult } from '@/lib/pendingResult';
 
 
 // Lazy load screens that are not shown initially
@@ -24,12 +25,31 @@ const ScreenLoader = () => (
 const isMobileViewport = () =>
   typeof window !== 'undefined' && window.innerWidth < 768;
 
-const getInitialState = (): DecisionState => ({
-  context: null,
-  currentOption: null,
-  comparisonOption: null,
-  step: isMobileViewport() ? 'context' : 'entry',
-});
+const getInitialState = (): DecisionState => {
+  // If the user just jumped from an in-app browser (?from=inapp) and we have
+  // their pending answers, hydrate directly to the result screen so they
+  // land on the email form with autofill working.
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('from') === 'inapp') {
+      const pending = loadPendingResult();
+      if (pending?.context && pending.currentOption) {
+        return {
+          context: pending.context,
+          currentOption: pending.currentOption,
+          comparisonOption: pending.comparisonOption ?? null,
+          step: 'result',
+        };
+      }
+    }
+  }
+  return {
+    context: null,
+    currentOption: null,
+    comparisonOption: null,
+    step: isMobileViewport() ? 'context' : 'entry',
+  };
+};
 
 function getStepNumber(step: DecisionState['step'], isCompare: boolean): number {
   if (step === 'entry') return 0;

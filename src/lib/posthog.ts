@@ -1,6 +1,7 @@
 // PostHog initialization — loaded after page load to not affect LCP.
 // Public project API key + host are safe to ship in client code.
 import posthog from 'posthog-js';
+import { detectInAppBrowser } from './inAppBrowser';
 
 const POSTHOG_KEY = 'phc_trVH4CdGyvfoakPZuQkMkT6A943zrbJHup7hLXHX4GCr';
 const POSTHOG_HOST = 'https://us.i.posthog.com';
@@ -32,6 +33,11 @@ export function initPostHog() {
           if (v) utms[k] = v;
         });
         if (document.referrer) utms.referrer = document.referrer;
+        // In-app browser context as super-properties for funnel segmentation
+        const inApp = detectInAppBrowser();
+        utms.is_inapp_browser = String(inApp.isInApp);
+        if (inApp.name) utms.inapp_browser_name = inApp.name;
+        utms.device_os = inApp.os;
         if (Object.keys(utms).length) ph.register(utms);
       } catch (e) {
         // noop
