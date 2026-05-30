@@ -33,6 +33,11 @@ export function initPostHog() {
           if (v) utms[k] = v;
         });
         if (document.referrer) utms.referrer = document.referrer;
+        // In-app browser context as super-properties for funnel segmentation
+        const inApp = detectInAppBrowser();
+        utms.is_inapp_browser = String(inApp.isInApp);
+        if (inApp.name) utms.inapp_browser_name = inApp.name;
+        utms.device_os = inApp.os;
         if (Object.keys(utms).length) ph.register(utms);
       } catch (e) {
         // noop
