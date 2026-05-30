@@ -59,6 +59,8 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
                 }
               }}
               maxLength={100}
+              enterKeyHint="next"
+              autoCapitalize="sentences"
               placeholder="Seguir así / Ascenso / Nueva empresa..."
               className="w-full px-4 py-3 bg-secondary border border-border rounded-sm
                          text-foreground placeholder:text-muted-foreground
