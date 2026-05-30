@@ -58,6 +58,8 @@ const xEvents: Record<FlowEvent, string> = {
   open_stats: 'ViewContent',
   view_global_compare: 'ViewContent',
   complete_demographics: 'Signup',
+  inapp_banner_shown: 'ViewContent',
+  inapp_banner_click: 'ViewContent',
 };
 
 // GA4 event mapping
