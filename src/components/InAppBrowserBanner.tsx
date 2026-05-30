@@ -2,17 +2,31 @@ import { useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { detectInAppBrowser, openInExternalBrowser } from '@/lib/inAppBrowser';
 import { trackFlowEvent } from '@/lib/analytics';
+import { encodeStateToParams } from '@/lib/pendingResult';
+import type { Option, UserContext } from '@/types/decision';
 
 interface InAppBrowserBannerProps {
-  /** Optional email already typed — preserved across the browser jump via URL. */
+  /** Email already typed — preserved across the browser jump via URL. */
   email?: string;
+  /** Current 3D state, serialized into the URL so Safari can hydrate it. */
+  userContext: UserContext;
+  currentOption: Option;
+  comparisonOption: Option | null;
 }
 
 /**
  * Minimal banner shown only inside in-app browsers (Twitter/IG/FB/TikTok/…).
  * Opens the current URL in Safari/Chrome so iCloud Keychain / Google autofill work.
+ *
+ * Crucially, the destination URL carries the full 3D state in query params —
+ * because localStorage is NOT shared between WKWebView and Safari on iOS.
  */
-export function InAppBrowserBanner({ email }: InAppBrowserBannerProps) {
+export function InAppBrowserBanner({
+  email,
+  userContext,
+  currentOption,
+  comparisonOption,
+}: InAppBrowserBannerProps) {
   const [info] = useState(() => detectInAppBrowser());
 
   useEffect(() => {
@@ -29,8 +43,9 @@ export function InAppBrowserBanner({ email }: InAppBrowserBannerProps) {
   const handleClick = () => {
     trackFlowEvent('inapp_banner_click', { app: info.name, os: info.os });
 
-    // Build URL preserving current path + query, append email + from=inapp
+    // Preserve current path + UTMs, add scores + email + from=inapp flag
     const url = new URL(window.location.href);
+    encodeStateToParams(url, { context: userContext, currentOption, comparisonOption });
     if (email) url.searchParams.set('email', email);
     url.searchParams.set('from', 'inapp');
 

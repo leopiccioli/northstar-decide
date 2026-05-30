@@ -1,72 +1,93 @@
-## Objetivo
+## QA del paquete "in-app browser conversion"
 
-Subir la conversión de `complete_3d_signup` en tráfico de la campaña de X, especialmente en WKWebView (in-app browser de Twitter/IG/FB/TikTok) donde no funciona el autofill ni el llavero de iCloud.
+Revisé los 9 archivos tocados. La mayoría está sólido. Hay **1 problema crítico de arquitectura** que rompe la promesa principal del feature, y 2 limpiezas chicas.
 
-## Cambios
+---
 
-### 1. Atributos de autofill en el input de email (ResultScreen.tsx)
+### 🔴 Crítico: `pendingResult` en `localStorage` NO se comparte entre WKWebView y Safari
 
-Envolver el input + botón en un `<form onSubmit>` y agregar:
-- `name="email"`
-- `autoComplete="email"`
-- `inputMode="email"`
-- `enterKeyHint="go"`
-- `autoCapitalize="off"`, `spellCheck={false}`
+**Qué pasa hoy:**
+1. Usuario llega por ad de Twitter → WKWebView in-app.
+2. Mueve sliders → en `ResultScreen` guardamos los scores en `localStorage` (clave `3d:pending_result`).
+3. Toca el banner "Abrir en Safari" → se abre `x-safari-https://3d.ceoencamiseta.com/?from=inapp`.
+4. Safari hidrata desde `loadPendingResult()`.
 
-Esto activa el chip "From iCloud Keychain" arriba del teclado en iOS WKWebView y permite submit con Enter desde el teclado del celu.
+**El problema:** WKWebView de Twitter/IG/FB usa un **storage partition propio de la app**. Su `localStorage` NO es el mismo que el de Safari nativo, aunque sea el mismo dominio. Resultado: en Safari, `localStorage.getItem('3d:pending_result')` devuelve `null`, no se hidrata, y el usuario **arranca el flujo desde cero** después del salto. Cae justamente en el escenario que el banner promete evitar.
 
-### 2. Banner "Abrir en navegador" para in-app browsers
+Lo mismo aplica a Android Chrome vs WebView de in-app.
 
-Nuevo componente `InAppBrowserBanner.tsx` que se monta en `ResultScreen` (solo cuando aparece el form de email, no antes — para no agregar fricción al `complete_3d`).
+**Fix propuesto (Opción A — recomendada):** Pasar los scores por URL en vez de localStorage.
 
-Detección por user-agent: Twitter, Instagram, FBAN/FBAV (Facebook), Line, TikTok, LinkedInApp. Chrome/Safari quedan afuera aunque sean iOS.
+En `InAppBrowserBanner.handleClick`, leer los scores actuales (vía prop nueva o vía un hook compartido) y serializar en query params:
 
-UI minimalista, consistente con el resto: una línea de texto + link "Abrir en Safari/Chrome →" arriba del form. Al tocarlo:
-- iOS: abre `x-safari-https://3d.ceoencamiseta.com/?...` (deep link a Safari) con fallback a la URL normal.
-- Android: usa `intent://` para forzar Chrome con fallback.
+```
+?from=inapp
+&ctx=improve
+&d=7&de=4&di=8                       // current
+&dc=5&dec=6&dic=3                    // comparison (si existe)
+&n=Seguir%20asi&nc=Cambiar           // option names
+&email=usuario%40gmail.com
+```
 
-La URL incluye los params actuales (UTMs preservados) + `email=` si ya lo escribieron + un flag `from=inapp` para tracking.
+Luego en `DecisionFlow.getInitialState`, si está `?from=inapp` con scores válidos, reconstruir el state desde la URL (no desde localStorage). El payload total queda < 200 chars, sin problema de límite. localStorage queda como fallback secundario.
 
-Tracking: `trackFlowEvent` nuevo `inapp_banner_shown` y `inapp_banner_click` (mapeados a `ViewContent` en pixels, no consumen Event ID de X).
+**Cambios necesarios:**
+- `InAppBrowserBanner` recibe `currentOption`, `comparisonOption`, `userContext` como props (ResultScreen ya los tiene).
+- Nueva función `encodeStateToURL` / `decodeStateFromURL` en `src/lib/pendingResult.ts` (renombrarlo a algo como `crossBrowserState.ts`).
+- `DecisionFlow.getInitialState` chequea URL antes que localStorage.
+- `ResultScreen` pasa props al banner en vez de solo `email`.
 
-### 3. Persistir scores entre sesiones para "abrir en Safari"
+**Opción B (más simple, peor UX):** Aceptar la limitación y reescribir el copy del banner para que diga claramente "vas a tener que repetir los 3 sliders en Safari para que funcione el autofill". Conserva el código actual pero pierde el 80% del valor del feature.
 
-Si el usuario clickea el banner, perdería el progreso al saltar de navegador. Guardar los scores actuales en `localStorage` con TTL de 10 min y, al cargar la app, si existen y no hay `step` previo, saltar directo al resultado con esos scores (mismo email prefill por URL ya existe).
+---
 
-Clave: `3d:pending_result` con `{currentOption, comparisonOption, context, email?, ts}`.
+### 🟡 Menor 1: `clearPendingResult` se importa pero nunca se llama
 
-### 4. Mejoras chicas que también ayudan en in-app
+`ResultScreen.tsx` importa `clearPendingResult` (línea 16) pero nunca lo invoca. Consecuencias: después de guardar exitosamente, el `localStorage` queda con los scores 10 min. Si el usuario refresca con `?from=inapp` por cualquier motivo, lo manda otra vez al form de email (que ya completó).
 
-- En el otro `<input>` de email/name de InputScreen (option name) y CloseScreen, agregar `autoComplete`/`enterKeyHint` apropiados.
-- `enterKeyHint="next"` en el input de nombre de opción para que el teclado muestre "Siguiente" en vez de "OK".
-- Verificar que el form de email no quede tapado por el teclado: agregar `scroll-margin-bottom: 120px` al input para que el scroll automático de iOS lo deje visible arriba del teclado.
+**Fix:** llamar `clearPendingResult()` dentro de `onSaveSuccess` (cuando el save-result devuelve el ID real) y también al desmontar `ResultScreen`.
 
-### 5. Tracking adicional para diagnosticar
+---
 
-Agregar property `is_inapp_browser: true/false` y `inapp_browser_name` ('twitter'|'instagram'|...) en todos los `trackFlowEvent` (vía PostHog `register_once`). Así en PostHog podés segmentar `complete_3d` vs `complete_3d_signup` por WKWebView y ver el lift real del cambio.
+### 🟡 Menor 2: `<form onSubmit>` en el save form puede dispararse al elegir país
 
-## Detalles técnicos
+El save form en `ResultScreen.tsx` (línea 424) envuelve `CountryCombobox` y `SectorCombobox` (que son Popover + Command de shadcn). En algunos casos, presionar Enter dentro del combobox para seleccionar un país **puede burbujear y disparar `handleSave()`** prematuramente — antes de tocar el botón "Guardar y avisarme".
 
-- Util nuevo `src/lib/inAppBrowser.ts` con `detectInAppBrowser()` que devuelve `{ isInApp, name, os }`.
-- Util `openInExternalBrowser(url)` con la lógica de `x-safari-https://` / `intent://` y fallback.
-- Persistencia en `src/lib/pendingResult.ts` con `save/load/clear` y TTL.
-- DecisionFlow.tsx: al montar, leer `pendingResult`; si existe y es < 10min, hidratar el state y saltar a `step: 'result'`.
-- analytics.ts: agregar `inapp_banner_shown` e `inapp_banner_click` al `FlowEvent` union y a los 3 mappings.
-- Memoria nueva: `mem://features/inapp-browser-conversion` con la estrategia.
+**Fix corto:** agregar `onKeyDown` al `<form>` que detecte si el target NO es el botón submit ni el input de email y, en ese caso, prevenga el Enter:
 
-## Archivos a tocar
+```tsx
+onKeyDown={(e) => {
+  if (e.key === 'Enter') {
+    const target = e.target as HTMLElement;
+    if (target.tagName !== 'BUTTON' && target.id !== 'result-email') {
+      e.preventDefault();
+    }
+  }
+}}
+```
 
-- `src/components/decision/ResultScreen.tsx` — form wrapper + atributos + banner + scroll-margin
-- `src/components/decision/InputScreen.tsx` — atributos en input de nombre
-- `src/components/decision/CloseScreen.tsx` — atributos en input de email
-- `src/components/decision/DecisionFlow.tsx` — hidratar pendingResult al montar
-- `src/components/InAppBrowserBanner.tsx` (nuevo)
-- `src/lib/inAppBrowser.ts` (nuevo)
-- `src/lib/pendingResult.ts` (nuevo)
-- `src/lib/analytics.ts` — eventos + property `is_inapp_browser`
+Vale la pena testear en mobile real antes de publicar — si no se reproduce, lo dejamos como está.
 
-## Lo que NO va a hacer
+---
 
-- No agrega "Continuar con Google" (otra decisión, requiere OAuth setup).
-- No fuerza nada al usuario de Chrome o Safari nativo — el banner solo aparece en WKWebView in-app.
-- No toca el flujo si no estás en WKWebView: cero cambios visibles para el 100% del tráfico desktop y para mobile fuera de in-app.
+### ✅ Lo que sí está bien
+
+- Atributos de autofill (`autoComplete="email"`, `inputMode`, `enterKeyHint="go"`, `autoCapitalize="off"`) en los 3 inputs de email. Correcto y completo.
+- `scrollMarginBottom: 120px` previene que el teclado iOS tape el input. ✓
+- Detección de in-app browsers cubre los 9 más relevantes (Twitter, IG, FB, TikTok, LinkedIn, Line, Snap, Pinterest, WeChat). ✓
+- PostHog `register` de `is_inapp_browser` + `inapp_browser_name` + `device_os` como super-properties. Vas a poder segmentar el funnel en PostHog. ✓
+- Eventos `inapp_banner_shown` + `inapp_banner_click` mapeados a `ViewContent` en Meta/X (no consume Event ID de X). ✓
+- Banner aparece SOLO en in-app browsers (Chrome iOS y Safari ven cero cambios). ✓
+- Banner aparece DENTRO del save form (después de `complete_3d`), no antes — no agrega fricción al primer paso. ✓
+- CloseScreen tiene `<form>` y autofill attrs. ✓
+
+---
+
+### Recomendación
+
+Aplicar los 3 fixes (crítico + 2 menores) en una sola pasada antes de publicar. El crítico es chico — ~40 líneas — y desbloquea el valor real del banner. Después del deploy, mirar en PostHog en 24-48h:
+
+- `inapp_banner_click` count
+- Tasa de `complete_3d_signup` segmentada por `is_inapp_browser=true` (antes vs después)
+
+¿Procedo con los 3 fixes (Opción A para el crítico)?

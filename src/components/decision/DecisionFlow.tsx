@@ -3,7 +3,7 @@ import { DecisionState, UserContext, Scores } from '@/types/decision';
 import { EntryScreen } from './EntryScreen';
 import { ProgressIndicator } from './ProgressIndicator';
 import { trackFlowEvent } from '@/lib/analytics';
-import { loadPendingResult } from '@/lib/pendingResult';
+import { decodeStateFromParams, loadPendingResult } from '@/lib/pendingResult';
 
 
 // Lazy load screens that are not shown initially
@@ -26,13 +26,15 @@ const isMobileViewport = () =>
   typeof window !== 'undefined' && window.innerWidth < 768;
 
 const getInitialState = (): DecisionState => {
-  // If the user just jumped from an in-app browser (?from=inapp) and we have
-  // their pending answers, hydrate directly to the result screen so they
-  // land on the email form with autofill working.
+  // If the user just jumped from an in-app browser (?from=inapp), hydrate
+  // directly to the result screen so they land on the email form with
+  // autofill working. Prefer URL params (cross-browser) over localStorage
+  // (which is NOT shared between WKWebView and Safari on iOS).
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
     if (params.get('from') === 'inapp') {
-      const pending = loadPendingResult();
+      const fromUrl = decodeStateFromParams(params);
+      const pending = fromUrl ?? loadPendingResult();
       if (pending?.context && pending.currentOption) {
         return {
           context: pending.context,

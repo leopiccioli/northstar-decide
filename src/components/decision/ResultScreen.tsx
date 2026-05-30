@@ -426,6 +426,17 @@ function SaveSection({
         e.preventDefault();
         handleSave();
       }}
+      onKeyDown={(e) => {
+        // Prevent Enter inside CountryCombobox / SectorCombobox (Popover+Command)
+        // from bubbling up and submitting the form prematurely. Only allow
+        // Enter-to-submit from the email input or the submit button itself.
+        if (e.key === 'Enter') {
+          const target = e.target as HTMLElement;
+          const isEmail = target.id === 'result-email';
+          const isSubmit = target.tagName === 'BUTTON' && (target as HTMLButtonElement).type === 'submit';
+          if (!isEmail && !isSubmit) e.preventDefault();
+        }
+      }}
       className="space-y-5 p-4 bg-secondary rounded-sm border border-border animate-fade-up"
     >
       {/* Microcopy */}
@@ -434,7 +445,12 @@ function SaveSection({
       </p>
 
       {/* In-app browser banner — only renders on Twitter/IG/FB/etc */}
-      <InAppBrowserBanner email={email} />
+      <InAppBrowserBanner
+        email={email}
+        userContext={userContext}
+        currentOption={currentOption}
+        comparisonOption={comparisonOption}
+      />
 
       <div className="space-y-2">
         <label htmlFor="result-email" className="text-sm font-medium">Guardá tu 3D gratis</label>
@@ -546,9 +562,12 @@ export default function ResultScreen({
   const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const isMobile = useIsMobile();
 
-  // Persist current scores so a Safari/Chrome jump preserves progress
+  // Persist current scores so a Safari/Chrome jump preserves progress (fallback;
+  // the primary transport is URL params, since localStorage isn't shared
+  // between WKWebView and Safari). Clear on unmount to avoid stale rehydration.
   useEffect(() => {
     savePendingResult({ context: userContext, currentOption, comparisonOption });
+    return () => clearPendingResult();
   }, [userContext, currentOption, comparisonOption]);
 
   // Fetch global averages (non-blocking, fire-and-forget)
