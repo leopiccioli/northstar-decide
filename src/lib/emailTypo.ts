@@ -32,6 +32,30 @@ const DOMAIN_TYPOS: Record<string, string> = {
   'mail,ru': 'mail.ru',
 };
 
+// Domain root typos - independent of TLD (.com, .com.ar, .es, etc.)
+// Maps misspelled root to correct root, preserving whatever TLD chain follows.
+const DOMAIN_ROOT_TYPOS: Record<string, string> = {
+  hoymail: 'hotmail',
+  hotmial: 'hotmail',
+  hotmal: 'hotmail',
+  hotmai: 'hotmail',
+  hotmil: 'hotmail',
+  hotnail: 'hotmail',
+  hormail: 'hotmail',
+  hotmaill: 'hotmail',
+  gmial: 'gmail',
+  gamil: 'gmail',
+  gmaill: 'gmail',
+  gmali: 'gmail',
+  gnail: 'gmail',
+  yaho: 'yahoo',
+  yhaoo: 'yahoo',
+  yahooo: 'yahoo',
+  outlok: 'outlook',
+  outllok: 'outlook',
+  outloo: 'outlook',
+};
+
 // Domains where .co is a typo for .com (not legitimate .co domains)
 const DOT_CO_DOMAINS = ['gmail', 'hotmail', 'yahoo', 'icloud', 'live', 'gmx'];
 
