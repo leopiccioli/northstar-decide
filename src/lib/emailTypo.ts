@@ -153,5 +153,21 @@ export function detectEmailTypo(email: string): string | null {
     }
   }
 
+  // 6. Letra extra al final del TLD (.comp, .coml, .como, .comm, .neto, .orgs)
+  // TLD-agnóstico: aplica a cualquier dominio (gmail, hotmail, corporativos).
+  // No afecta .com.ar / .com.mx porque ahí el TLD final es "ar" / "mx".
+  const TRAILING_TLD_TYPOS: Record<string, string> = {
+    comp: 'com', coml: 'com', como: 'com', comm: 'com', comn: 'com', comz: 'com', comk: 'com', comj: 'com',
+    neto: 'net', nett: 'net',
+    orgs: 'org', orgo: 'org',
+  };
+  const lastDot = domain.lastIndexOf('.');
+  if (lastDot > 0) {
+    const tld = domain.slice(lastDot + 1);
+    if (TRAILING_TLD_TYPOS[tld]) {
+      return `${localPart}@${domain.slice(0, lastDot + 1)}${TRAILING_TLD_TYPOS[tld]}`;
+    }
+  }
+
   return null;
 }
