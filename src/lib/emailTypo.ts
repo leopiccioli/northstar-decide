@@ -32,6 +32,30 @@ const DOMAIN_TYPOS: Record<string, string> = {
   'mail,ru': 'mail.ru',
 };
 
+// Domain root typos - independent of TLD (.com, .com.ar, .es, etc.)
+// Maps misspelled root to correct root, preserving whatever TLD chain follows.
+const DOMAIN_ROOT_TYPOS: Record<string, string> = {
+  hoymail: 'hotmail',
+  hotmial: 'hotmail',
+  hotmal: 'hotmail',
+  hotmai: 'hotmail',
+  hotmil: 'hotmail',
+  hotnail: 'hotmail',
+  hormail: 'hotmail',
+  hotmaill: 'hotmail',
+  gmial: 'gmail',
+  gamil: 'gmail',
+  gmaill: 'gmail',
+  gmali: 'gmail',
+  gnail: 'gmail',
+  yaho: 'yahoo',
+  yhaoo: 'yahoo',
+  yahooo: 'yahoo',
+  outlok: 'outlook',
+  outllok: 'outlook',
+  outloo: 'outlook',
+};
+
 // Domains where .co is a typo for .com (not legitimate .co domains)
 const DOT_CO_DOMAINS = ['gmail', 'hotmail', 'yahoo', 'icloud', 'live', 'gmx'];
 
@@ -53,6 +77,16 @@ export function detectEmailTypo(email: string): string | null {
   // 1. Direct domain lookup
   if (DOMAIN_TYPOS[domain]) {
     return `${localPart}@${DOMAIN_TYPOS[domain]}`;
+  }
+
+  // 1b. Root-of-domain typo, TLD-agnostic (hoymail.com.ar -> hotmail.com.ar)
+  const firstDot = domain.indexOf('.');
+  if (firstDot > 0) {
+    const root = domain.slice(0, firstDot);
+    const rest = domain.slice(firstDot); // includes leading dot
+    if (DOMAIN_ROOT_TYPOS[root]) {
+      return `${localPart}@${DOMAIN_ROOT_TYPOS[root]}${rest}`;
+    }
   }
 
   // 2. Format fixes: comma instead of dot (e.g. gmail,com)
