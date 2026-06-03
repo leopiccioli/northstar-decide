@@ -79,6 +79,16 @@ export function detectEmailTypo(email: string): string | null {
     return `${localPart}@${DOMAIN_TYPOS[domain]}`;
   }
 
+  // 1b. Root-of-domain typo, TLD-agnostic (hoymail.com.ar -> hotmail.com.ar)
+  const firstDot = domain.indexOf('.');
+  if (firstDot > 0) {
+    const root = domain.slice(0, firstDot);
+    const rest = domain.slice(firstDot); // includes leading dot
+    if (DOMAIN_ROOT_TYPOS[root]) {
+      return `${localPart}@${DOMAIN_ROOT_TYPOS[root]}${rest}`;
+    }
+  }
+
   // 2. Format fixes: comma instead of dot (e.g. gmail,com)
   const commaFixed = domain.replace(',', '.');
   if (commaFixed !== domain && DOMAIN_TYPOS[commaFixed]) {
