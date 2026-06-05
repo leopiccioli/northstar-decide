@@ -44,6 +44,13 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const adminSecret = Deno.env.get("ADMIN_SECRET");
+  if (!adminSecret || req.headers.get("x-admin-secret") !== adminSecret) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const { filename = "data.csv" } = await req.json().catch(() => ({}));
 

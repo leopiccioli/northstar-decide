@@ -130,6 +130,16 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  const adminSecret = Deno.env.get("ADMIN_SECRET");
+  const provided = req.headers.get("x-cron-secret") || req.headers.get("x-admin-secret");
+  const isAuthorized = (cronSecret && provided === cronSecret) || (adminSecret && provided === adminSecret);
+  if (!isAuthorized) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,

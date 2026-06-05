@@ -22,24 +22,28 @@ serve(async (req: Request): Promise<Response> => {
     const rawBody = await req.text();
     const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET");
 
+    // Fail closed: refuse to process events if signing secret is not configured
+    if (!webhookSecret) {
+      console.error("RESEND_WEBHOOK_SECRET not configured — refusing request");
+      return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Verify signature (Resend uses Svix)
-    if (webhookSecret) {
-      try {
-        const wh = new Webhook(webhookSecret);
-        const headers = {
-          "svix-id": req.headers.get("svix-id") || "",
-          "svix-timestamp": req.headers.get("svix-timestamp") || "",
-          "svix-signature": req.headers.get("svix-signature") || "",
-        };
-        wh.verify(rawBody, headers);
-      } catch (err: any) {
-        console.error("Signature verification failed:", err.message);
-        return new Response(JSON.stringify({ error: "invalid signature" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    } else {
-      console.warn("RESEND_WEBHOOK_SECRET not set — accepting without verification");
+    try {
+      const wh = new Webhook(webhookSecret);
+      const headers = {
+        "svix-id": req.headers.get("svix-id") || "",
+        "svix-timestamp": req.headers.get("svix-timestamp") || "",
+        "svix-signature": req.headers.get("svix-signature") || "",
+      };
+      wh.verify(rawBody, headers);
+    } catch (err: any) {
+      console.error("Signature verification failed:", err.message);
+      return new Response(JSON.stringify({ error: "invalid signature" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const payload = JSON.parse(rawBody);
