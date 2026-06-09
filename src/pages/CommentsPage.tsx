@@ -233,7 +233,8 @@ const CTACard = ({ variant }: { variant: "feed" | "mosaic" }) => {
 };
 
 const FeedView = ({ comments, formatDate, ctaPosition, onSelect }: ViewProps) => (
-  <div className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl overflow-hidden">
+  <section aria-labelledby="comments-heading" className="max-w-[600px] mx-auto bg-zinc-900 rounded-xl overflow-hidden">
+    <h2 id="comments-heading" className="sr-only">Comentarios de la comunidad</h2>
     <div className="divide-y divide-zinc-800">
       {comments.map((comment, index) => (
         <>
@@ -273,7 +274,7 @@ const FeedView = ({ comments, formatDate, ctaPosition, onSelect }: ViewProps) =>
         </>
       ))}
     </div>
-  </div>
+  </section>
 );
 
 const Mini3DChart = ({ dinero, desarrollo, diversion }: { 
