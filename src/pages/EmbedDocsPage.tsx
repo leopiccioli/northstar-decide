@@ -39,6 +39,7 @@ export default function EmbedDocsPage() {
             <li><code>data-context</code> — pantalla inicial: <code>burnout</code>, <code>change</code>, <code>improve</code>, <code>compare</code>, <code>check</code>. Si falta, muestra la pantalla de contexto.</li>
             <li><code>data-source</code> — se mapea a <code>utm_source</code> para atribución. Default <code>embed</code>.</li>
             <li><code>data-height</code> — alto fijo en px. Si falta, el iframe se ajusta solo al contenido.</li>
+            <li><code>data-email</code> — opcional. Email del usuario logueado en tu sitio. Llega pre-cargado al guardar el resultado (el usuario lo puede editar).</li>
             <li><code>data-theme</code> — opcional. <code>"auto"</code> hereda colores y fuente del sitio host. Si se omite, se usa la identidad visual del 3D (recomendado).</li>
           </ul>
         </section>
@@ -59,6 +60,25 @@ export default function EmbedDocsPage() {
             <li>Best-effort: si tu sitio usa fondos con imagen/gradiente o transparencia total, conviene no usar <code>auto</code>.</li>
             <li>No cargamos fuentes externas — si la familia no está disponible globalmente, el navegador hace fallback.</li>
             <li>Si el contraste detectado es bajo, forzamos texto negro o blanco para garantizar legibilidad.</li>
+          </ul>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Pre-cargar el email (opcional)</h2>
+          <p className="text-sm text-foreground/70">
+            Si en tu sitio el usuario está logueado, podés pasar su email para que llegue pre-cargado al formulario de guardado. El usuario lo puede editar antes de confirmar.
+          </p>
+          <pre className="bg-secondary p-4 rounded-sm text-xs overflow-x-auto">
+            <code>{`<div id="tres-d-embed"></div>
+<script async src="${SITE_CONFIG.baseUrl}/embed.js"
+        data-target="tres-d-embed"
+        data-context="burnout"
+        data-email="usuario@ejemplo.com"></script>`}</code>
+          </pre>
+          <ul className="text-xs space-y-1 text-foreground/60 list-disc pl-5">
+            <li>Renderizá el atributo server-side con el email del usuario logueado. Si no hay usuario, omití el atributo.</li>
+            <li>Validamos formato básico en el cliente; valores inválidos se ignoran.</li>
+            <li>El email se usa solo para guardar el resultado y enviar la medición por mail.</li>
           </ul>
         </section>
 
