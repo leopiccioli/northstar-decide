@@ -143,7 +143,7 @@ export default function CompletarPage() {
       <SEO title="Completar tu medición 3D" path="/completar" noIndex />
       <div className="w-full max-w-md space-y-8">
         <header className="space-y-1">
-          <h1 className="text-2xl font-display tracking-tight">3D para Decidir</h1>
+          <h1 className="text-2xl font-display tracking-tight">Completar medición</h1>
         </header>
 
         {state.kind === 'loading' && (

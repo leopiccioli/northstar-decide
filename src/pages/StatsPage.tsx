@@ -176,24 +176,19 @@ export default function StatsPage() {
         description="Cómo puntúan Dinero, Desarrollo y Diversión en el trabajo según el país. Datos de la comunidad CEO en Camiseta."
         path="/por-pais"
       />
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm">Volver</span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <img src={logoImage} alt="3D Logo" className="w-6 h-6" />
-              <h1 className="text-lg font-semibold">3D para Decidir</h1>
-            </div>
-          </div>
+      {/* Page sub-header */}
+      <div className="border-b border-border">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-4">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">Volver</span>
+          </Link>
+          <h1 className="text-sm font-medium">3D por país</h1>
         </div>
-      </header>
+      </div>
 
       <StatsNav active="country" />
 
