@@ -12,5 +12,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /embed
+Disallow: /embed-docs
 
 Sitemap: https://3d.ceoencamiseta.com/sitemap.xml
