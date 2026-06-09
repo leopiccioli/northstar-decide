@@ -4,7 +4,7 @@ import { DecisionFlow } from '@/components/decision/DecisionFlow';
 import { UserContext } from '@/types/decision';
 import { FAQ, FAQItem } from './FAQ';
 import { SITE_CONFIG } from '@/config/urls';
-import { posthog } from '@/lib/posthog';
+import { getPostHog } from '@/lib/posthog';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
 
@@ -37,7 +37,7 @@ export function LandingShell({
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    trackFlowEvent('lp_view' as any, { landing: landingId });
+    getPostHog()?.capture('lp_view', { landing: landingId });
   }, [landingId]);
 
   useEffect(() => {
