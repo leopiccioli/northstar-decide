@@ -279,6 +279,8 @@ export default function ResultPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
       <SEO title="Mi resultado 3D" path={`/r/${id}`} noIndex />
       <div className="max-w-md w-full space-y-10">
+        <h1 className="sr-only">Resultados de tu medición 3D</h1>
+        
         
         {/* Single option result */}
         {!comparisonOption && (
