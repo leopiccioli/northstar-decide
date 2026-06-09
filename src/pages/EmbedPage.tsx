@@ -3,25 +3,30 @@ import { Helmet } from 'react-helmet-async';
 import { DecisionFlow } from '@/components/decision/DecisionFlow';
 import { UserContext } from '@/types/decision';
 import { getPostHog } from '@/lib/posthog';
+import { readThemeFromParams, buildThemeCSS } from '@/lib/embedTheme';
 
 const VALID: UserContext[] = ['improve', 'change', 'compare', 'burnout', 'check'];
 
 export default function EmbedPage() {
-  const { ctx, source } = useMemo(() => {
+  const { ctx, source, themeCSS } = useMemo(() => {
     const p = new URLSearchParams(window.location.search);
     const raw = p.get('ctx');
+    const tokens = readThemeFromParams(p);
     return {
       ctx: raw && VALID.includes(raw as UserContext) ? (raw as UserContext) : undefined,
       source: p.get('utm_source') || 'embed',
+      themeCSS: tokens ? buildThemeCSS(tokens) : '',
     };
   }, []);
 
-  // Track embed view
   useEffect(() => {
-    getPostHog()?.capture('embed_view', { source, ctx: ctx ?? 'none' });
-  }, [ctx, source]);
+    getPostHog()?.capture('embed_view', {
+      source,
+      ctx: ctx ?? 'none',
+      themed: themeCSS ? 'auto' : 'default',
+    });
+  }, [ctx, source, themeCSS]);
 
-  // Post height to parent on every layout change so the wrapper iframe can resize.
   useEffect(() => {
     let lastHeight = 0;
     const post = () => {
@@ -37,7 +42,7 @@ export default function EmbedPage() {
     post();
     const ro = new ResizeObserver(post);
     ro.observe(document.body);
-    const interval = window.setInterval(post, 500); // safety net for late layout shifts
+    const interval = window.setInterval(post, 500);
     window.addEventListener('load', post);
     return () => {
       ro.disconnect();
@@ -53,9 +58,9 @@ export default function EmbedPage() {
         <meta name="robots" content="noindex,nofollow" />
         <style>{`
           html, body, #root { min-height: 0 !important; height: auto !important; background: transparent; }
-          /* Neutralize full-viewport containers inside the embed */
           .min-h-screen { min-height: 0 !important; }
         `}</style>
+        {themeCSS ? <style>{themeCSS}</style> : null}
       </Helmet>
       <div className="bg-background">
         <DecisionFlow initialContext={ctx} />
