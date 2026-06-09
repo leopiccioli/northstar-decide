@@ -1,113 +1,67 @@
-## Landings SEO con flujo embebido
+# Widget embebible "3D para Decidir"
 
-Cuatro landings públicas, cada una con su keyword dedicada y el flujo 3D embebido directamente (sin scroll obligado, sin navegación). El usuario llega desde Google → lee 2 líneas → arranca a mover sliders en la misma página.
+## Objetivo
+Permitir que cualquier página tuya (ceoencamiseta.com, Notion, Substack, WordPress, etc.) muestre el flujo 3D embebido, sin redirigir al usuario y conservando atribución (UTMs) hacia tu dominio.
 
-### Páginas
+## Enfoque recomendado: iframe + script auto-resize
 
-| Ruta | Keyword principal | Vol/mes | KD | Contexto pre-set |
-|---|---|---|---|---|
-| `/test-burnout` | test burnout | 110 | 14 | `burnout` |
-| `/cambiar-de-trabajo` | cambiar de trabajo | 320 | 15 | `change` |
-| `/cambiar-de-trabajo-a-los-40` | cambiar de trabajo a los 40 | 170 | bajo | `change` |
-| `/cambiar-de-trabajo-a-los-50` | cambiar de trabajo a los 50 | 210 | bajo | `change` |
+La forma estándar, segura y compatible con cualquier CMS. El usuario hace el 3D dentro de tu página; los datos siguen guardándose en tu backend (`3d.ceoencamiseta.com`), por lo que las stats globales, emails y reminders siguen funcionando igual.
 
-Páginas separadas (no anchors) porque:
-- Google premia URL exacta = keyword exacta.
-- Permite copy específico por edad sin diluir.
-- Cada una tiene su `<title>`, canonical, FAQ y JSON-LD propios.
+### Snippet que vos pegás en cualquier página
 
-### Estructura de cada landing (mobile-first, fold único)
-
-```text
-[H1 corto con keyword exacta]
-[Subhead emocional, 1 línea]
-[FORM 3D EMBEBIDO — empieza directamente en sliders]
-   ↓ usuario completa → mismo ResultScreen del flujo principal
-[Bloque secundario debajo del fold: "qué mide", FAQ, contador]
+```html
+<div id="tres-d-embed" style="max-width:560px;margin:0 auto"></div>
+<script async src="https://3d.ceoencamiseta.com/embed.js"
+        data-target="tres-d-embed"
+        data-context="burnout"
+        data-source="ceoencamiseta"></script>
 ```
 
-El form NO es un CTA que lleva a otro lado: es el contenido principal. Llegás y ya estás midiendo.
+- `data-context` (opcional): `burnout` | `change` | `improve` | `compare` | `check`. Si se omite, arranca en la pantalla de contexto.
+- `data-source` (opcional): se mapea a `utm_source` para atribución.
+- `data-height` (opcional): alto fijo en px; por defecto auto-resize.
 
-### Cómo se embebe el flujo
+### Qué hace `embed.js`
+1. Inyecta un `<iframe>` apuntando a `https://3d.ceoencamiseta.com/embed?ctx=burnout&utm_source=...&utm_medium=embed`.
+2. Escucha `postMessage` desde el iframe para ajustar el alto dinámicamente al contenido (sin scroll interno).
+3. Setea `allow="clipboard-write"` y `referrerpolicy="strict-origin-when-cross-origin"`.
 
-`DecisionFlow` acepta un nuevo prop opcional `initialContext?: UserContext`. Cuando viene seteado:
-- Estado inicial salta directo a `step: 'input'` con el context ya elegido.
-- No renderiza EntryScreen ni ContextScreen.
-- Mantiene todo lo demás idéntico: ProgressIndicator, InputScreen, ResultScreen, save-result, emails, reminders.
+## Cambios técnicos
 
-Las 4 landings montan `<DecisionFlow initialContext="burnout" />` o `<DecisionFlow initialContext="change" />` debajo del H1/subhead.
+### 1. Nueva ruta `/embed` (frontend)
+- Archivo: `src/pages/EmbedPage.tsx`.
+- Lee `?ctx=` de la URL y monta `<DecisionFlow initialContext={ctx} />` (ya existe la prop, hecha en las landings).
+- Layout simplificado: sin footer fijo, sin banners (in-app banner sigue OK), padding mínimo.
+- `useEffect` con `ResizeObserver` que postea `{type:'3d:resize', height}` al `parent` en cada cambio.
+- `<SEO>` con `noindex` (no queremos que Google indexe el embed).
+- Headers: en `index.html` / hosting no podemos setear `X-Frame-Options` por dominio; en su lugar configuramos `Content-Security-Policy: frame-ancestors` permisivo (`*`) sólo para esta ruta vía `<meta>` no aplica — se documenta que Lovable hosting permite framing por defecto. Si más adelante querés restringir, se hace en config de hosting.
+- Ruta agregada en `src/App.tsx` (lazy).
 
-### Copy diferenciado por edad
+### 2. Script público `public/embed.js`
+- Vanilla JS (~1.5 KB), sin dependencias.
+- Lee `data-*` del propio `<script>` (`document.currentScript`).
+- Crea el iframe dentro del `data-target` (o reemplaza el `<script>` si no se pasa target).
+- Listener `window.addEventListener('message', ...)` que valida `event.origin === 'https://3d.ceoencamiseta.com'` antes de aplicar el alto.
+- Pasa UTMs por query string: `utm_source=<data-source||embed>`, `utm_medium=embed`, `utm_campaign=widget`.
 
-**`/cambiar-de-trabajo-a-los-40`**
-- H1: "Cambiar de trabajo a los 40"
-- Sub: "A esta edad cada movimiento pesa más. Medilo antes de decidir."
-- FAQ: "¿es tarde para cambiar a los 40?", "¿qué priorizar en esta etapa?", "¿y la estabilidad familiar?".
+### 3. Página de documentación `/embed-docs` (opcional pero recomendado)
+- Muestra el snippet copy-paste, las opciones (`data-context`, `data-source`, `data-height`), un preview en vivo, y notas sobre privacidad (los datos los guarda 3D, no el sitio host).
+- Linkeable desde el footer.
 
-**`/cambiar-de-trabajo-a-los-50`**
-- H1: "Cambiar de trabajo a los 50"
-- Sub: "La experiencia es tu activo. Medí si tu trabajo actual la está aprovechando."
-- FAQ: "¿conviene cambiar a los 50?", "¿qué buscar a esta edad?", "¿y el riesgo?".
+### 4. Tracking
+- En `EmbedPage` disparar `trackFlowEvent('embed_view', { source, ctx })` al montar — reutiliza PostHog ya configurado.
+- Los UTMs se persisten igual que hoy vía `useTrackingData` al guardar resultado, así sabés qué embed convirtió.
 
-**`/cambiar-de-trabajo`** (página madre)
-- H1: "¿Cambiar de trabajo? Medilo antes de decidir"
-- Sub: "20 segundos, 3 dimensiones: Dinero, Desarrollo, Diversión."
-- FAQ general + links internos a las dos versiones por edad.
+## Alternativas consideradas (descartadas)
 
-**`/test-burnout`**
-- H1: "Test de burnout en 20 segundos"
-- Sub: "Medí cuánto te está costando tu trabajo."
-- FAQ: "¿qué es burnout?", "¿reemplaza un diagnóstico?" (no, disclaimer), "¿es anónimo?".
+- **Web Component (`<tres-d-widget>`)**: más elegante pero exige `<script type="module">` y rompe en editores que sanitizan custom elements (Substack, Notion). El snippet `<script src>` + iframe funciona en todos lados.
+- **Reescribir el flujo en JS puro inyectado**: rompería el aislamiento de estilos del host, conflictos de Tailwind/fuentes, y duplicaría mantenimiento.
 
-### Bloque debajo del fold (compartido)
+## Out of scope
+- Theming desde el host (colores/fuentes) — el widget mantiene la identidad visual del 3D.
+- Callbacks al host con el resultado (`onComplete`) — se puede agregar después vía `postMessage` si lo necesitás.
+- Limitar dominios que pueden embeber — abierto por ahora.
 
-- "Qué mide este test" — 3 bullets cortos (Dinero/Desarrollo/Diversión).
-- Contador en vivo de mediciones (mismo RPC `get_measurement_count`).
-- FAQ accordion (4–6 preguntas, varía por landing).
-- Footer estándar.
-
-Estética: monocromática, Space Grotesk, sin hero images. Densidad de calculadora igual que el resto.
-
-### SEO técnico (por página)
-
-Vía `<SEO>` helmet:
-- `<title>` ≤60 chars con keyword exacta
-- `<meta description>` ≤160 chars
-- Canonical absoluto a la URL propia
-- `og:title`, `og:description`, `og:url`, `og:type=website`
-- JSON-LD: `WebPage` + `FAQPage` con las Q&A de la página
-
-Linking interno:
-- `/cambiar-de-trabajo` linkea a `/cambiar-de-trabajo-a-los-40` y `…-50`.
-- Las dos por edad linkean back a `/cambiar-de-trabajo`.
-
-Agregar las 4 rutas a:
-- `src/App.tsx` (lazy)
-- `public/sitemap.xml` (priority 0.9, changefreq monthly)
-- `public/llms.txt`
-
-### Tracking
-
-- Cada landing inyecta UTMs internos al `trackingData` que viaja a `save-result`: `utm_source=seo`, `utm_medium=lp`, `utm_campaign=burnout|change`, `utm_content=40|50|generic`.
-- Evento PostHog `lp_view` y `lp_first_slider_move` con `{ landing }` para medir conversión por página.
-
-### Archivos a crear/editar
-
-**Nuevos**
-- `src/pages/TestBurnoutPage.tsx`
-- `src/pages/CambiarDeTrabajoPage.tsx`
-- `src/pages/CambiarDeTrabajo40Page.tsx`
-- `src/pages/CambiarDeTrabajo50Page.tsx`
-- `src/components/landing/LandingShell.tsx` — hero (H1+sub) + slot del flow + bloque inferior
-- `src/components/landing/FAQ.tsx` — accordion + JSON-LD generator
-
-**Editar**
-- `src/components/decision/DecisionFlow.tsx` — aceptar `initialContext` y opcionalmente `landingUtms`
-- `src/App.tsx` — agregar 4 rutas
-- `public/sitemap.xml`, `public/llms.txt`
-
-### Fuera de alcance
-
-- No tocamos home ni flujo existente más allá del prop nuevo.
-- No generamos imágenes (sin og:image, mantenemos consistencia con el sitio).
-- No agregamos blog ni contenido largo — el form ES el contenido.
+## Archivos
+- **Nuevos:** `src/pages/EmbedPage.tsx`, `public/embed.js`, `src/pages/EmbedDocsPage.tsx` (opcional).
+- **Editados:** `src/App.tsx` (rutas `/embed` y `/embed-docs`), `public/robots.txt` (disallow `/embed`), `public/sitemap.xml` (no incluir embed).

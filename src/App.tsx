@@ -15,6 +15,8 @@ const TestBurnoutPage = lazy(() => import("./pages/TestBurnoutPage"));
 const CambiarDeTrabajoPage = lazy(() => import("./pages/CambiarDeTrabajoPage"));
 const CambiarDeTrabajo40Page = lazy(() => import("./pages/CambiarDeTrabajo40Page"));
 const CambiarDeTrabajo50Page = lazy(() => import("./pages/CambiarDeTrabajo50Page"));
+const EmbedPage = lazy(() => import("./pages/EmbedPage"));
+const EmbedDocsPage = lazy(() => import("./pages/EmbedDocsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Lazy load toasters - not needed for initial render
@@ -52,6 +54,8 @@ const App = () => (
             <Route path="/cambiar-de-trabajo" element={<CambiarDeTrabajoPage />} />
             <Route path="/cambiar-de-trabajo-a-los-40" element={<CambiarDeTrabajo40Page />} />
             <Route path="/cambiar-de-trabajo-a-los-50" element={<CambiarDeTrabajo50Page />} />
+            <Route path="/embed" element={<EmbedPage />} />
+            <Route path="/embed-docs" element={<EmbedDocsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
