@@ -23,7 +23,7 @@ export default function ContextScreen({ onSelect }: ContextScreenProps) {
 
         {/* Hook header */}
         <div className="space-y-2 text-center animate-fade-up">
-          <h2 className="text-2xl font-semibold">¿Cuál es tu situación hoy?</h2>
+          <h1 className="text-2xl font-semibold">¿Cuál es tu situación hoy?</h1>
           <p className="text-subtle">Elegí la que más se parezca. No hay respuesta correcta.</p>
         </div>
 

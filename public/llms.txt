@@ -1,0 +1,11 @@
+# 3D para Decidir
+
+> Herramienta para medir tu trabajo en 3 dimensiones (Dinero, Desarrollo, Diversión) en 20 segundos y tomar mejores decisiones laborales. Creada por CEO en Camiseta.
+
+## Pages
+
+- [Inicio](/): Medí tu trabajo en 3D — Dinero, Desarrollo, Diversión.
+- [Muro de los lamentos](/comentarios): Comentarios anónimos sobre el trabajo junto a sus 3D.
+- [Estadísticas por país](/por-pais): Cómo se ven las 3D por país.
+- [Estadísticas por sector](/por-sector): Cómo se ven las 3D por sector laboral.
+- [Estadísticas por edad](/por-edad): Cómo se ven las 3D por rango etario.
