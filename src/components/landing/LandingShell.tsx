@@ -114,12 +114,6 @@ export function LandingShell({
 
           {belowForm}
 
-          {/* Footer */}
-          <footer className="text-center text-xs text-foreground/40 pt-8 border-t">
-            <a href={SITE_CONFIG.mainSiteUrl} className="hover:text-foreground/70">
-              CEO en Camiseta
-            </a>
-          </footer>
         </section>
       </main>
     </>
