@@ -1,41 +1,35 @@
-## Objetivo
+## Qué se construye
 
-Permitir que el sitio host pase el email del usuario logueado al embed, para que llegue pre-cargado al momento de guardar el resultado.
+1. **Header global minimalista** presente en todas las páginas (excepto el embed, que debe quedarse limpio para no romper sitios externos).
+2. **Quitar el "Hecho con ❤️ para la comunidad de CEO en Camiseta"** del InputScreen y de cualquier footer equivalente.
 
-## Cómo se usaría
+## Header
 
-```html
-<script async src="https://3d.ceoencamiseta.com/embed.js"
-        data-target="tres-d-embed"
-        data-context="burnout"
-        data-email="usuario@ejemplo.com"></script>
-```
+Componente nuevo `src/components/SiteHeader.tsx`:
+- Fondo neutro, borde inferior sutil, altura compacta, alineado al lenguaje monocromático del 3D.
+- Izquierda: logo "3D" (texto, Space Grotesk) que linkea a `/`.
+- Derecha: dos links de texto, pequeños:
+  - "CEO en Camiseta" → `https://ceoencamiseta.com` (target _blank, con UTM `utm_source=3d&utm_medium=header`)
+  - "Embeber" → `/embed-docs`
+- En mobile, los dos links se mantienen visibles (son cortos); si no caben, el primero se acorta a "ceoencamiseta.com".
+- Sticky opcional (mantengo no-sticky por simplicidad y consistencia con el tono "calculadora").
 
-Si el host renderiza server-side, inyecta el email del usuario logueado en ese atributo. Si no lo pasa, el embed funciona igual que hoy (el usuario lo tipea al final).
+Montaje:
+- Se inserta en `src/App.tsx` envolviendo `<Routes>`, con una excepción para la ruta `/embed`: el header NO se renderiza ahí (el embed debe permanecer aislado).
+- Las páginas de stats (`/por-pais`, `/por-sector`, `/por-edad`) y `/completar` ya tienen sus propios headers internos con logo + título; se simplificarán quitando el bloque duplicado del logo/título y dejando solo el `<Link>Volver</Link>` cuando aplique, para no duplicar identidad.
 
-## Cambios
+## Texto "Hecho con ❤️"
 
-**1. `public/embed.js`**
-- Leer `script.getAttribute('data-email')`.
-- Validación mínima en el cliente: que contenga `@` y `.` (evita pasar basura como `"undefined"` o `"null"` si el host renderiza mal).
-- Si es válido, agregar `&email=<encoded>` a los query params del iframe.
+- Eliminar el `<footer>` final de `src/components/decision/InputScreen.tsx` (líneas 180–190).
+- `src/components/landing/LandingShell.tsx` ya tiene un footer con "CEO en Camiseta" — se elimina (queda cubierto por el header global).
+- No hay otras instancias del texto literal "Hecho con amor"/"Hecho con ❤️" en el código.
 
-**2. `src/pages/EmbedPage.tsx`**
-- No requiere cambios. El email ya viaja en `window.location.search` dentro del iframe, y el mecanismo existente de URL Prefill (memory: [URL Prefill](mem://features/url-prefill)) lo levanta automáticamente en el formulario de guardado.
+## Detalles técnicos
 
-**3. `src/pages/EmbedDocsPage.tsx`**
-- Documentar el atributo `data-email` con:
-  - Ejemplo de uso (server-side render con el email del usuario logueado).
-  - Nota: el usuario lo puede editar antes de guardar (no es lock-in).
-  - Privacidad: el email solo se usa para guardar el resultado y mandar el email de medición; no se trackea como identidad en analytics si el usuario no completa el flujo.
-
-## Privacidad / consideraciones
-
-- El email viaja en la URL del iframe (query string). Es HTTPS, pero queda en logs del servidor de 3d.ceoencamiseta.com. Es el mismo tratamiento que cuando llega desde links de email (ya lo hacemos).
-- No se valida ownership del email — el host es responsable de pasar el del usuario correcto. Documentado.
-- Si el host pasa `data-email` vacío o inválido, se ignora silenciosamente (no rompe el embed).
-
-## Fuera de alcance
-
-- Firmar el email con un token (HMAC) para validar autenticidad. Si más adelante querés evitar que alguien manipule el DOM y mande embeds con emails ajenos, lo agregamos como `data-email` + `data-email-sig`. Hoy, dado el caso de uso (pre-fill de conveniencia, el usuario igual puede editarlo), no hace falta.
-- Pasar nombre u otros datos demográficos.
+- Archivo nuevo: `src/components/SiteHeader.tsx`.
+- Editar: `src/App.tsx` (montaje condicional según `location.pathname !== '/embed'`).
+- Editar: `src/components/decision/InputScreen.tsx` (quitar footer).
+- Editar: `src/components/landing/LandingShell.tsx` (quitar footer de "CEO en Camiseta").
+- Editar: `src/pages/StatsPage.tsx`, `src/pages/SectorStatsPage.tsx`, `src/pages/AgeStatsPage.tsx`, `src/pages/CompletarPage.tsx` (quitar el header local con logo+título para evitar duplicación; conservar la fila con "Volver" si existe).
+- Los botones existentes "Unirme a CEO en Camiseta" en ResultPage e InputScreen permanecen — son CTAs de conversión, distintos del footer de crédito.
+- Sin cambios en routing, datos ni edge functions.
