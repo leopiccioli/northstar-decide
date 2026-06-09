@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { DecisionFlow } from '@/components/decision/DecisionFlow';
 import { UserContext } from '@/types/decision';
-import { trackFlowEvent } from '@/lib/analytics';
+import { getPostHog } from '@/lib/posthog';
 
 const VALID: UserContext[] = ['improve', 'change', 'compare', 'burnout', 'check'];
 
@@ -18,7 +18,7 @@ export default function EmbedPage() {
 
   // Track embed view
   useEffect(() => {
-    trackFlowEvent('embed_view', { source, ctx: ctx ?? 'none' });
+    getPostHog()?.capture('embed_view', { source, ctx: ctx ?? 'none' });
   }, [ctx, source]);
 
   // Post height to parent on every layout change so the wrapper iframe can resize.
