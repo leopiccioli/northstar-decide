@@ -24,6 +24,7 @@
   var source = script.getAttribute('data-source') || 'embed';
   var fixedHeight = parseInt(script.getAttribute('data-height') || '', 10);
   var theme = script.getAttribute('data-theme');
+  var email = script.getAttribute('data-email');
 
   var container = targetId ? document.getElementById(targetId) : null;
   if (!container) {
