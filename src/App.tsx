@@ -11,6 +11,10 @@ const SectorStatsPage = lazy(() => import("./pages/SectorStatsPage"));
 const AgeStatsPage = lazy(() => import("./pages/AgeStatsPage"));
 const CommentsPage = lazy(() => import("./pages/CommentsPage"));
 const CompletarPage = lazy(() => import("./pages/CompletarPage"));
+const TestBurnoutPage = lazy(() => import("./pages/TestBurnoutPage"));
+const CambiarDeTrabajoPage = lazy(() => import("./pages/CambiarDeTrabajoPage"));
+const CambiarDeTrabajo40Page = lazy(() => import("./pages/CambiarDeTrabajo40Page"));
+const CambiarDeTrabajo50Page = lazy(() => import("./pages/CambiarDeTrabajo50Page"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Lazy load toasters - not needed for initial render
@@ -44,6 +48,10 @@ const App = () => (
             <Route path="/por-edad" element={<AgeStatsPage />} />
             <Route path="/comentarios" element={<CommentsPage />} />
             <Route path="/completar" element={<CompletarPage />} />
+            <Route path="/test-burnout" element={<TestBurnoutPage />} />
+            <Route path="/cambiar-de-trabajo" element={<CambiarDeTrabajoPage />} />
+            <Route path="/cambiar-de-trabajo-a-los-40" element={<CambiarDeTrabajo40Page />} />
+            <Route path="/cambiar-de-trabajo-a-los-50" element={<CambiarDeTrabajo50Page />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

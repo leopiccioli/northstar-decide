@@ -25,7 +25,7 @@ const ScreenLoader = () => (
 const isMobileViewport = () =>
   typeof window !== 'undefined' && window.innerWidth < 768;
 
-const getInitialState = (): DecisionState => {
+const getInitialState = (initialContext?: UserContext): DecisionState => {
   // If the user just jumped from an in-app browser (?from=inapp), hydrate
   // directly to the result screen so they land on the email form with
   // autofill working. Prefer URL params (cross-browser) over localStorage
@@ -44,6 +44,15 @@ const getInitialState = (): DecisionState => {
         };
       }
     }
+  }
+  // Landing pages with pre-selected context skip Entry + Context screens.
+  if (initialContext) {
+    return {
+      context: initialContext,
+      currentOption: null,
+      comparisonOption: null,
+      step: 'input',
+    };
   }
   return {
     context: null,
@@ -66,15 +75,19 @@ function getTotalSteps(isCompare: boolean): number {
   return isCompare ? 4 : 3;
 }
 
-export function DecisionFlow() {
-  const [state, setState] = useState<DecisionState>(getInitialState);
+interface DecisionFlowProps {
+  initialContext?: UserContext;
+}
 
-  // Mobile entry: still fire start_flow once on mount since the entry button is skipped
+export function DecisionFlow({ initialContext }: DecisionFlowProps = {}) {
+  const [state, setState] = useState<DecisionState>(() => getInitialState(initialContext));
+
+  // Mobile entry / landing entry: fire start_flow once on mount since the entry button is skipped
   useEffect(() => {
-    if (isMobileViewport()) {
+    if (initialContext || isMobileViewport()) {
       trackFlowEvent('start_flow');
     }
-  }, []);
+  }, [initialContext]);
 
   const handleStart = () => {
     setState(prev => ({ ...prev, step: 'context' }));
