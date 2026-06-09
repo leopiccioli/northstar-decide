@@ -41,6 +41,10 @@
   ];
   if (ctx) params.push('ctx=' + encodeURIComponent(ctx));
 
+  if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    params.push('email=' + encodeURIComponent(email));
+  }
+
   if (theme === 'auto') {
     try {
       var detected = detectHostTheme();
