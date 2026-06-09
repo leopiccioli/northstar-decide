@@ -176,18 +176,6 @@ export default function InputScreen({ context, isComparison, isFirstComparison, 
           </button>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="absolute bottom-6 text-subtle">
-        <a 
-          href="https://ceoencamiseta.com" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="hover:text-foreground transition-colors"
-        >
-          Hecho con ❤️ para la comunidad de CEO en Camiseta
-        </a>
-      </footer>
     </div>
   );
 }
