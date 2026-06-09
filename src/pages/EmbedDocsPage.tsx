@@ -39,6 +39,7 @@ export default function EmbedDocsPage() {
             <li><code>data-context</code> — pantalla inicial: <code>burnout</code>, <code>change</code>, <code>improve</code>, <code>compare</code>, <code>check</code>. Si falta, muestra la pantalla de contexto.</li>
             <li><code>data-source</code> — se mapea a <code>utm_source</code> para atribución. Default <code>embed</code>.</li>
             <li><code>data-height</code> — alto fijo en px. Si falta, el iframe se ajusta solo al contenido.</li>
+            <li><code>data-email</code> — opcional. Email del usuario logueado en tu sitio. Llega pre-cargado al guardar el resultado (el usuario lo puede editar).</li>
             <li><code>data-theme</code> — opcional. <code>"auto"</code> hereda colores y fuente del sitio host. Si se omite, se usa la identidad visual del 3D (recomendado).</li>
           </ul>
         </section>
