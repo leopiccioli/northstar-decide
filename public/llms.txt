@@ -4,12 +4,19 @@
 
 ## Pages
 
-- [Inicio](/): Medí tu trabajo en 3D — Dinero, Desarrollo, Diversión.
-- [Test de burnout](/test-burnout): Test anónimo de burnout laboral en 20 segundos.
-- [Cambiar de trabajo](/cambiar-de-trabajo): Decidir si cambiar de trabajo midiendo las 3D.
-- [Cambiar de trabajo a los 40](/cambiar-de-trabajo-a-los-40): Versión específica para cambios laborales a los 40.
-- [Cambiar de trabajo a los 50](/cambiar-de-trabajo-a-los-50): Versión específica para cambios laborales a los 50.
-- [Muro de los lamentos](/comentarios): Comentarios anónimos sobre el trabajo junto a sus 3D.
-- [Estadísticas por país](/por-pais): Cómo se ven las 3D por país.
-- [Estadísticas por sector](/por-sector): Cómo se ven las 3D por sector laboral.
-- [Estadísticas por edad](/por-edad): Cómo se ven las 3D por rango etario.
+- [Inicio](https://3d.ceoencamiseta.com/): Medí tu trabajo en 3D — Dinero, Desarrollo, Diversión.
+- [Test de burnout](https://3d.ceoencamiseta.com/test-burnout): Test anónimo de burnout laboral en 20 segundos.
+- [Cambiar de trabajo](https://3d.ceoencamiseta.com/cambiar-de-trabajo): Decidir si cambiar de trabajo midiendo las 3D.
+- [Cambiar de trabajo a los 40](https://3d.ceoencamiseta.com/cambiar-de-trabajo-a-los-40): Versión específica para cambios laborales a los 40.
+- [Cambiar de trabajo a los 50](https://3d.ceoencamiseta.com/cambiar-de-trabajo-a-los-50): Versión específica para cambios laborales a los 50.
+- [Muro de los lamentos](https://3d.ceoencamiseta.com/comentarios): Comentarios anónimos sobre el trabajo junto a sus 3D.
+- [Estadísticas por país](https://3d.ceoencamiseta.com/por-pais): Cómo se ven las 3D por país.
+- [Estadísticas por sector](https://3d.ceoencamiseta.com/por-sector): Cómo se ven las 3D por sector laboral.
+- [Estadísticas por edad](https://3d.ceoencamiseta.com/por-edad): Cómo se ven las 3D por rango etario.
+- [Embeber 3D](https://3d.ceoencamiseta.com/embed-docs): Cómo embeber la herramienta en otro sitio.
+
+## Datos en texto plano (en vivo, para LLMs)
+
+- [Comentarios anónimos](https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-comments): Últimos 500 comentarios de la comunidad con sus 3D, en Markdown.
+- [Estadísticas](https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-stats): Promedios globales y por país, sector y rango etario.
+- [Índice extendido](https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-index): Descripción completa del proyecto y la metodología.
