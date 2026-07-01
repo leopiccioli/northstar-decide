@@ -1,6 +1,6 @@
 # 3D para Decidir — índice para LLMs
 > Snapshot estático del proyecto **3D para Decidir** (CEO en Camiseta).
-- **Última actualización:** 2026-06-22T10:41:33.778Z
+- **Última actualización:** 2026-07-01T13:28:42.949Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Descripción del proyecto, su metodología, páginas públicas indexables y archivos de datos para LLMs.
 - **Limitaciones:**

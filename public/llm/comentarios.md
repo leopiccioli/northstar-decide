@@ -1,6 +1,6 @@
 # Muro de los lamentos — comentarios anónimos
 > Snapshot estático del proyecto **3D para Decidir** (CEO en Camiseta).
-- **Última actualización:** 2026-06-22T10:41:33.778Z
+- **Última actualización:** 2026-07-01T13:28:42.949Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Últimos 500 comentarios públicos enviados por personas sobre su trabajo, junto a sus puntajes de Dinero, Desarrollo y Diversión (1–10), país, sector y rango etario opcionales.
 - **Limitaciones:**
@@ -9,7 +9,85 @@
   - Snapshot estático: se actualiza en cada deploy de la plataforma.
   - Total listados: 500.
 - **Versión en vivo (siempre fresca):** https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-comments
----## Uruguay · Salud · 35-44 · 2026-06-17
+---## Argentina · Industria / Manufactura · 35-44 · 2026-07-01
+Dinero: 5/10 · Desarrollo: 3/10 · Diversión: 1/10
+
+falta de desafíos
+
+---
+## Argentina · Gobierno / Sector público · 45-54 · 2026-07-01
+Dinero: 9/10 · Desarrollo: 7/10 · Diversión: 7/10
+
+Sueldo bajo, falta de motivación
+
+---
+## Argentina · Retail / Comercio · 35-44 · 2026-07-01
+Dinero: 7/10 · Desarrollo: 6/10 · Diversión: 5/10
+
+Gestión de personas
+
+---
+## Argentina · Construcción · 35-44 · 2026-06-30
+Dinero: 7/10 · Desarrollo: 10/10 · Diversión: 3/10
+
+Exceso de presión externa y exceso de tareas
+
+---
+## Argentina · Finanzas / Banca / Seguros · 2026-06-29
+Dinero: 5/10 · Desarrollo: 6/10 · Diversión: 5/10
+
+Mejor resultado sin tener que quemarme tanto de cabeza o de esfuerzo más allá que siempre doy todo para los cierres de objetivos
+
+---
+## Argentina · Salud · 45-54 · 2026-06-29
+Dinero: 7/10 · Desarrollo: 10/10 · Diversión: 5/10
+
+Poco sueldo, mucho trabajo para todo sola como emprendedora.
+
+---
+## Argentina · Salud · 35-44 · 2026-06-29
+Dinero: 7/10 · Desarrollo: 8/10 · Diversión: 8/10
+
+Siento que estoy mejor con el dinero. Voy a invertir tiempo en leer algo para mejorar mis ingresos. Me postule para dos trabajos (la siglo xxi y el consultorio del italiano)
+
+---
+## Argentina · Otro · 2026-06-28
+Dinero: 7/10 · Desarrollo: 6/10 · Diversión: 8/10
+
+Poco crecimiento laboral e incertidumbre por despidos
+
+---
+## México · Agro · 35-44 · 2026-06-27
+Dinero: 9/10 · Desarrollo: 8/10 · Diversión: 2/10
+
+siento demasiada frustración
+
+---
+## Argentina · Retail / Comercio · 25-34 · 2026-06-26
+Dinero: 5/10 · Desarrollo: 5/10 · Diversión: 5/10
+
+Falta de compromiso para emprender
+
+---
+## Argentina · Finanzas / Banca / Seguros · 55-64 · 2026-06-24
+Dinero: 5/10 · Desarrollo: 9/10 · Diversión: 5/10
+
+poco sueldo
+
+---
+## Argentina · Consultoría · 45-54 · 2026-06-24
+Dinero: 10/10 · Desarrollo: 4/10 · Diversión: 4/10
+
+Hacer algo que me guste y que impacte en los otros
+
+---
+## Argentina · Tecnología / Software · 25-34 · 2026-06-23
+Dinero: 8/10 · Desarrollo: 10/10 · Diversión: 7/10
+
+diversion
+
+---
+## Uruguay · Salud · 35-44 · 2026-06-17
 Dinero: 7/10 · Desarrollo: 8/10 · Diversión: 4/10
 
 Exceso de responsabilidades
@@ -597,7 +675,7 @@ Dinero: 3/10 · Desarrollo: 7/10 · Diversión: 9/10
 mejorar cantidad de prospectos y entusiasmo
 
 ---
-## Argentina · 2026-05-08
+## Argentina · Hospitalidad / Turismo · 35-44 · 2026-05-08
 Dinero: 2/10 · Desarrollo: 4/10 · Diversión: 5/10
 
 POCO SUELDO
@@ -2733,7 +2811,7 @@ Dinero: 8/10 · Desarrollo: 6/10 · Diversión: 6/10
 estoy en un año de quiebre, para evaluar a mitad de año y empezar a buscar opciones si no se desenvuelve como espero
 
 ---
-## México · 2025-12-28
+## México · Agro · 35-44 · 2025-12-28
 Dinero: 9/10 · Desarrollo: 7/10 · Diversión: 6/10
 
 Después de meses de desempleo, estoy por cumplir 3 meses laborando. No en lo que hubiese querido, pero estoy generando ingresos.
@@ -2929,83 +3007,5 @@ estoy en transición en mi penúltimo día del trabajo como editora. buenas ener
 Dinero: 9/10 · Desarrollo: 9/10 · Diversión: 7/10
 
 Se padece la falta de sueño. No termino de encontrar el sentido de Yeca. La docencia me gusta mucho
-
----
-## Argentina · Consultoría · 35-44 · 2025-12-15
-Dinero: 6/10 · Desarrollo: 9/10 · Diversión: 8/10
-
-Nuevo comienzo en AASA. Menos sueldo que antes, nuevos desafíos
-
----
-## Argentina · 35-44 · 2025-12-15
-Dinero: 9/10 · Desarrollo: 9/10 · Diversión: 6/10
-
--
-
----
-## Argentina · 2025-12-15
-Dinero: 8/10 · Desarrollo: 7/10 · Diversión: 7/10
-
-Siento que me falta desarrollo para explotar mi potencial
-
----
-## Argentina · 2025-12-15
-Dinero: 5/10 · Desarrollo: 7/10 · Diversión: 10/10
-
-Estoy sin trabajo fijo, haciendo trabajos esporádicos de manera freelance
-
----
-## Argentina · 2025-12-15
-Dinero: 8/10 · Desarrollo: 9/10 · Diversión: 9/10
-
-NA
-
----
-## Argentina · 2025-12-15
-Dinero: 4/10 · Desarrollo: 7/10 · Diversión: 6/10
-
-Estoy evaluando si quiero seguir con mi trabajo o es tiempo de volar
-
----
-## Argentina · 2025-12-15
-Dinero: 6/10 · Desarrollo: 7/10 · Diversión: 5/10
-
-Nuevo trabajo, nuevos desafíos. Nuevo equipo, mucho más humano que el anterior, se puede trabajar y pasarla bien.
-
----
-## Argentina · 2025-12-15
-Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 5/10
-
-monotonía
-
----
-## Argentina · 2025-12-15
-Dinero: 10/10 · Desarrollo: 10/10 · Diversión: 5/10
-
-v
-
----
-## Argentina · 2025-12-15
-Dinero: 4/10 · Desarrollo: 6/10 · Diversión: 4/10
-
-Estoy bien en los objetivos, pero siento que estoy mal en lo laboral
-
----
-## Argentina · Otro · 35-44 · 2025-12-15
-Dinero: 5/10 · Desarrollo: 8/10 · Diversión: 7/10
-
-H
-
----
-## Argentina · 2025-12-15
-Dinero: 6/10 · Desarrollo: 8/10 · Diversión: 8/10
-
-Estoy aprovechando a aprender lo máximo posible! El ambiente es bueno pero la paga es poca, se que hay trabajos mucho mejores!! Espero algún día aplicar toda experiencia en algún lugar donde lo valoren económicamente
-
----
-## Argentina · 2025-12-15
-Dinero: 7/10 · Desarrollo: 5/10 · Diversión: 5/10
-
-Momento estancamiento
 
 ---
