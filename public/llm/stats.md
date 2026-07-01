@@ -1,6 +1,6 @@
 # Estadísticas agregadas — 3D para Decidir
 > Snapshot estático del proyecto **3D para Decidir** (CEO en Camiseta).
-- **Última actualización:** 2026-06-22T10:41:33.778Z
+- **Última actualización:** 2026-07-01T13:28:42.949Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Promedios globales (Dinero, Desarrollo, Diversión, escala 1–10) y desglose por país, sector laboral y rango etario reportado.
 - **Limitaciones:**
@@ -9,7 +9,7 @@
   - Snapshot estático: se actualiza en cada deploy.
 - **Versión en vivo (siempre fresca):** https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-stats
 ---## Global
-- Mediciones totales: 12841
+- Mediciones totales: 12860
 - Promedio Dinero: 6/10
 - Promedio Desarrollo: 6.3/10
 - Promedio Diversión: 5.7/10
@@ -24,10 +24,10 @@
 | Guatemala | 24 | 5.9 | 7.1 | 6.6 | 6.5 |
 | Italia | 12 | 6.9 | 6.7 | 5.8 | 6.5 |
 | Nicaragua | 41 | 6.2 | 6.4 | 6.2 | 6.3 |
-| México | 1136 | 5.8 | 6.8 | 6.3 | 6.3 |
+| México | 1137 | 5.8 | 6.8 | 6.3 | 6.3 |
+| Argentina | 6252 | 6.1 | 6.3 | 5.7 | 6.1 |
 | Uruguay | 163 | 6.1 | 6.4 | 5.6 | 6.1 |
 | Chile | 150 | 6.2 | 6.4 | 5.8 | 6.1 |
-| Argentina | 6237 | 6.1 | 6.3 | 5.7 | 6 |
 | Panamá | 18 | 5.5 | 6.9 | 5.3 | 5.9 |
 | España | 96 | 5.7 | 5.9 | 5.7 | 5.8 |
 | Paraguay | 115 | 5.5 | 6.2 | 5.5 | 5.7 |
@@ -45,25 +45,25 @@
 | Sector | N | Dinero | Desarrollo | Diversión | Promedio |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Energía | 21 | 7.9 | 8.1 | 7 | 7.7 |
-| Educación | 34 | 6.4 | 7.1 | 6.8 | 6.8 |
-| Tecnología / Software | 30 | 6.7 | 6.9 | 6.4 | 6.7 |
+| Tecnología / Software | 31 | 6.7 | 7 | 6.5 | 6.7 |
+| Educación | 35 | 6.4 | 7.1 | 6.7 | 6.7 |
+| Salud | 61 | 6.9 | 6.8 | 6.1 | 6.6 |
 | Medios / Comunicación | 10 | 6.9 | 6.2 | 6.3 | 6.5 |
-| Salud | 59 | 6.8 | 6.7 | 6.1 | 6.5 |
-| Otro | 74 | 5.9 | 7 | 6.5 | 6.5 |
 | ONG / Tercer sector | 10 | 6.4 | 6.3 | 6.4 | 6.4 |
-| Industria / Manufactura | 60 | 6.5 | 6.7 | 5.9 | 6.4 |
-| Consultoría | 131 | 6.3 | 6.6 | 6.2 | 6.4 |
-| Construcción | 11 | 6.5 | 6.5 | 5.5 | 6.2 |
-| Retail / Comercio | 46 | 6.4 | 6.2 | 5.6 | 6.1 |
+| Otro | 77 | 5.9 | 6.9 | 6.5 | 6.4 |
+| Industria / Manufactura | 61 | 6.5 | 6.7 | 6 | 6.4 |
+| Consultoría | 133 | 6.3 | 6.6 | 6.2 | 6.4 |
+| Construcción | 12 | 6.6 | 6.8 | 5.3 | 6.2 |
+| Retail / Comercio | 49 | 6.4 | 6.2 | 5.5 | 6 |
 | Gobierno / Sector público | 39 | 7.1 | 5.4 | 4.8 | 5.8 |
-| Agro | 21 | 7.2 | 4.8 | 4.3 | 5.4 |
-| Finanzas / Banca / Seguros | 26 | 5.5 | 5.2 | 4.2 | 4.9 |
+| Agro | 24 | 7.5 | 5.1 | 4.5 | 5.7 |
+| Finanzas / Banca / Seguros | 28 | 5.5 | 5.3 | 4.2 | 5 |
 
 ## Por rango de edad
 
 | Edad | N | Dinero | Desarrollo | Diversión | Promedio |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 25-34 | 82 | 7 | 7.5 | 6.5 | 7 |
-| 55-64 | 64 | 6.6 | 6.5 | 6.2 | 6.4 |
-| 35-44 | 278 | 6.5 | 6.4 | 6 | 6.3 |
-| 45-54 | 154 | 6.2 | 6.4 | 5.8 | 6.1 |
+| 25-34 | 85 | 6.9 | 7.4 | 6.4 | 6.9 |
+| 55-64 | 66 | 6.6 | 6.6 | 6.2 | 6.5 |
+| 35-44 | 286 | 6.5 | 6.4 | 5.9 | 6.3 |
+| 45-54 | 159 | 6.2 | 6.3 | 5.7 | 6.1 |
