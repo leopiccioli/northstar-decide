@@ -103,8 +103,8 @@ Deno.serve(async (req) => {
 
     return new Response(lines.join("\n"), { headers: textHeaders });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return new Response(`# Error\n\n${msg}\n`, {
+    console.error("llm-stats error:", err);
+    return new Response(`# Error\n\nTemporary error, please retry.\n`, {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "text/plain; charset=utf-8" },
     });

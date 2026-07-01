@@ -21,12 +21,8 @@ function rateLimited(ip: string): boolean {
   return entry.count > 10;
 }
 
-function maskEmail(email: string): string {
-  const [name, domain] = email.split('@');
-  if (!name || !domain) return email;
-  const visible = name.slice(0, Math.min(2, name.length));
-  return `${visible}${'*'.repeat(Math.max(1, name.length - 2))}@${domain}`;
-}
+
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -63,8 +59,23 @@ serve(async (req) => {
       });
     }
 
+    // Only accept tokens that were sent out in a demographics-backfill email,
+    // so the public share URL (same UUID) cannot be used to enumerate demographics.
+    const { data: emailSent } = await supabase
+      .from('outbound_emails')
+      .select('id')
+      .eq('email_type', 'demographics_backfill')
+      .ilike('to_email', record.email)
+      .limit(1)
+      .maybeSingle();
+
+    if (!emailSent) {
+      return new Response(JSON.stringify({ error: 'not_found' }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({
-      email_masked: maskEmail(record.email),
       sector: record.sector,
       age_range: record.age_range,
       dinero: record.dinero,

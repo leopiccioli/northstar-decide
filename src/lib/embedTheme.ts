@@ -138,9 +138,11 @@ export function buildThemeCSS(tokens: EmbedThemeTokens): string {
   }
   let css = `:root{${rules.join('')}}`;
   if (tokens.font) {
-    // Escape any closing braces just in case
-    const safeFont = tokens.font.replace(/[<>]/g, '');
-    css += `body,html{font-family:${safeFont} !important;}`;
+    // Strict allow-list: letters, digits, spaces, commas, quotes, hyphens. Max 100 chars.
+    const raw = tokens.font.trim().slice(0, 100);
+    if (/^[a-zA-Z0-9 ,'"\-]+$/.test(raw) && !/[{};\\]|\/\*|\*\//.test(raw)) {
+      css += `body,html{font-family:${raw} !important;}`;
+    }
   }
   return css;
 }
