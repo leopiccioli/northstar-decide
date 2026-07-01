@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     const comments = (data ?? []) as Comment[];
     const lines: string[] = [];
-    lines.push("# Muro de los lamentos — 3D para Decidir");
+    lines.push("# Muro de los lamentos — Las 3D del Trabajo");
     lines.push("");
     lines.push(`> Comentarios anónimos sobre el trabajo, junto a sus puntajes en las 3D: Dinero, Desarrollo y Diversión (escala 1–10). Fuente: https://3d.ceoencamiseta.com/comentarios`);
     lines.push("");

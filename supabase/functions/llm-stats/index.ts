@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     ]);
 
     const lines: string[] = [];
-    lines.push("# Estadísticas — 3D para Decidir");
+    lines.push("# Estadísticas — Las 3D del Trabajo");
     lines.push("");
     lines.push("> Promedios de Dinero, Desarrollo y Diversión (escala 1–10) reportados por la comunidad. Última actualización: " + new Date().toISOString() + ".");
     lines.push("");

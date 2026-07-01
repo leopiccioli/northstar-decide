@@ -1,5 +1,5 @@
-# Estadísticas agregadas — 3D para Decidir
-> Snapshot estático del proyecto **3D para Decidir** (CEO en Camiseta).
+# Estadísticas agregadas — Las 3D del Trabajo
+> Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
 - **Última actualización:** 2026-07-01T13:28:42.949Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Promedios globales (Dinero, Desarrollo, Diversión, escala 1–10) y desglose por país, sector laboral y rango etario reportado.

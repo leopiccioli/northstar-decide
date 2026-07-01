@@ -65,7 +65,7 @@ function header(title: string, contains: string, limitations: string[], live?: s
   return [
     `# ${title}`,
     ``,
-    `> Snapshot estático del proyecto **3D para Decidir** (CEO en Camiseta).`,
+    `> Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).`,
     ``,
     `- **Última actualización:** ${ISO_NOW}`,
     `- **Fuente original:** ${SITE}`,
@@ -167,7 +167,7 @@ async function buildStats(): Promise<string> {
   ]);
   const g = global[0];
   const head = header(
-    "Estadísticas agregadas — 3D para Decidir",
+    "Estadísticas agregadas — Las 3D del Trabajo",
     "Promedios globales (Dinero, Desarrollo, Diversión, escala 1–10) y desglose por país, sector laboral y rango etario reportado.",
     [
       "Sólo se incluyen grupos con al menos 5 mediciones, para evitar exposición de individuos.",
@@ -194,7 +194,7 @@ async function buildStats(): Promise<string> {
 
 function buildIndex(): string {
   return header(
-    "3D para Decidir — índice para LLMs",
+    "Las 3D del Trabajo — índice para LLMs",
     "Descripción del proyecto, su metodología, páginas públicas indexables y archivos de datos para LLMs.",
     [
       "Texto curado por los autores; los archivos de datos enlazados son los que reflejan el estado real de la comunidad.",
@@ -203,7 +203,7 @@ function buildIndex(): string {
   )
   + `## Qué es
 
-**3D para Decidir** es una mini-app web gratuita y anónima donde alguien puntúa su trabajo en tres dimensiones, cada una de 1 a 10:
+**Las 3D del Trabajo** es una mini-app web gratuita y anónima donde alguien puntúa su trabajo en tres dimensiones, cada una de 1 a 10:
 
 - **Dinero**: cuánto te paga (sueldo, beneficios, estabilidad).
 - **Desarrollo**: cuánto aprendés y crecés profesionalmente.

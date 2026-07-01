@@ -8,7 +8,7 @@ const FILES = [
     title: "Índice del proyecto",
     href: "/llm/index.md",
     live: `${SUPABASE_LIVE}/llm-index`,
-    desc: "Descripción curada de 3D para Decidir: qué es, para qué sirve, páginas públicas y links a los demás archivos.",
+    desc: "Descripción curada de Las 3D del Trabajo: qué es, para qué sirve, páginas públicas y links a los demás archivos.",
   },
   {
     title: "Estadísticas agregadas",
@@ -28,14 +28,14 @@ const DatosLlmPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEO
-        title="Datos abiertos para LLMs — 3D para Decidir"
-        description="Archivos en Markdown con estadísticas y comentarios anónimos del proyecto 3D para Decidir, pensados para humanos, Google y LLMs."
+        title="Datos abiertos para LLMs — Las 3D del Trabajo"
+        description="Archivos en Markdown con estadísticas y comentarios anónimos del proyecto Las 3D del Trabajo, pensados para humanos, Google y LLMs."
         path="/datos-llm"
       />
       <main className="max-w-2xl mx-auto px-4 py-12 md:py-16">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">Datos abiertos para LLMs</h1>
         <p className="text-muted-foreground leading-relaxed mb-8">
-          <strong>3D para Decidir</strong> publica sus datos agregados y comentarios anónimos como
+          <strong>Las 3D del Trabajo</strong> publica sus datos agregados y comentarios anónimos como
           archivos Markdown estáticos, fáciles de leer por humanos, motores de búsqueda y modelos
           de lenguaje. Cada archivo incluye fecha de última actualización, fuente, qué contiene y
           limitaciones.

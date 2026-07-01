@@ -167,7 +167,7 @@ export function CommentShareCard({
         {/* Shareable card */}
         <div className="bg-background p-8 space-y-7">
           <div className="text-sm font-semibold tracking-tight text-foreground">
-            3D para Decidir
+            Las 3D del Trabajo
           </div>
 
           <div className="space-y-6">

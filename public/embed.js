@@ -1,5 +1,5 @@
 /**
- * 3D para Decidir — widget embebible
+ * Las 3D del Trabajo — widget embebible
  *
  * Uso básico:
  *   <div id="tres-d-embed"></div>
@@ -62,7 +62,7 @@
 
   var iframe = document.createElement('iframe');
   iframe.src = url;
-  iframe.title = '3D para Decidir';
+  iframe.title = 'Las 3D del Trabajo';
   iframe.loading = 'lazy';
   iframe.setAttribute('allow', 'clipboard-write');
   iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');

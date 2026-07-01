@@ -1,5 +1,5 @@
-# 3D para Decidir — índice para LLMs
-> Snapshot estático del proyecto **3D para Decidir** (CEO en Camiseta).
+# Las 3D del Trabajo — índice para LLMs
+> Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
 - **Última actualización:** 2026-07-01T13:28:42.949Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Descripción del proyecto, su metodología, páginas públicas indexables y archivos de datos para LLMs.
@@ -8,7 +8,7 @@
   - Snapshot estático: se actualiza en cada deploy.
 ---## Qué es
 
-**3D para Decidir** es una mini-app web gratuita y anónima donde alguien puntúa su trabajo en tres dimensiones, cada una de 1 a 10:
+**Las 3D del Trabajo** es una mini-app web gratuita y anónima donde alguien puntúa su trabajo en tres dimensiones, cada una de 1 a 10:
 
 - **Dinero**: cuánto te paga (sueldo, beneficios, estabilidad).
 - **Desarrollo**: cuánto aprendés y crecés profesionalmente.
