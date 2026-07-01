@@ -59,8 +59,8 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
 
         {/* Persuasive hook */}
         <p className="text-base sm:text-lg text-background/80 max-w-md mx-auto leading-relaxed">
-          La mayoría tolera un trabajo mediocre<br className="hidden sm:inline" />
-          {' '}porque nunca se detiene a medirlo.
+          Muchos toleran algo<br className="hidden sm:inline" />
+          {' '}porque no lo miden.
         </p>
 
         {/* Social proof: live measurement count */}
