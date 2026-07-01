@@ -17,8 +17,8 @@ export default function ContextScreen({ onSelect }: ContextScreenProps) {
       <div className="max-w-md w-full space-y-8">
         {/* Persuasive hook (also primary entry for mobile users) */}
         <p className="text-base sm:text-lg text-center text-foreground/80 leading-relaxed animate-fade-up">
-          La mayoría tolera un trabajo mediocre<br className="hidden sm:inline" />
-          {' '}porque nunca se detiene a medirlo.
+          Muchos toleran algo<br className="hidden sm:inline" />
+          {' '}porque no lo miden.
         </p>
 
         {/* Hook header */}
