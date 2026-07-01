@@ -21,12 +21,8 @@ function rateLimited(ip: string): boolean {
   return entry.count > 10;
 }
 
-function maskEmail(email: string): string {
-  const [name, domain] = email.split('@');
-  if (!name || !domain) return email;
-  const visible = name.slice(0, Math.min(2, name.length));
-  return `${visible}${'*'.repeat(Math.max(1, name.length - 2))}@${domain}`;
-}
+
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
