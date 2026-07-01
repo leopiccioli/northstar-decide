@@ -5,7 +5,7 @@ const Index = () => {
   return (
     <>
       <SEO
-        title="3D para Decidir — Dinero, Desarrollo, Diversión"
+        title="Las 3D del Trabajo — Dinero, Desarrollo, Diversión"
         description="Tomá mejores decisiones laborales en 20 segundos midiendo tus 3D: Dinero, Desarrollo y Diversión."
         path="/"
       />

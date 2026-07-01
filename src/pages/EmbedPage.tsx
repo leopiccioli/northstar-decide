@@ -54,7 +54,7 @@ export default function EmbedPage() {
   return (
     <>
       <Helmet>
-        <title>3D para Decidir — Embed</title>
+        <title>Las 3D del Trabajo — Embed</title>
         <meta name="robots" content="noindex,nofollow" />
         <style>{`
           html, body, #root { min-height: 0 !important; height: auto !important; background: transparent; }

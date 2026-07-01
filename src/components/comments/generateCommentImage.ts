@@ -146,7 +146,7 @@ export async function generateCommentImage({
   ctx.fillStyle = COLORS.fg;
   ctx.font = '700 42px "Space Grotesk", system-ui, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('3D para Decidir', padding, titleY);
+  ctx.fillText('Las 3D del Trabajo', padding, titleY);
 
   // Sliders
   let y = slidersStartY;

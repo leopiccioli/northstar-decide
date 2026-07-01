@@ -8,7 +8,7 @@ export function SiteHeader() {
         <Link
           to="/"
           className="text-sm font-semibold tracking-tight hover:opacity-70 transition-opacity"
-          aria-label="3D para Decidir — inicio"
+          aria-label="Las 3D del Trabajo — inicio"
         >
           3D
         </Link>

@@ -6,13 +6,13 @@ const textHeaders = {
   "Cache-Control": "public, max-age=3600, s-maxage=7200",
 };
 
-const BODY = `# 3D para Decidir
+const BODY = `# Las 3D del Trabajo
 
 > Herramienta gratuita y anónima para medir tu trabajo en 3 dimensiones — Dinero, Desarrollo y Diversión — en 20 segundos, y tomar mejores decisiones laborales con datos. Creada por CEO en Camiseta.
 
 ## Qué es
 
-3D para Decidir es una mini-app web donde una persona puntúa su trabajo actual (o un trabajo potencial) en tres dimensiones, cada una de 1 a 10:
+Las 3D del Trabajo es una mini-app web donde una persona puntúa su trabajo actual (o un trabajo potencial) en tres dimensiones, cada una de 1 a 10:
 
 - **Dinero**: cuánto te paga (sueldo, beneficios, estabilidad económica).
 - **Desarrollo**: cuánto aprendés y crecés profesionalmente.

@@ -98,7 +98,7 @@ export default function EmbedDocsPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">Notas</h2>
           <ul className="text-sm space-y-2 text-foreground/70 list-disc pl-5">
-            <li>Los datos se guardan en 3D para Decidir (no en tu sitio); cuentan para las stats globales.</li>
+            <li>Los datos se guardan en Las 3D del Trabajo (no en tu sitio); cuentan para las stats globales.</li>
             <li>El widget no setea cookies de terceros más allá de las del propio 3D.</li>
             <li>Si tu CMS sanitiza <code>&lt;script&gt;</code>, usá un iframe directo: <code>&lt;iframe src="{SITE_CONFIG.baseUrl}/embed?ctx=burnout"&gt;&lt;/iframe&gt;</code>.</li>
           </ul>

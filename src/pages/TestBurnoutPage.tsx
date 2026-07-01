@@ -26,7 +26,7 @@ const faq = [
 export default function TestBurnoutPage() {
   return (
     <LandingShell
-      title="Test de burnout en 20 segundos — 3D para Decidir"
+      title="Test de burnout en 20 segundos — Las 3D del Trabajo"
       description="Test anónimo para medir tu nivel de burnout laboral en 20 segundos. 3 dimensiones: Dinero, Desarrollo, Diversión."
       path="/test-burnout"
       h1="Test de burnout en 20 segundos"
