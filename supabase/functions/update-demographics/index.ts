@@ -86,6 +86,34 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
+    // Only allow updates for records whose owner received a demographics-backfill email.
+    // Prevents anyone with a share URL UUID from overwriting demographics.
+    const { data: record } = await supabase
+      .from('records_3d')
+      .select('id, email')
+      .eq('id', token)
+      .maybeSingle();
+
+    if (!record) {
+      return new Response(JSON.stringify({ error: 'not_found' }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: emailSent } = await supabase
+      .from('outbound_emails')
+      .select('id')
+      .eq('email_type', 'demographics_backfill')
+      .ilike('to_email', record.email)
+      .limit(1)
+      .maybeSingle();
+
+    if (!emailSent) {
+      return new Response(JSON.stringify({ error: 'not_found' }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: updated, error } = await supabase
       .from('records_3d')
       .update(update)
