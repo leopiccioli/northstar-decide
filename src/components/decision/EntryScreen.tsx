@@ -46,16 +46,15 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
         {/* Main title with one-shot compass tick */}
         <div className="space-y-2">
           <h1 className="heading-display">
-            3
+            Las 3
             <span
               className="inline-block transition-transform duration-200 ease-out"
               style={{ transform: didTick ? 'rotate(3deg)' : 'rotate(0deg)' }}
             >
               D
             </span>
-            {" "}para Decidir
+            {" "}del Trabajo
           </h1>
-          <p className="text-2xl font-medium text-background/60">tu trabajo</p>
         </div>
 
         {/* Persuasive hook */}
