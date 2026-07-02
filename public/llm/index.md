@@ -1,6 +1,6 @@
 # Las 3D del Trabajo — índice para LLMs
 > Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
-- **Última actualización:** 2026-07-01T13:28:42.949Z
+- **Última actualización:** 2026-07-02T12:14:14.076Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Descripción del proyecto, su metodología, páginas públicas indexables y archivos de datos para LLMs.
 - **Limitaciones:**

@@ -178,7 +178,8 @@ function SuccessWithShare({
   onShare: () => void;
   email: string;
 }) {
-  const shareUrl = `${SITE_CONFIG.baseUrl}/r/${recordId}`;
+  const isOptimistic = !recordId || recordId.startsWith('optimistic-');
+  const shareUrl = isOptimistic ? SITE_CONFIG.baseUrl : `${SITE_CONFIG.baseUrl}/r/${recordId}`;
   const ceoUrl = buildBeehiivUrl({ email, utmMedium: 'result' });
 
   return (

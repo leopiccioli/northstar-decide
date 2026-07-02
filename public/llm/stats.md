@@ -1,6 +1,6 @@
 # Estadísticas agregadas — Las 3D del Trabajo
 > Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
-- **Última actualización:** 2026-07-01T13:28:42.949Z
+- **Última actualización:** 2026-07-02T12:14:14.076Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Promedios globales (Dinero, Desarrollo, Diversión, escala 1–10) y desglose por país, sector laboral y rango etario reportado.
 - **Limitaciones:**
@@ -9,7 +9,7 @@
   - Snapshot estático: se actualiza en cada deploy.
 - **Versión en vivo (siempre fresca):** https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-stats
 ---## Global
-- Mediciones totales: 12860
+- Mediciones totales: 12861
 - Promedio Dinero: 6/10
 - Promedio Desarrollo: 6.3/10
 - Promedio Diversión: 5.7/10
@@ -25,9 +25,9 @@
 | Italia | 12 | 6.9 | 6.7 | 5.8 | 6.5 |
 | Nicaragua | 41 | 6.2 | 6.4 | 6.2 | 6.3 |
 | México | 1137 | 5.8 | 6.8 | 6.3 | 6.3 |
-| Argentina | 6252 | 6.1 | 6.3 | 5.7 | 6.1 |
 | Uruguay | 163 | 6.1 | 6.4 | 5.6 | 6.1 |
 | Chile | 150 | 6.2 | 6.4 | 5.8 | 6.1 |
+| Argentina | 6256 | 6.1 | 6.3 | 5.7 | 6 |
 | Panamá | 18 | 5.5 | 6.9 | 5.3 | 5.9 |
 | España | 96 | 5.7 | 5.9 | 5.7 | 5.8 |
 | Paraguay | 115 | 5.5 | 6.2 | 5.5 | 5.7 |
@@ -51,11 +51,11 @@
 | Medios / Comunicación | 10 | 6.9 | 6.2 | 6.3 | 6.5 |
 | ONG / Tercer sector | 10 | 6.4 | 6.3 | 6.4 | 6.4 |
 | Otro | 77 | 5.9 | 6.9 | 6.5 | 6.4 |
-| Industria / Manufactura | 61 | 6.5 | 6.7 | 6 | 6.4 |
 | Consultoría | 133 | 6.3 | 6.6 | 6.2 | 6.4 |
+| Industria / Manufactura | 62 | 6.5 | 6.7 | 5.9 | 6.3 |
 | Construcción | 12 | 6.6 | 6.8 | 5.3 | 6.2 |
-| Retail / Comercio | 49 | 6.4 | 6.2 | 5.5 | 6 |
-| Gobierno / Sector público | 39 | 7.1 | 5.4 | 4.8 | 5.8 |
+| Retail / Comercio | 50 | 6.4 | 6.2 | 5.5 | 6 |
+| Gobierno / Sector público | 40 | 7.1 | 5.5 | 4.9 | 5.8 |
 | Agro | 24 | 7.5 | 5.1 | 4.5 | 5.7 |
 | Finanzas / Banca / Seguros | 28 | 5.5 | 5.3 | 4.2 | 5 |
 
@@ -65,5 +65,5 @@
 | --- | ---: | ---: | ---: | ---: | ---: |
 | 25-34 | 85 | 6.9 | 7.4 | 6.4 | 6.9 |
 | 55-64 | 66 | 6.6 | 6.6 | 6.2 | 6.5 |
-| 35-44 | 286 | 6.5 | 6.4 | 5.9 | 6.3 |
-| 45-54 | 159 | 6.2 | 6.3 | 5.7 | 6.1 |
+| 35-44 | 289 | 6.5 | 6.4 | 5.9 | 6.3 |
+| 45-54 | 160 | 6.3 | 6.3 | 5.7 | 6.1 |
