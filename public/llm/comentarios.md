@@ -1,6 +1,6 @@
 # Muro de los lamentos — comentarios anónimos
 > Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
-- **Última actualización:** 2026-07-02T12:14:14.076Z
+- **Última actualización:** 2026-07-21T13:05:56.751Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Últimos 500 comentarios públicos enviados por personas sobre su trabajo, junto a sus puntajes de Dinero, Desarrollo y Diversión (1–10), país, sector y rango etario opcionales.
 - **Limitaciones:**
@@ -9,7 +9,79 @@
   - Snapshot estático: se actualiza en cada deploy de la plataforma.
   - Total listados: 500.
 - **Versión en vivo (siempre fresca):** https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-comments
----## Argentina · Industria / Manufactura · 35-44 · 2026-07-01
+---## Argentina · Gobierno / Sector público · 45-54 · 2026-07-18
+Dinero: 5/10 · Desarrollo: 5/10 · Diversión: 8/10
+
+Hice desarreglos y estoy recuperando el bolsillo lentamente. Al menos trabajo
+
+---
+## Argentina · Otro · 45-54 · 2026-07-15
+Dinero: 5/10 · Desarrollo: 3/10 · Diversión: 4/10
+
+poco sueldo
+
+---
+## Colombia · ONG / Tercer sector · 2026-07-15
+Dinero: 5/10 · Desarrollo: 9/10 · Diversión: 10/10
+
+nadaaaaa, pura pasión y entrega =)
+
+---
+## Argentina · Otro · 35-44 · 2026-07-12
+Dinero: 7/10 · Desarrollo: 9/10 · Diversión: 9/10
+
+he llegado a mi objetivo económico, pero trabajando sin descansos ni feriados
+
+---
+## Argentina · Medios / Comunicación · 55-64 · 2026-07-12
+Dinero: 5/10 · Desarrollo: 5/10 · Diversión: 5/10
+
+exceso de trabajo por poco dinero
+
+---
+## Argentina · Retail / Comercio · 25-34 · 2026-07-11
+Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 6/10
+
+Nuevo puesto, me aumentaron el sueldo pero me sigue pareciendo insuficiente, voy a aprender sobre cosas que no hice y capaz eso me divirte
+
+---
+## Argentina · 45-54 · 2026-07-10
+Dinero: 5/10 · Desarrollo: 8/10 · Diversión: 8/10
+
+dinero
+
+---
+## Argentina · Industria / Manufactura · 35-44 · 2026-07-06
+Dinero: 8/10 · Desarrollo: 8/10 · Diversión: 7/10
+
+FALTA DE DIVERSION
+
+---
+## Argentina · Agro · 45-54 · 2026-07-05
+Dinero: 10/10 · Desarrollo: 8/10 · Diversión: 7/10
+
+Estoy pasado de horas y no paro. Necesito bajar un cambio y poder capacitarme
+
+---
+## Argentina · Gobierno / Sector público · 35-44 · 2026-07-05
+Dinero: 3/10 · Desarrollo: 5/10 · Diversión: 7/10
+
+El sueldo
+
+---
+## Argentina · Hospitalidad / Turismo · 35-44 · 2026-07-05
+Dinero: 8/10 · Desarrollo: 8/10 · Diversión: 6/10
+
+exceso de trabajo, aislamiento por 100% remoto
+
+---
+## Argentina · Hospitalidad / Turismo · 25-34 · 2026-07-04
+Dinero: 5/10 · Desarrollo: 8/10 · Diversión: 7/10
+
+Quiero emprender. Hoy trabajando de algo nada que ver pero con un objetivo a corto plazo que necesita de ese trabajo. Dinero podria estar mejor. Desarrollo estoy full. La estoy pasando bien
+
+---
+## Argentina · Industria / Manufactura · 35-44 · 2026-07-01
 Dinero: 5/10 · Desarrollo: 3/10 · Diversión: 1/10
 
 falta de desafíos
@@ -687,7 +759,7 @@ Dinero: 7/10 · Desarrollo: 6/10 · Diversión: 3/10
 Más flexibilidad y capacidad para gestionar directamente (hoy todo pasa por el dueño)
 
 ---
-## Argentina · 2026-05-07
+## Argentina · 35-44 · 2026-05-07
 Dinero: 8/10 · Desarrollo: 8/10 · Diversión: 7/10
 
 Falta de reconocimiento
@@ -2769,7 +2841,7 @@ Dinero: 10/10 · Desarrollo: 8/10 · Diversión: 2/10
 New job
 
 ---
-## Argentina · 2026-01-03
+## Argentina · Hospitalidad / Turismo · 35-44 · 2026-01-03
 Dinero: 6/10 · Desarrollo: 8/10 · Diversión: 7/10
 
 Hola, enero 2026, haciendo orden de finanzas. Hoy estoy semi conforme con el dinero, pero tambien lo he desatendido asique estoy retomando el orden para saber como me siento con respecto a lo que gano. En desarrollo, finalmente me he decidido a tomar posesion de mi lugar como comercial de la empresa, es algo que me da pavor, le temo, y trato de huir, pero en el fondo sé que es miedo al exito y a exponerme y fallar. Veo mi poca tolerancia a fallar. Voy a ir a por ella. Y en diversion, la verdad que está baja, lo remoto tiene a ser aburrido y eso continua. Pero tengo en claro que si voy regularmente a la ofi cada 3 meses, eso se regula, seguire con ese plan. Ofi nos vemos en marzo/abril 2026
@@ -2935,77 +3007,5 @@ Estoy trabajando part time, represento un rebalanceo muy beneficioso
 Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 7/10
 
 Mis ingresos no mejoraron pero trabajo menos hora y con más libertad, entoncesc entiendo que la variable dinero mejora. Ahora el desafío es compensaar esos ingresos...
-
----
-## Argentina · 2025-12-16
-Dinero: 7/10 · Desarrollo: 8/10 · Diversión: 3/10
-
-.
-
----
-## Argentina · 2025-12-16
-Dinero: 3/10 · Desarrollo: 5/10 · Diversión: 4/10
-
-nnn
-
----
-## Argentina · 2025-12-16
-Dinero: 8/10 · Desarrollo: 10/10 · Diversión: 7/10
-
-No olvidarme de disfrutar el proceso!!
-
----
-## Argentina · 2025-12-16
-Dinero: 6/10 · Desarrollo: 3/10 · Diversión: 1/10
-
-Respecto del salario, tengo un buen salario a nivel Argentina. Trabajo para el exterior hace 3 años pero cobro lo mismo desde que comence a trabajar en esta startup, lamentablemente no me han aumentado el sueldo. A nivel desarrollo, no hay estructura para que aprenda o crezca profesionalmente. Y a nivel diversion se ha convertido en un lugar toxico.
-
----
-## Argentina · 2025-12-16
-Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 8/10
-
-No estoy mal en cuanto a lo que hago porque me da tiempo para hacer otras cosas que no generan dinero pero si me generan satisfaccion. (trabajo voluntario). Sin embargo creo que (aunque mi trabajo lo disfruto bastante) estpoy vendiendo "horas" y quisiera vener valor por encima del valor hora "promedio". no estoy seguro como encarar eso.
-
----
-## Argentina · Gobierno / Sector público · 35-44 · 2025-12-16
-Dinero: 7/10 · Desarrollo: 3/10 · Diversión: 3/10
-
-Cierro el año sin ningún extra fuera del trabajo en relacion de dependencia. Este 2025 pase por freelance hasta 08/2025 con Neostar. Pase x una consultora, haciendo tareas de gestion de proyectos, y en sep/oct dí clases en un taller que me entusiasmo, pero que tb me genero muuuuucha ansiedad. Que seguira? Para donde?
-
----
-## Argentina · 2025-12-16
-Dinero: 5/10 · Desarrollo: 5/10 · Diversión: 5/10
-
-El nivel de actividad económica golpea directamente mi trabajo
-
----
-## Argentina · 2025-12-16
-Dinero: 8/10 · Desarrollo: 7/10 · Diversión: 8/10
-
-Clave el cambio laboral a fines de Septiembre
-
----
-## Argentina · 2025-12-15
-Dinero: 8/10 · Desarrollo: 8/10 · Diversión: 8/10
-
-Quise mucho estar en donde estoy ahora. Admiro mi capacidad de seguir adelante sin darme por vencida, porque amo lo que hago. Me amigué con la incertidumbre y soy una fiel creyente de la siembra a largo plazo.
-
----
-## México · 2025-12-15
-Dinero: 8/10 · Desarrollo: 9/10 · Diversión: 9/10
-
-En este momento comienzo a pensar que mi tiempo en este trabajo va llegando a su final,
-
----
-## Guatemala · Educación · 25-34 · 2025-12-15
-Dinero: 9/10 · Desarrollo: 8/10 · Diversión: 10/10
-
-estoy en transición en mi penúltimo día del trabajo como editora. buenas energías para lo que viene.
-
----
-## Argentina · 2025-12-15
-Dinero: 9/10 · Desarrollo: 9/10 · Diversión: 7/10
-
-Se padece la falta de sueño. No termino de encontrar el sentido de Yeca. La docencia me gusta mucho
 
 ---
