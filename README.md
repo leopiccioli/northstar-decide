@@ -1,230 +1,92 @@
-# Registro 3D
+# Las 3D del Trabajo
 
-Qué tiene que sentirse
+> Medí tu trabajo en 20 segundos. Tres dimensiones, un número, una decisión más clara.
 
-No es un test.
-No es un journal.
-No es coaching.
+**URL en vivo:** [https://3d.ceoencamiseta.com](https://3d.ceoencamiseta.com)
 
-Tiene que sentirse como:
+**Las 3D del Trabajo** es una mini-app web gratuita y anónima creada por [CEO en Camiseta](https://ceoencamiseta.com). Te ayuda a puntuar tu trabajo actual (o una opción que estés evaluando) en tres dimensiones, cada una de 1 a 10:
 
-👉 sacar el celular, abrir una brújula, ver hacia dónde apunta.
+- **Dinero** — cuánto te paga, incluyendo sueldo, beneficios y estabilidad.
+- **Desarrollo** — cuánto aprendés y crecés profesionalmente.
+- **Diversión** — cuánto disfrutás del día a día, el equipo y la cultura.
 
-Rápido. Frío. Claro. Casi obvio.
+El resultado se compara con el promedio global de la comunidad y, opcionalmente, con promedios por país, sector o rango etario. La herramienta no te dice qué hacer: te da los datos para que vos decidas.
 
-Cero “autoayuda”.
-Cero “reflexión profunda”.
-Más instrumento de decisión.
+---
 
-Como una calculadora.
+## ¿Por qué medir las 3D?
 
-Experiencia completa
-Pantalla 1 — Entrada
+La idea de las tres D está planteada en el capítulo 14 de *Sé tu propio CEO*.
 
-Muy limpia. Mucho aire.
+El capítulo parte de una tensión clásica: ¿elegir lo que paga bien o lo que nos gusta? La historia del libro sugiere que elegir por encima del dinero lo que realmente nos interesa suele traducirse en más desarrollo y más diversión. Y que invertir solo en una de las tres D —por ejemplo, aceptar un trabajo aburrido por un buen salario— puede terminar en frustración a largo plazo.
 
-Un título grande. Nada más.
+Las tres D funcionan como variables que evolucian con el tiempo:
 
-“3D para decidir tu trabajo”
+- **Dinero** cubre las necesidades de hoy.
+- **Desarrollo** es una inversión en el trabajo que vas a poder hacer mañana.
+- **Diversión** reconoce que pasamos más del 57 % de nuestras horas despiertas trabajando; no tiene sentido resignar todo ese tiempo.
 
-Abajo, una sola línea:
-“En 20 segundos vas a poder tomar una mejor decisión.”
+Medirlas de forma simple hace visible lo que antes era solo una sensación. Por eso la app no interpreta: muestra tus números junto a los de la comunidad, para que la conversación sea con vos mismo y no con un algoritmo.
 
-Un botón.
-Grande. Solo uno.
+---
 
-👉 Empezar
+## Páginas públicas
 
-Nada más.
-Sin explicaciones.
-Sin formulario.
-Sin email.
+### Medición y contextos
 
-Sensación:
-“esto no me va a robar tiempo”.
+- **[Inicio](https://3d.ceoencamiseta.com/)** — medí tu trabajo en 3D.
+- **[Test de burnout](https://3d.ceoencamiseta.com/test-burnout)** — versión orientada a detectar agotamiento.
+- **[Cambiar de trabajo](https://3d.ceoencamiseta.com/cambiar-de-trabajo)** — para quien está evaluando un cambio.
+- **[Cambiar de trabajo a los 40](https://3d.ceoencamiseta.com/cambiar-de-trabajo-a-los-40)**
+- **[Cambiar de trabajo a los 50](https://3d.ceoencamiseta.com/cambiar-de-trabajo-a-los-50)**
 
-Pantalla 2 — Contexto (qué problema estás resolviendo)
+### Estadísticas y datos abiertos
 
-Ahora sí, le preguntás para qué vino.
+- **[Estadísticas por país](https://3d.ceoencamiseta.com/por-pais)**
+- **[Estadísticas por sector](https://3d.ceoencamiseta.com/por-sector)**
+- **[Estadísticas por edad](https://3d.ceoencamiseta.com/por-edad)**
+- **[Muro de los lamentos](https://3d.ceoencamiseta.com/comentarios)** — comentarios anónimos de la comunidad junto a sus 3D.
+- **[Datos abiertos para LLMs](https://3d.ceoencamiseta.com/datos-llm)** — archivos Markdown con estadísticas agregadas y comentarios anónimos.
 
-No opciones largas.
+### Embeber en otro sitio
 
-Tarjetas grandes, tipo botones:
+- **[Documentación del widget](https://3d.ceoencamiseta.com/embed-docs)** — código para incrustar el formulario 3D en tu sitio vía iframe.
 
-Evaluar mi situación actual
+---
 
-Comparar dos opciones
+## Stack y desarrollo local
 
-Estoy confundido, necesito claridad
-
-Pocas. Muy obvias.
-
-Que cualquiera diga: “sí, soy ese”.
-
-Sensación:
-“me entiende”.
-
-Pantalla 3 — Carga (el corazón)
-
-Pantalla ultra simple.
-
-Tres líneas.
-
-Dinero
-Desarrollo
-Diversión
-
-Cada una con slider 1–10.
-
-Nada de texto explicativo.
-Nada de coaching.
-
-Solo una frase chiquita:
-“Respondé intuitivo. No lo pienses mucho.”
-
-Se completa en segundos.
-Casi lúdico.
-
-Sensación:
-“esto es ridículamente fácil”.
-
-Si eligió comparar
-
-Después del primero:
-
-Aparece:
-“Ahora cargá la otra opción”
-
-Campo:
-Nombre (Ascenso / Nueva empresa / Freelance…)
-
-Mismos 3 sliders.
-
-Listo.
-
-Nada más.
-
-Sensación:
-“ah, es literal comparar”.
-
-Pantalla 4 — Resultado (la brújula)
-
-Acá está la magia.
-
-No texto largo.
-
-Primero:
-un gráfico fuerte y visual.
-Tres barras o triángulo.
-
-Que se entienda en 1 segundo.
-
-Después:
-frases cortas, descriptivas, no prescriptivas.
-
-Ejemplos de tono:
-
-“Hoy estás fuerte en Desarrollo.”
-
-“Diversión es tu punto más débil.”
-
-“Tu perfil prioriza progreso sobre disfrute.”
-
-Nada de consejos.
-Nada de “deberías”.
-
-Solo claridad.
-
-Si hay histórico:
-“+1 vs última vez”
-
-Si comparó:
-tabla simple A vs B
-y una línea tipo:
-
-“Opción B mejora Dinero, pero cae fuerte en Diversión.”
-
-Que casi se decida solo.
-
-Sensación:
-“wow, esto ordenó mi cabeza”.
-
-Cierre
-
-Recién ahora:
-
-“¿Querés guardar tu resultado y volver más adelante?”
-
-Email opcional.
-
-Promesa clara:
-“te avisamos cuando quieras repetirlo”
-
-No marketing.
-No venta.
-
-Solo utilidad.
-
-Tono general
-
-Menos:
-❌ motivacional
-❌ introspectivo
-❌ coaching
-
-Más:
-✅ sobrio
-✅ adulto
-✅ útil
-✅ casi frío
-
-Como una herramienta financiera.
-
-Muy “Leo”.
-
-Idea rectora para el diseño
-
-Si algo:
-
-agrega fricción
-
-o parece autoayuda
-
-o requiere leer mucho
-
-afuera.
-
-Debe sentirse como:
-👉 abrir clima en el iPhone
-no como completar un test de BuzzFeed.
-
-Si querés, en el próximo paso te lo traduzco a:
-
-textos exactos de cada pantalla
-
-copy final listo para pegar
-
-estructura ultra minimalista (1–2 líneas por bloque)
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://northstar-decide.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/155f9bc9-73bd-45e6-ad21-55b55bc4a03c).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+```text
+Frontend: Vite + React + TypeScript + Tailwind CSS + shadcn/ui
+Backend:  Supabase Edge Functions (Lovable Cloud)
+Datos:    Supabase Postgres + datos abiertos en Markdown
 ```
+
+### Scripts
+
+```bash
+# Instalar dependencias
+npm i
+
+# Levantar en desarrollo (genera snapshots LLM y levanta Vite)
+npm run dev
+
+# Build de producción
+npm run build
+
+# Tests
+npm run test
+```
+
+---
+
+## Privacidad
+
+Las respuestas son anónimas. El email se pide solo de forma opcional, para guardar el resultado o recibir recordatorios. Los comentarios públicos en el Muro de los lamentos se publican sin email ni identificadores.
+
+---
+
+## Creado por
+
+**CEO en Camiseta** — comunidad y newsletter sobre liderazgo y trabajo.  
+[https://ceoencamiseta.com](https://ceoencamiseta.com)
