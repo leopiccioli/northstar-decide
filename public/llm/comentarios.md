@@ -1,6 +1,6 @@
 # Muro de los lamentos — comentarios anónimos
 > Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
-- **Última actualización:** 2026-08-09T13:12:12.476Z
+- **Última actualización:** 2026-08-09T13:12:36.759Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Últimos 500 comentarios públicos enviados por personas sobre su trabajo, junto a sus puntajes de Dinero, Desarrollo y Diversión (1–10), país, sector y rango etario opcionales.
 - **Limitaciones:**
