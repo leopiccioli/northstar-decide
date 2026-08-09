@@ -1,12 +1,12 @@
 // AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.
 export default {
-  "generatedAt": "2026-08-09T14:17:06.780Z",
+  "generatedAt": "2026-08-09T15:19:20.479Z",
   "cutDateIso": "2026-08-09",
   "cutDateHuman": "9 de agosto de 2026",
   "window": {
     "to": "2026-08-09",
     "from": "2025-08-09",
-    "total": 1552,
+    "total": 1554,
     "by_age": [
       {
         "n": 57,
@@ -17,7 +17,7 @@ export default {
         "desarrollo": 7.4
       },
       {
-        "n": 186,
+        "n": 188,
         "key": "35-44",
         "dinero": 6.6,
         "promedio": 6.3,
@@ -49,9 +49,9 @@ export default {
     },
     "months": 12,
     "coverage": {
-      "with_age": 427,
-      "with_sector": 418,
-      "with_country": 1551
+      "with_age": 429,
+      "with_sector": 420,
+      "with_country": 1553
     },
     "by_sector": [
       {
@@ -119,7 +119,7 @@ export default {
         "desarrollo": 7.3
       },
       {
-        "n": 69,
+        "n": 70,
         "key": "Consultoría",
         "dinero": 6.1,
         "promedio": 6.2,
@@ -159,12 +159,12 @@ export default {
         "desarrollo": 6.3
       },
       {
-        "n": 25,
+        "n": 26,
         "key": "Finanzas / Banca / Seguros",
-        "dinero": 5.8,
-        "promedio": 5.4,
-        "diversion": 4.6,
-        "desarrollo": 5.8
+        "dinero": 5.9,
+        "promedio": 5.5,
+        "diversion": 4.7,
+        "desarrollo": 5.9
       },
       {
         "n": 24,
@@ -257,11 +257,11 @@ export default {
         "desarrollo": 6.5
       },
       {
-        "n": 1295,
+        "n": 1297,
         "key": "Argentina",
         "dinero": 6.4,
         "promedio": 6.3,
-        "diversion": 6.1,
+        "diversion": 6,
         "desarrollo": 6.6
       },
       {
@@ -283,7 +283,7 @@ export default {
     ]
   },
   "allTime": {
-    "total": 12907,
+    "total": 12909,
     "global": {
       "dinero": 6,
       "promedio": 6,

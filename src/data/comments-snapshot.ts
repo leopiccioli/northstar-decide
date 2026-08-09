@@ -3,6 +3,26 @@ export default [
   {
     "date": "2026-08-09",
     "country": "Argentina",
+    "sector": "Consultoría",
+    "age": "35-44",
+    "dinero": 8,
+    "desarrollo": 7,
+    "diversion": 4,
+    "text": "Hay mucho trabajo. La facturación es del orden de lo que quiero, pero vendo mis servicios a varias empresas y eso me genera un stress bastante sostenido. A veces inflo los precios para que me digan que no o si me dicen que si, que valga la pena."
+  },
+  {
+    "date": "2026-08-09",
+    "country": "Argentina",
+    "sector": "Finanzas / Banca / Seguros",
+    "age": "35-44",
+    "dinero": 7,
+    "desarrollo": 7,
+    "diversion": 5,
+    "text": "Desarrollo laboral"
+  },
+  {
+    "date": "2026-08-09",
+    "country": "Argentina",
     "sector": "Hospitalidad / Turismo",
     "age": "35-44",
     "dinero": 7,
@@ -2979,25 +2999,5 @@ export default [
     "desarrollo": 5,
     "diversion": 4,
     "text": "Mayor sueldo, desafios, trabajo remoto"
-  },
-  {
-    "date": "2026-02-02",
-    "country": "Uruguay",
-    "sector": null,
-    "age": null,
-    "dinero": 8,
-    "desarrollo": 9,
-    "diversion": 8,
-    "text": "Falta de claridad en el rol, me siento estancada, falta de visibilidad de mi trabajo, piensan que me pagan mucho"
-  },
-  {
-    "date": "2026-02-01",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 5,
-    "desarrollo": 5,
-    "diversion": 5,
-    "text": "Sentir que no aprovecho mi tiempo libre porque siempre tengo el trabajo en mi cabeza"
   }
 ] as const;
