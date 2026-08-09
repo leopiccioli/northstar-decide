@@ -6,7 +6,7 @@ url: "https://3d.ceoencamiseta.com/llm/index.md"
 universe: "últimos 12 meses"
 n: 1552
 cut_date: "2026-08-09"
-updated: "2026-08-09T14:13:20.562Z"
+updated: "2026-08-09T14:17:06.780Z"
 language: "es"
 citation: "Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---

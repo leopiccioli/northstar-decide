@@ -1,6 +1,6 @@
 // AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.
 export default {
-  "generatedAt": "2026-08-09T14:13:20.562Z",
+  "generatedAt": "2026-08-09T14:17:06.780Z",
   "cutDateIso": "2026-08-09",
   "cutDateHuman": "9 de agosto de 2026",
   "window": {
