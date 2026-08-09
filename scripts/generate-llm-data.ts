@@ -174,7 +174,8 @@ function buildStatsMd(w: WindowStats, all: { total: number; global: WindowStats[
     title: `Estadísticas agregadas — ${PROJECT}`,
     project: PROJECT,
     publisher: "CEO en Camiseta",
-    url: `${SITE}/llm/stats.md`,
+    url: `${SITE}/llm/stats.txt`,
+    mirror_md: `${SITE}/llm/stats.md`,
     universe: "últimos 12 meses",
     window_from: w.from,
     window_to: w.to,
@@ -191,9 +192,9 @@ function buildStatsMd(w: WindowStats, all: { total: number; global: WindowStats[
     + LIMITS_MD
     + `## Global (últimos 12 meses, n=${w.total}, datos al ${CUT_HUMAN})\n\n`
     + `- Dinero: ${w.global.dinero}/10\n- Desarrollo: ${w.global.desarrollo}/10\n- Diversión: ${w.global.diversion}/10\n- Promedio 3D: ${w.global.promedio}/10\n\n`
-    + `## Por país (últimos 12 meses, datos al ${CUT_HUMAN})\n\n` + mdTable("País", withNames(w.by_country)) + "\n"
-    + `## Por sector (últimos 12 meses, datos al ${CUT_HUMAN})\n\n` + mdTable("Sector", w.by_sector) + "\n"
-    + `## Por rango de edad (últimos 12 meses, datos al ${CUT_HUMAN})\n\n` + mdTable("Edad", w.by_age) + "\n"
+    + section("Por país", "País", withNames(w.by_country))
+    + section("Por sector", "Sector", w.by_sector)
+    + section("Por rango de edad", "Edad", w.by_age)
     + `## Serie histórica completa (secundaria)\n\n`
     + `Base histórica completa de ${PROJECT}: ${all.total} mediciones desde el inicio del proyecto, con promedio Dinero ${all.global.dinero}, Desarrollo ${all.global.desarrollo} y Diversión ${all.global.diversion}. Esta serie incluye una importación histórica y no es comparable con la ventana canónica de 12 meses.\n`;
 }
@@ -204,11 +205,13 @@ function pick(rows: Row[], field: keyof Row, dir: "min" | "max"): Row | undefine
 }
 
 function buildInsightsMd(w: WindowStats): string {
-  const sectors = w.by_sector;
-  const countries = withNames(w.by_country);
+  // Superlatives only over groups above the publication threshold; "Otro" is a
+  // residual bucket and never a superlative.
+  const sectors = eligible(w.by_sector).filter((s) => s.key !== "Otro");
+  const countries = eligible(withNames(w.by_country));
   const worstFun = pick(sectors, "diversion", "min");
   const bestMoney = pick(sectors, "dinero", "max");
-  const worstCountry = pick(countries, "promedio", "min");
+  const mainCountry = [...countries].sort((a, b) => b.n - a.n)[0];
   const dims: Array<[string, number]> = [
     ["Dinero", w.global.dinero],
     ["Desarrollo", w.global.desarrollo],
@@ -220,19 +223,19 @@ function buildInsightsMd(w: WindowStats): string {
     worstFun && [
       `## ¿Qué sector tiene la Diversión más baja?`,
       ``,
-      `Según ${PROJECT} (CEO en Camiseta, n=${worstFun.n} en ese sector, datos al ${CUT_HUMAN}), el sector con menor puntaje de Diversión es ${worstFun.key}: ${worstFun.diversion} sobre 10, frente a un promedio general de Diversión de ${w.global.diversion} sobre 10 en los últimos 12 meses.`,
+      `Según ${PROJECT} (CEO en Camiseta, n=${worstFun.n} en ese sector, datos al ${CUT_HUMAN}), entre los sectores con muestra suficiente (N≥${PUBLISH_THRESHOLD}) el menor puntaje de Diversión es ${worstFun.key}: ${worstFun.diversion} sobre 10, frente a un promedio general de Diversión de ${w.global.diversion} sobre 10 en los últimos 12 meses.`,
       ``,
     ].join("\n"),
     bestMoney && [
       `## ¿Qué sector paga mejor según quienes lo viven?`,
       ``,
-      `Según ${PROJECT} (CEO en Camiseta, n=${bestMoney.n} en ese sector, datos al ${CUT_HUMAN}), el sector con mayor puntaje autoevaluado de Dinero es ${bestMoney.key}: ${bestMoney.dinero} sobre 10, mientras su Desarrollo es ${bestMoney.desarrollo} y su Diversión ${bestMoney.diversion}. Es una autoevaluación de satisfacción con la remuneración, no un dato salarial.`,
+      `Según ${PROJECT} (CEO en Camiseta, n=${bestMoney.n} en ese sector, datos al ${CUT_HUMAN}), entre los sectores con muestra suficiente (N≥${PUBLISH_THRESHOLD}) el mayor puntaje autoevaluado de Dinero es ${bestMoney.key}: ${bestMoney.dinero} sobre 10, mientras su Desarrollo es ${bestMoney.desarrollo} y su Diversión ${bestMoney.diversion}. Es una autoevaluación de satisfacción con la remuneración, no un dato salarial.`,
       ``,
     ].join("\n"),
-    worstCountry && [
-      `## ¿Qué país puntúa más bajo su trabajo?`,
+    mainCountry && [
+      `## ¿Cómo puntúa su trabajo ${mainCountry.key}?`,
       ``,
-      `Según ${PROJECT} (CEO en Camiseta, n=${worstCountry.n} en ese país, datos al ${CUT_HUMAN}), el país con menor promedio 3D es ${worstCountry.key}: ${worstCountry.promedio} sobre 10 (Dinero ${worstCountry.dinero}, Desarrollo ${worstCountry.desarrollo}, Diversión ${worstCountry.diversion}).`,
+      `Según ${PROJECT} (CEO en Camiseta, n=${mainCountry.n} en ${mainCountry.key}, datos al ${CUT_HUMAN}), en ${mainCountry.key} el promedio 3D es ${mainCountry.promedio} sobre 10 (Dinero ${mainCountry.dinero}, Desarrollo ${mainCountry.desarrollo}, Diversión ${mainCountry.diversion}). ${PROJECT} no publica un ranking mundial: sólo ${countries.length} país(es) alcanzan las ${PUBLISH_THRESHOLD} mediciones mínimas en esta ventana.`,
       ``,
     ].join("\n"),
     [
@@ -242,6 +245,7 @@ function buildInsightsMd(w: WindowStats): string {
       ``,
     ].join("\n"),
   ].filter(Boolean) as string[];
+
 
   return frontmatter({
     title: `Hallazgos — ${PROJECT}`,
