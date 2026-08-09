@@ -40,20 +40,49 @@ function pivot<T extends Row>(rows: T[], keyField: keyof T): Map<string, { diner
   return map;
 }
 
+/** Groups below this N are published for transparency but never ranked. */
+const PUBLISH_THRESHOLD = 30;
+
 function renderTable(title: string, label: string, data: Map<string, { dinero?: number; desarrollo?: number; diversion?: number; promedio?: number; count: number }>, nameMap?: Record<string, string>): string {
-  const rows = Array.from(data.entries())
-    .filter(([, v]) => v.count >= 5)
+  const all = Array.from(data.entries());
+  const top = all
+    .filter(([, v]) => v.count >= PUBLISH_THRESHOLD)
     .sort((a, b) => (b[1].promedio ?? 0) - (a[1].promedio ?? 0));
+  const rest = all
+    .filter(([, v]) => v.count < PUBLISH_THRESHOLD)
+    .sort((a, b) => (nameMap?.[a[0]] ?? a[0]).localeCompare(nameMap?.[b[0]] ?? b[0], "es"));
+
   const lines: string[] = [];
   lines.push(`## ${title}`);
   lines.push("");
-  lines.push(`| ${label} | N | Dinero | Desarrollo | Diversión | Promedio |`);
-  lines.push(`| --- | ---: | ---: | ---: | ---: | ---: |`);
-  for (const [k, v] of rows) {
-    const name = nameMap?.[k] ?? k;
-    lines.push(`| ${name} | ${v.count} | ${v.dinero ?? "-"} | ${v.desarrollo ?? "-"} | ${v.diversion ?? "-"} | ${v.promedio ?? "-"} |`);
-  }
+  lines.push(`### Muestra suficiente (N≥${PUBLISH_THRESHOLD})`);
   lines.push("");
+  if (top.length === 0) {
+    lines.push(`Ningún grupo alcanza las ${PUBLISH_THRESHOLD} mediciones en esta ventana.`);
+    lines.push("");
+  } else {
+    lines.push(`| ${label} | N | Dinero | Desarrollo | Diversión | Promedio |`);
+    lines.push(`| --- | ---: | ---: | ---: | ---: | ---: |`);
+    for (const [k, v] of top) {
+      const name = nameMap?.[k] ?? k;
+      lines.push(`| ${name} | ${v.count} | ${v.dinero ?? "-"} | ${v.desarrollo ?? "-"} | ${v.diversion ?? "-"} | ${v.promedio ?? "-"} |`);
+    }
+    lines.push("");
+  }
+
+  if (rest.length > 0) {
+    lines.push(`### Muestra insuficiente (N<${PUBLISH_THRESHOLD}) — no comparable`);
+    lines.push("");
+    lines.push("Se publican por transparencia, en orden alfabético y sin promedio. No admiten comparación ni ranking.");
+    lines.push("");
+    lines.push(`| ${label} | N | Dinero | Desarrollo | Diversión |`);
+    lines.push(`| --- | ---: | ---: | ---: | ---: |`);
+    for (const [k, v] of rest) {
+      const name = nameMap?.[k] ?? k;
+      lines.push(`| ${name} | ${v.count} | ${v.dinero ?? "-"} | ${v.desarrollo ?? "-"} | ${v.diversion ?? "-"} |`);
+    }
+    lines.push("");
+  }
   return lines.join("\n");
 }
 
@@ -99,7 +128,7 @@ Deno.serve(async (req) => {
     lines.push(renderTable("Por rango de edad", "Edad", pivot((age.data ?? []) as Row[], "age_range" as keyof Row)));
 
     lines.push("---");
-    lines.push("Notas: se incluyen sólo grupos con al menos 5 mediciones. Fuente y detalle visual: https://3d.ceoencamiseta.com/por-pais , /por-sector , /por-edad");
+    lines.push(`Notas: sólo se ordenan y comparan grupos con al menos ${PUBLISH_THRESHOLD} mediciones; los grupos menores se publican aparte, sin promedio. Archivos canónicos: https://3d.ceoencamiseta.com/llm/stats.txt . Detalle visual: https://3d.ceoencamiseta.com/por-pais , /por-sector , /por-edad`);
 
     return new Response(lines.join("\n"), { headers: textHeaders });
   } catch (err) {
