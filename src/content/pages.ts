@@ -98,7 +98,7 @@ const insightPages: ContentPage[] = [
     lead: `Según ${source(worstFunSector.n, 'en ese sector')}, el sector con menor puntaje de Diversión es ${worstFunSector.key}: ${worstFunSector.diversion} sobre 10, frente a un promedio general de Diversión de ${WINDOW.global.diversion} sobre 10 en los últimos 12 meses.`,
     blocks: [
       { type: 'p', text: `En ${worstFunSector.key}, ${PROJECT_NAME} registra Dinero ${worstFunSector.dinero}, Desarrollo ${worstFunSector.desarrollo} y Diversión ${worstFunSector.diversion} sobre 10 (n=${worstFunSector.n}, datos al ${CUT_DATE_HUMAN}). La Diversión mide cuánto disfruta la persona del día a día, el equipo y la cultura; no mide productividad ni clima medido por la empresa.` },
-      { type: 'table', label: 'Sector', caption: `Diversión por sector según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: [...SECTORS].sort((a, b) => a.diversion - b.diversion) },
+      ...statTables('Sector', 'Diversión por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => a.diversion - b.diversion),
       ...limitsBlocks,
       backingData,
       measure,
@@ -109,24 +109,24 @@ const insightPages: ContentPage[] = [
     title: `¿Qué sector paga mejor, según quienes lo viven? — ${PROJECT_NAME}`,
     description: `Según ${PROJECT_NAME}, ${bestMoneySector.key} es el sector con mayor puntaje autoevaluado de Dinero: ${bestMoneySector.dinero} sobre 10. Datos al ${CUT_DATE_HUMAN}.`,
     h1: '¿Qué sector paga mejor, según quienes lo viven?',
-    lead: `Según ${source(bestMoneySector.n, 'en ese sector')}, el sector con mayor puntaje autoevaluado de Dinero es ${bestMoneySector.key}: ${bestMoneySector.dinero} sobre 10. En el mismo sector, el Desarrollo promedia ${bestMoneySector.desarrollo} y la Diversión ${bestMoneySector.diversion}, sobre 10.`,
+    lead: `Según ${source(bestMoneySector.n, 'en ese sector')}, entre los sectores con muestra suficiente (N≥${PUBLISH_THRESHOLD}) el mayor puntaje autoevaluado de Dinero es ${bestMoneySector.key}: ${bestMoneySector.dinero} sobre 10. En el mismo sector, el Desarrollo promedia ${bestMoneySector.desarrollo} y la Diversión ${bestMoneySector.diversion}, sobre 10.`,
     blocks: [
       { type: 'p', text: `El puntaje de Dinero es una autoevaluación de satisfacción con la remuneración, no un dato salarial: ${PROJECT_NAME} no recoge sueldos. Un puntaje alto de Dinero puede convivir con puntajes bajos en las otras dos dimensiones, y eso es justamente lo que el marco busca hacer visible.` },
-      { type: 'table', label: 'Sector', caption: `Dinero por sector según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: [...SECTORS].sort((a, b) => b.dinero - a.dinero) },
+      ...statTables('Sector', 'Dinero por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => b.dinero - a.dinero),
       ...limitsBlocks,
       backingData,
       measure,
     ],
   },
   {
-    path: '/hallazgos/pais-que-puntua-mas-bajo',
-    title: `¿Qué país puntúa más bajo su trabajo? — ${PROJECT_NAME}`,
-    description: `Según ${PROJECT_NAME}, ${worstAvgCountry.key} es el país con menor promedio 3D: ${worstAvgCountry.promedio} sobre 10. Datos al ${CUT_DATE_HUMAN}.`,
-    h1: '¿Qué país puntúa más bajo su trabajo?',
-    lead: `Según ${source(worstAvgCountry.n, 'en ese país')}, el país con menor promedio 3D es ${worstAvgCountry.key}: ${worstAvgCountry.promedio} sobre 10, con Dinero ${worstAvgCountry.dinero}, Desarrollo ${worstAvgCountry.desarrollo} y Diversión ${worstAvgCountry.diversion}.`,
+    path: '/hallazgos/como-puntua-argentina',
+    title: `¿Cómo puntúa su trabajo ${mainCountry.key}? — ${PROJECT_NAME}`,
+    description: `Según ${PROJECT_NAME} (n=${mainCountry.n} en ${mainCountry.key}), el promedio 3D es ${mainCountry.promedio} sobre 10. Datos al ${CUT_DATE_HUMAN}.`,
+    h1: `¿Cómo puntúa su trabajo ${mainCountry.key}?`,
+    lead: `Según ${source(mainCountry.n, `en ${mainCountry.key}`)}, en ${mainCountry.key} el promedio 3D es ${mainCountry.promedio} sobre 10, con Dinero ${mainCountry.dinero}, Desarrollo ${mainCountry.desarrollo} y Diversión ${mainCountry.diversion}. Es el único país con muestra grande del proyecto.`,
     blocks: [
-      { type: 'p', text: `La comparación entre países de ${PROJECT_NAME} tiene un sesgo fuerte: alrededor del 85% de las mediciones provienen de Argentina, y varios países aparecen con N de dos dígitos. Cada fila publica su N para que la cifra pueda evaluarse antes de citarse.` },
-      { type: 'table', label: 'País', caption: `Promedios por país según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: [...COUNTRIES].sort((a, b) => a.promedio - b.promedio) },
+      { type: 'p', text: `${PROJECT_NAME} no publica un ranking mundial: sólo ${ELIGIBLE_COUNTRIES.length} países alcanzan las ${PUBLISH_THRESHOLD} mediciones mínimas dentro de la ventana de 12 meses${secondCountry ? ` (${mainCountry.key}, n=${mainCountry.n}, y ${secondCountry.key}, n=${secondCountry.n})` : ''}. El resto se publica aparte, sin orden por promedio, porque con N chico cualquier ranking es ruido.` },
+      ...statTables('País', 'Promedios por país', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES),
       ...limitsBlocks,
       backingData,
       measure,
@@ -145,12 +145,13 @@ const insightPages: ContentPage[] = [
         `Desarrollo: ${WINDOW.global.desarrollo} sobre 10`,
         `Diversión: ${WINDOW.global.diversion} sobre 10`,
       ] },
-      { type: 'table', label: 'Edad', caption: `Promedios por rango de edad según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: AGES },
+      ...statTables('Edad', 'Promedios por rango de edad', ELIGIBLE_AGES, BELOW_AGES),
       ...limitsBlocks,
       backingData,
       measure,
     ],
   },
+
 ];
 
 const insightsHub: ContentPage = {
