@@ -1,6 +1,6 @@
 # Estadísticas agregadas — Las 3D del Trabajo
 > Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
-- **Última actualización:** 2026-08-09T14:06:41.313Z
+- **Última actualización:** 2026-08-09T14:07:28.269Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Promedios globales (Dinero, Desarrollo, Diversión, escala 1–10) y desglose por país, sector laboral y rango etario reportado.
 - **Limitaciones:**
