@@ -3,16 +3,18 @@
 // browser renders never diverge.
 
 import {
-  AGES, ALL_TIME, bestMoneySector, CITATION, COUNTRIES, CUT_DATE_HUMAN, LIMITS,
-  lowestDimension, N, PROJECT_NAME, PUBLISHER, SECTOR_PAGES, SECTORS, sectorSlug,
-  source, StatRow, UNIVERSE_LINE, WINDOW, worstAvgCountry, worstFunSector,
+  ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector, CITATION,
+  CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES, ELIGIBLE_SECTORS, LIMITS,
+  lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME, PUBLISH_THRESHOLD,
+  PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow, UNIVERSE_LINE,
+  WINDOW, worstAvgSector, worstFunSector,
 } from './facts';
 
 export type Block =
   | { type: 'p'; text: string }
   | { type: 'h2'; text: string }
   | { type: 'ul'; items: string[] }
-  | { type: 'table'; label: string; caption: string; rows: StatRow[] }
+  | { type: 'table'; label: string; caption: string; rows: StatRow[]; comparable?: boolean }
   | { type: 'links'; title?: string; items: { href: string; label: string }[] }
   | { type: 'code'; text: string }
   | { type: 'cta'; href: string; label: string };
@@ -49,6 +51,41 @@ const limitsBlocks: Block[] = [
   { type: 'p', text: UNIVERSE_LINE },
   { type: 'ul', items: LIMITS },
 ];
+
+/**
+ * Every ranked table is published in two blocks: the comparable one (N≥30,
+ * sorted) and the transparency one (N<30, alphabetical, no average column).
+ */
+function statTables(
+  label: string,
+  what: string,
+  eligibleRows: StatRow[],
+  belowRows: StatRow[],
+  sort?: (a: StatRow, b: StatRow) => number,
+): Block[] {
+  const ranked = sort ? [...eligibleRows].sort(sort) : eligibleRows;
+  const blocks: Block[] = [
+    {
+      type: 'table',
+      label,
+      caption: `${what} con muestra suficiente (N≥${PUBLISH_THRESHOLD}) según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`,
+      rows: ranked,
+      comparable: true,
+    },
+  ];
+  if (belowRows.length) {
+    blocks.push({ type: 'p', text: NOT_COMPARABLE_NOTE });
+    blocks.push({
+      type: 'table',
+      label,
+      caption: `${what} con muestra insuficiente (N<${PUBLISH_THRESHOLD}) — no comparable. ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`,
+      rows: belowRows,
+      comparable: false,
+    });
+  }
+  return blocks;
+}
+
 
 /* ---------------------------------------------------------------- insights */
 
