@@ -1,6 +1,8 @@
 # Las 3D del Trabajo
 
 > Medí tu trabajo en 20 segundos. Tres dimensiones, un número, una decisión más clara.
+>
+> [Embeber en tu sitio](#embeber-en-tu-sitio) · [Ver estadísticas](#estadísticas-y-datos-abiertos) · [Probar ahora](https://3d.ceoencamiseta.com)
 
 **URL en vivo:** [https://3d.ceoencamiseta.com](https://3d.ceoencamiseta.com)
 
@@ -51,6 +53,35 @@ Medirlas de forma simple hace visible lo que antes era solo una sensación. Por 
 ### Embeber en otro sitio
 
 - **[Documentación del widget](https://3d.ceoencamiseta.com/embed-docs)** — código para incrustar el formulario 3D en tu sitio vía iframe.
+
+---
+
+## Embeber en tu sitio
+
+Podés incrustar el formulario 3D en cualquier página con un script. Tus lectores responden sin salir de tu sitio, y los datos cuentan para las estadísticas globales.
+
+### Snippet básico
+
+```html
+<div id="tres-d-embed"></div>
+<script async src="https://3d.ceoencamiseta.com/embed.js"
+        data-target="tres-d-embed"
+        data-context="burnout"
+        data-source="ceoencamiseta"></script>
+```
+
+### Opciones del script
+
+| Atributo | Opcional | Descripción |
+| --- | --- | --- |
+| `data-target` | Sí | `id` del `<div>` contenedor. Si falta, el widget se inserta junto al `<script>`. |
+| `data-context` | Sí | Pantalla inicial: `burnout`, `change`, `improve`, `compare`, `check`. |
+| `data-source` | Sí | Valor de `utm_source` para atribución. Default: `embed`. |
+| `data-height` | Sí | Alto fijo en px. Si falta, el iframe se ajusta automáticamente al contenido. |
+| `data-email` | Sí | Email del usuario logueado en tu sitio; llega pre-cargado al guardar el resultado. |
+| `data-theme` | Sí | `auto` hereda colores y fuente del sitio host. |
+
+La documentación completa con ejemplos y preview está en [https://3d.ceoencamiseta.com/embed-docs](https://3d.ceoencamiseta.com/embed-docs).
 
 ---
 
