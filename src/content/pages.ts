@@ -302,7 +302,7 @@ const methodPage: ContentPage = {
     { type: 'h2', text: 'Límites conocidos' },
     { type: 'ul', items: LIMITS },
     { type: 'h2', text: 'Qué no publicamos' },
-    { type: 'p', text: 'No publicamos correlaciones entre dimensiones, interpretaciones psicológicas ni diagnósticos. Tampoco publicamos grupos con menos de 5 mediciones.' },
+    { type: 'p', text: `No publicamos correlaciones entre dimensiones, interpretaciones psicológicas ni diagnósticos. Tampoco ordenamos ni comparamos grupos con menos de ${PUBLISH_THRESHOLD} mediciones: se publican aparte, en orden alfabético y sin promedio, sólo por transparencia. Sectores comparables hoy: ${ELIGIBLE_SECTORS.length}. Países comparables: ${ELIGIBLE_COUNTRIES.length}.` },
     backingData,
   ],
 };
