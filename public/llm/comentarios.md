@@ -1,6 +1,6 @@
 # Muro de los lamentos — comentarios anónimos
 > Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
-- **Última actualización:** 2026-07-23T13:17:07.563Z
+- **Última actualización:** 2026-08-09T13:11:07.519Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Últimos 500 comentarios públicos enviados por personas sobre su trabajo, junto a sus puntajes de Dinero, Desarrollo y Diversión (1–10), país, sector y rango etario opcionales.
 - **Limitaciones:**
@@ -9,7 +9,97 @@
   - Snapshot estático: se actualiza en cada deploy de la plataforma.
   - Total listados: 500.
 - **Versión en vivo (siempre fresca):** https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-comments
----## Argentina · Gobierno / Sector público · 45-54 · 2026-07-18
+---## Argentina · Finanzas / Banca / Seguros · 45-54 · 2026-08-09
+Dinero: 9/10 · Desarrollo: 9/10 · Diversión: 7/10
+
+exceso de trabajo
+
+---
+## Argentina · Consultoría · 35-44 · 2026-08-08
+Dinero: 8/10 · Desarrollo: 9/10 · Diversión: 9/10
+
+optimización del tiempo
+
+---
+## Argentina · Industria / Manufactura · 45-54 · 2026-08-08
+Dinero: 10/10 · Desarrollo: 9/10 · Diversión: 6/10
+
+Problemas en la sociedad
+
+---
+## Colombia · Retail / Comercio · 65+ · 2026-08-08
+Dinero: 6/10 · Desarrollo: 7/10 · Diversión: 6/10
+
+Mi impotencia
+
+---
+## Argentina · Otro · 45-54 · 2026-08-08
+Dinero: 2/10 · Desarrollo: 10/10 · Diversión: 4/10
+
+Mi situación económica
+
+---
+## Argentina · 35-44 · 2026-08-06
+Dinero: 9/10 · Desarrollo: 8/10 · Diversión: 5/10
+
+hay momentos en mi trabajo que son ciclicos, y se me arman cuellos de botellas que no lo termino de solucionar, pero hasta ahora no he hecho algo significativo para cambiarlo, siempre pongo el foco en otro lado y lo surfeo, pero el desgaste es enorme, si bien voy mejorando el dinero de a poco, podria estar mejor, quizas, pero estoy creciendo bien, a mi ritmo, pero cuando me quemo se apaga una chispa y no me gusta. Necesito mejorar esto de una vez.
+
+---
+## México · Consultoría · 35-44 · 2026-08-06
+Dinero: 9/10 · Desarrollo: 8/10 · Diversión: 7/10
+
+Plata, aunque estoy saliendo con los gastos, la realidad es que varias cosas me están comiendo a paso de lobo y no estoy generando ahorro
+
+---
+## Perú · Finanzas / Banca / Seguros · 35-44 · 2026-08-03
+Dinero: 6/10 · Desarrollo: 9/10 · Diversión: 6/10
+
+ingresos, mas dinero
+
+---
+## Colombia · Industria / Manufactura · 35-44 · 2026-08-01
+Dinero: 2/10 · Desarrollo: 8/10 · Diversión: 2/10
+
+Un nuevo rumbo profesional haciendo lo que realmente me gusta y disfruto. Y a su vez disfrutar más de mi vida junto con mi familia.
+
+---
+## Uruguay · Educación · 45-54 · 2026-08-01
+Dinero: 9/10 · Desarrollo: 8/10 · Diversión: 6/10
+
+Diversión
+
+---
+## Argentina · Otro · 2026-08-01
+Dinero: 5/10 · Desarrollo: 5/10 · Diversión: 8/10
+
+Quiero ganar más plata como para poder llegar a fin de mes, dejar de recortar gastos y tener descanso
+
+---
+## Argentina · Tecnología / Software · 45-54 · 2026-07-31
+Dinero: 8/10 · Desarrollo: 5/10 · Diversión: 3/10
+
+Falta de motivación, falta de desafío
+
+---
+## Argentina · Consultoría · 35-44 · 2026-07-28
+Dinero: 7/10 · Desarrollo: 8/10 · Diversión: 6/10
+
+exceso de trabajo, cantidad de horas de trabajo
+
+---
+## Argentina · Finanzas / Banca / Seguros · 35-44 · 2026-07-27
+Dinero: 6/10 · Desarrollo: 4/10 · Diversión: 4/10
+
+poco sueldo y sin posibilidades de crecer
+
+---
+## Argentina · Consultoría · 2026-07-23
+Dinero: 6/10 · Desarrollo: 8/10 · Diversión: 8/10
+
+aumentar facturación
+
+---
+## Argentina · Gobierno / Sector público · 45-54 · 2026-07-18
 Dinero: 5/10 · Desarrollo: 5/10 · Diversión: 8/10
 
 Hice desarreglos y estoy recuperando el bolsillo lentamente. Al menos trabajo
@@ -2917,95 +3007,5 @@ La diversidad me enriquece
 Dinero: 5/10 · Desarrollo: 5/10 · Diversión: 8/10
 
 .
-
----
-## Argentina · Medios / Comunicación · 35-44 · 2025-12-20
-Dinero: 4/10 · Desarrollo: 7/10 · Diversión: 8/10
-
-.
-
----
-## Argentina · 2025-12-19
-Dinero: 5/10 · Desarrollo: 6/10 · Diversión: 6/10
-
-Si mira para atrás, refresco todo lo que crecí desde que me propuse hacerlo, si miro hacia adelante me gustaría que todo fuera mas veloz. En el hoy siento que tengo mucho por trabajar y mucho por hacer para los 3D estén muy bien.
-
----
-## Uruguay · 2025-12-18
-Dinero: 9/10 · Desarrollo: 6/10 · Diversión: 3/10
-
-Estoy más preocupado de hacer las cosas bien, o de no hacerlas mal que de disfrutar
-
----
-## Argentina · 2025-12-18
-Dinero: 9/10 · Desarrollo: 7/10 · Diversión: 8/10
-
-Un año después de cambiar de empleo. Gane calidad de vida y paz mental aunque creo que resigne algo de perspectiva de crecimiento en corto plazo
-
----
-## Argentina · 2025-12-18
-Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 5/10
-
-Es un trabajo q me hubiera gustado tener hace 10 años. Por un lado me siento junior, por otro no sé quiénes tan largo plazo tendré en esta empresa
-
----
-## Argentina · 2025-12-18
-Dinero: 9/10 · Desarrollo: 7/10 · Diversión: 7/10
-
-Gracias Leo !!
-
----
-## Chile · 2025-12-17
-Dinero: 5/10 · Desarrollo: 9/10 · Diversión: 7/10
-
-He aprendido, he reconocido mis habilidades
-
----
-## Argentina · 2025-12-17
-Dinero: 2/10 · Desarrollo: 7/10 · Diversión: 8/10
-
-Renuncié hace mas de 6 meses a mi trabajo. No estoy bien de dinero pero sobrevivo. Me siento mejor conmigo mismo y estoy desarrollando (o puliendo) cosas que siempre me costaron sobre mi.
-
----
-## Argentina · 2025-12-17
-Dinero: 4/10 · Desarrollo: 7/10 · Diversión: 4/10
-
-Mejor que 2024. Más foco, más beca,  más proyectos personales
-
----
-## Argentina · 2025-12-16
-Dinero: 8/10 · Desarrollo: 7/10 · Diversión: 6/10
-
-no estoy en la carrera del crecimiento (en nivel, sueldo responsabilidades) sino que mis prioridades son otras (familia, desafío intelectual, gente)
-
----
-## Argentina · 2025-12-16
-Dinero: 7/10 · Desarrollo: 8/10 · Diversión: 5/10
-
-En diciembre cancelo gran parte del auto nuevo. Cambios en la dinámica de trabajo, jefa nueva.
-
----
-## Argentina · 2025-12-16
-Dinero: 9/10 · Desarrollo: 8/10 · Diversión: 8/10
-
-Trabajar bien cobrar bien y mantener la calma. Me tengo que propones aparte de ahorrar y tener dos trabajos uno fijo otro dd extras. Saber invertir en el emprendimiento ya que ahi me divierto. En lo demás cobro y además estudiar. El año pasado tenia menos plata este año lo duplique además compre materiales.  Lo que me falta es emprender. Y duplicar el ingreso perosin perderla felicidad este año logre trabajary comprar me falta estudiar y divertirme.gracias
-
----
-## Argentina · 2025-12-16
-Dinero: 8/10 · Desarrollo: 8/10 · Diversión: 8/10
-
-Estoy muy bien. Necesito capitalizar y despegar
-
----
-## Argentina · 2025-12-16
-Dinero: 8/10 · Desarrollo: 8/10 · Diversión: 5/10
-
-Estoy trabajando part time, represento un rebalanceo muy beneficioso
-
----
-## Argentina · 2025-12-16
-Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 7/10
-
-Mis ingresos no mejoraron pero trabajo menos hora y con más libertad, entoncesc entiendo que la variable dinero mejora. Ahora el desafío es compensaar esos ingresos...
 
 ---
