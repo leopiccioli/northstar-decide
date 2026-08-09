@@ -101,6 +101,9 @@ function citation(n: number): string {
   return `Las 3D del Trabajo (CEO en Camiseta), n=${n} mediciones de los últimos 12 meses, datos al ${CUT_HUMAN}. ${SITE}`;
 }
 
+/** Groups below this N are published for transparency but never ranked. */
+const PUBLISH_THRESHOLD = 30;
+
 const LIMITS_MD = [
   `## Método y límites`,
   ``,
@@ -108,10 +111,18 @@ const LIMITS_MD = [
   `- **Muestra:** voluntaria y autoseleccionada, mayoritariamente lectores de CEO en Camiseta. No es representativa de la población laboral.`,
   `- **Sesgo geográfico:** aproximadamente el 85% de las mediciones provienen de Argentina.`,
   `- **Cobertura demográfica:** sector y edad son campos opcionales; los completa una minoría de quienes miden.`,
-  `- **Inclusión:** sólo se publican grupos con al menos 5 mediciones (N≥5). El N de cada grupo se publica junto al dato.`,
+  `- **Inclusión:** sólo se ordenan y comparan grupos con al menos ${PUBLISH_THRESHOLD} mediciones (N≥${PUBLISH_THRESHOLD}). Los grupos con N menor se publican aparte, en orden alfabético y sin columna de promedio, y no admiten comparación ni ranking.`,
+  `- **N a la vista:** el N de cada grupo se publica junto al dato, en cada fila.`,
   `- **Sin interpretación:** el proyecto no publica consejos ni correlaciones entre dimensiones. Sólo promedios descriptivos.`,
   ``,
 ].join("\n");
+
+function eligible(rows: Row[]): Row[] {
+  return rows.filter((r) => r.n >= PUBLISH_THRESHOLD).sort((a, b) => b.promedio - a.promedio);
+}
+function below(rows: Row[]): Row[] {
+  return rows.filter((r) => r.n < PUBLISH_THRESHOLD).sort((a, b) => a.key.localeCompare(b.key, "es"));
+}
 
 function mdTable(label: string, rows: Row[]): string {
   const lines = [`| ${label} | N | Dinero | Desarrollo | Diversión | Promedio |`, `| --- | ---: | ---: | ---: | ---: | ---: |`];
@@ -119,6 +130,30 @@ function mdTable(label: string, rows: Row[]): string {
   lines.push("");
   return lines.join("\n");
 }
+
+/** Table without the average column, for groups that must not be ranked. */
+function mdTableNoAvg(label: string, rows: Row[]): string {
+  const lines = [`| ${label} | N | Dinero | Desarrollo | Diversión |`, `| --- | ---: | ---: | ---: | ---: |`];
+  for (const r of rows) lines.push(`| ${r.key} | ${r.n} | ${r.dinero} | ${r.desarrollo} | ${r.diversion} |`);
+  lines.push("");
+  return lines.join("\n");
+}
+
+/** Two-block section: comparable (N≥30, sorted) + transparency (N<30, A-Z). */
+function section(title: string, label: string, rows: Row[]): string {
+  const top = eligible(rows);
+  const rest = below(rows);
+  let out = `## ${title} (últimos 12 meses, datos al ${CUT_HUMAN})\n\n`;
+  out += `### Muestra suficiente (N≥${PUBLISH_THRESHOLD})\n\n`;
+  out += top.length ? mdTable(label, top) : `Ningún grupo alcanza las ${PUBLISH_THRESHOLD} mediciones en esta ventana.\n`;
+  if (rest.length) {
+    out += `\n### Muestra insuficiente (N<${PUBLISH_THRESHOLD}) — no comparable\n\n`;
+    out += `Estos grupos se publican por transparencia, en orden alfabético y sin promedio. No admiten comparación ni ranking.\n\n`;
+    out += mdTableNoAvg(label, rest);
+  }
+  return out + "\n";
+}
+
 
 function universeBlock(w: WindowStats, all: { total: number }): string {
   return [
