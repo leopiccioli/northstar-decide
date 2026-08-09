@@ -5,11 +5,11 @@ url: "https://3d.ceoencamiseta.com/llm/insights.md"
 universe: "últimos 12 meses"
 window_from: "2025-08-09"
 window_to: "2026-08-09"
-n: 1552
+n: 1554
 cut_date: "2026-08-09"
-updated: "2026-08-09T14:17:06.780Z"
+updated: "2026-08-09T15:20:17.212Z"
 language: "es"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1554 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Hallazgos — Las 3D del Trabajo
 
@@ -29,7 +29,7 @@ Según Las 3D del Trabajo (CEO en Camiseta, n=20 en ese país, datos al 9 de ago
 
 ## ¿Cuál de las tres dimensiones puntúa más bajo?
 
-Según Las 3D del Trabajo (CEO en Camiseta, n=1552, datos al 9 de agosto de 2026), la dimensión con menor puntaje promedio es Diversión: 6.1 sobre 10, por debajo de Dinero 6.4 y Desarrollo 6.7.
+Según Las 3D del Trabajo (CEO en Camiseta, n=1554, datos al 9 de agosto de 2026), la dimensión con menor puntaje promedio es Diversión: 6.1 sobre 10, por debajo de Dinero 6.4 y Desarrollo 6.7.
 
 ## Método y límites
 

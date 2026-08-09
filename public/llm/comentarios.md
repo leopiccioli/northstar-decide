@@ -5,9 +5,9 @@ url: "https://3d.ceoencamiseta.com/llm/comentarios.md"
 universe: "últimos comentarios públicos"
 n: 500
 cut_date: "2026-08-09"
-updated: "2026-08-09T14:17:06.780Z"
+updated: "2026-08-09T15:20:17.212Z"
 language: "es"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1554 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Muro de los lamentos — comentarios anónimos
 
@@ -21,6 +21,18 @@ Comentarios públicos enviados a Las 3D del Trabajo (CEO en Camiseta) junto a su
 
 ---
 
+## Argentina · Consultoría · 35-44 · 2026-08-09
+Dinero: 8/10 · Desarrollo: 7/10 · Diversión: 4/10
+
+Hay mucho trabajo. La facturación es del orden de lo que quiero, pero vendo mis servicios a varias empresas y eso me genera un stress bastante sostenido. A veces inflo los precios para que me digan que no o si me dicen que si, que valga la pena.
+
+---
+## Argentina · Finanzas / Banca / Seguros · 35-44 · 2026-08-09
+Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 5/10
+
+Desarrollo laboral
+
+---
 ## Argentina · Hospitalidad / Turismo · 35-44 · 2026-08-09
 Dinero: 7/10 · Desarrollo: 9/10 · Diversión: 5/10
 
@@ -3007,17 +3019,5 @@ Después de meses de desempleo, estoy por cumplir 3 meses laborando. No en lo qu
 Dinero: 3/10 · Desarrollo: 7/10 · Diversión: 7/10
 
 Me independicé, pero aún no logré un régimen suficiente.
-
----
-## Argentina · 2025-12-26
-Dinero: 2/10 · Desarrollo: 3/10 · Diversión: 2/10
-
-en este momento mas alla de lo economico macro , me siento estancado en un trabajo que no me da crecimiento personal o laboral
-
----
-## Argentina · 2025-12-24
-Dinero: 8/10 · Desarrollo: 9/10 · Diversión: 9/10
-
-navidad 2025 por ser papá, el equipo funciona muy bien y todo en marcha viendo como sera el 2026
 
 ---
