@@ -250,7 +250,8 @@ function buildInsightsMd(w: WindowStats): string {
   return frontmatter({
     title: `Hallazgos — ${PROJECT}`,
     project: PROJECT,
-    url: `${SITE}/llm/insights.md`,
+    url: `${SITE}/llm/insights.txt`,
+    mirror_md: `${SITE}/llm/insights.md`,
     universe: "últimos 12 meses",
     window_from: w.from,
     window_to: w.to,
@@ -270,7 +271,8 @@ function buildCommentsMd(comments: Comment[], w: WindowStats): string {
   const head = frontmatter({
     title: `Muro de los lamentos — comentarios anónimos (${PROJECT})`,
     project: PROJECT,
-    url: `${SITE}/llm/comentarios.md`,
+    url: `${SITE}/llm/comentarios.txt`,
+    mirror_md: `${SITE}/llm/comentarios.md`,
     universe: "últimos comentarios públicos",
     n: comments.length,
     cut_date: CUT_ISO,
@@ -309,7 +311,8 @@ function buildIndexMd(w: WindowStats, all: { total: number }): string {
     title: `${PROJECT} — índice para LLMs`,
     project: PROJECT,
     publisher: "CEO en Camiseta",
-    url: `${SITE}/llm/index.md`,
+    url: `${SITE}/llm/index.txt`,
+    mirror_md: `${SITE}/llm/index.md`,
     universe: "últimos 12 meses",
     n: w.total,
     cut_date: CUT_ISO,
@@ -331,10 +334,12 @@ El marco proviene del capítulo 14 del libro *Sé tu propio CEO*, de CEO en Cami
 
 ## Archivos de datos (canónicos)
 
-- Estadísticas agregadas: ${SITE}/llm/stats.md (texto plano: ${SITE}/llm/stats.txt)
-- Hallazgos con cifras citables: ${SITE}/llm/insights.md (texto plano: ${SITE}/llm/insights.txt)
-- Comentarios anónimos: ${SITE}/llm/comentarios.md (texto plano: ${SITE}/llm/comentarios.txt)
-- Este índice: ${SITE}/llm/index.md (texto plano: ${SITE}/llm/index.txt)
+- Estadísticas agregadas: ${SITE}/llm/stats.txt (espejo .md: ${SITE}/llm/stats.md)
+- Hallazgos con cifras citables: ${SITE}/llm/insights.txt (espejo .md: ${SITE}/llm/insights.md)
+- Comentarios anónimos: ${SITE}/llm/comentarios.txt (espejo .md: ${SITE}/llm/comentarios.md)
+- Este índice: ${SITE}/llm/index.txt (espejo .md: ${SITE}/llm/index.md)
+
+La lectura primaria es la variante .txt: el hosting la sirve como texto plano.
 
 ## Páginas públicas
 
