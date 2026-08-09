@@ -1,11 +1,12 @@
-{
-  "generatedAt": "2026-08-09T14:10:51.198Z",
+// AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.
+export default {
+  "generatedAt": "2026-08-09T14:13:20.562Z",
   "cutDateIso": "2026-08-09",
   "cutDateHuman": "9 de agosto de 2026",
   "window": {
     "to": "2026-08-09",
     "from": "2025-08-09",
-    "total": 1551,
+    "total": 1552,
     "by_age": [
       {
         "n": 57,
@@ -16,7 +17,7 @@
         "desarrollo": 7.4
       },
       {
-        "n": 185,
+        "n": 186,
         "key": "35-44",
         "dinero": 6.6,
         "promedio": 6.3,
@@ -48,9 +49,9 @@
     },
     "months": 12,
     "coverage": {
-      "with_age": 426,
-      "with_sector": 417,
-      "with_country": 1550
+      "with_age": 427,
+      "with_sector": 418,
+      "with_country": 1551
     },
     "by_sector": [
       {
@@ -78,6 +79,14 @@
         "desarrollo": 6.9
       },
       {
+        "n": 32,
+        "key": "Tecnología / Software",
+        "dinero": 6.6,
+        "promedio": 6.5,
+        "diversion": 6.3,
+        "desarrollo": 6.8
+      },
+      {
         "n": 11,
         "key": "Medios / Comunicación",
         "dinero": 6.7,
@@ -86,11 +95,11 @@
         "desarrollo": 6.4
       },
       {
-        "n": 32,
-        "key": "Tecnología / Software",
-        "dinero": 6.6,
-        "promedio": 6.5,
-        "diversion": 6.3,
+        "n": 28,
+        "key": "Educación",
+        "dinero": 6.3,
+        "promedio": 6.4,
+        "diversion": 6.1,
         "desarrollo": 6.8
       },
       {
@@ -102,12 +111,12 @@
         "desarrollo": 6.7
       },
       {
-        "n": 28,
-        "key": "Educación",
-        "dinero": 6.3,
-        "promedio": 6.4,
-        "diversion": 6.1,
-        "desarrollo": 6.8
+        "n": 6,
+        "key": "Hospitalidad / Turismo",
+        "dinero": 5.8,
+        "promedio": 6.3,
+        "diversion": 5.7,
+        "desarrollo": 7.3
       },
       {
         "n": 69,
@@ -132,14 +141,6 @@
         "promedio": 6.1,
         "diversion": 5.2,
         "desarrollo": 5.7
-      },
-      {
-        "n": 5,
-        "key": "Hospitalidad / Turismo",
-        "dinero": 5.6,
-        "promedio": 6.1,
-        "diversion": 5.8,
-        "desarrollo": 7
       },
       {
         "n": 37,
@@ -256,7 +257,7 @@
         "desarrollo": 6.5
       },
       {
-        "n": 1294,
+        "n": 1295,
         "key": "Argentina",
         "dinero": 6.4,
         "promedio": 6.3,
@@ -282,7 +283,7 @@
     ]
   },
   "allTime": {
-    "total": 12906,
+    "total": 12907,
     "global": {
       "dinero": 6,
       "promedio": 6,
@@ -290,4 +291,4 @@
       "desarrollo": 6.3
     }
   }
-}
+} as const;

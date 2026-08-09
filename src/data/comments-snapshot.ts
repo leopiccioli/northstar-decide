@@ -1,4 +1,15 @@
-[
+// AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.
+export default [
+  {
+    "date": "2026-08-09",
+    "country": "Argentina",
+    "sector": "Hospitalidad / Turismo",
+    "age": "35-44",
+    "dinero": 7,
+    "desarrollo": 9,
+    "diversion": 5,
+    "text": "Exceso de trabajo, trabajo reactivo no proactivo"
+  },
   {
     "date": "2026-08-09",
     "country": "Argentina",
@@ -2988,15 +2999,5 @@
     "desarrollo": 5,
     "diversion": 5,
     "text": "Sentir que no aprovecho mi tiempo libre porque siempre tengo el trabajo en mi cabeza"
-  },
-  {
-    "date": "2026-02-01",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 7,
-    "desarrollo": 9,
-    "diversion": 9,
-    "text": "Escalar para ganar productividad/alcance"
   }
-]
+] as const;

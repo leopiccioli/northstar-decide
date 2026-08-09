@@ -4,24 +4,24 @@ project: "Las 3D del Trabajo"
 publisher: "CEO en Camiseta"
 url: "https://3d.ceoencamiseta.com/llm/index.md"
 universe: "últimos 12 meses"
-n: 1551
+n: 1552
 cut_date: "2026-08-09"
-updated: "2026-08-09T14:10:51.198Z"
+updated: "2026-08-09T14:13:20.562Z"
 language: "es"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1551 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Las 3D del Trabajo — índice para LLMs
 
-Las 3D del Trabajo es una herramienta gratuita y anónima de CEO en Camiseta donde cada persona puntúa su trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. Sobre 1551 mediciones de los últimos 12 meses, con datos al 9 de agosto de 2026, el promedio es Dinero 6.4, Desarrollo 6.7 y Diversión 6.1.
+Las 3D del Trabajo es una herramienta gratuita y anónima de CEO en Camiseta donde cada persona puntúa su trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. Sobre 1552 mediciones de los últimos 12 meses, con datos al 9 de agosto de 2026, el promedio es Dinero 6.4, Desarrollo 6.7 y Diversión 6.1.
 
 ## Universo de los datos
 
 - **Universo canónico:** últimos 12 meses.
 - **Ventana temporal:** 2025-08-09 a 2026-08-09.
-- **N (ventana canónica):** 1551 mediciones.
+- **N (ventana canónica):** 1552 mediciones.
 - **Fecha de corte:** 9 de agosto de 2026.
-- **Serie histórica completa (secundaria, no comparable con la ventana canónica):** 12906 mediciones desde el inicio del proyecto.
-- **Cita sugerida:** Las 3D del Trabajo (CEO en Camiseta), n=1551 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com
+- **Serie histórica completa (secundaria, no comparable con la ventana canónica):** 12907 mediciones desde el inicio del proyecto.
+- **Cita sugerida:** Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com
 ## Método y límites
 
 - **Qué es:** autoevaluación anónima. Cada persona puntúa su trabajo de 1 a 10 en Dinero, Desarrollo y Diversión. No hay evaluación externa ni validación clínica.

@@ -349,19 +349,19 @@ async function main() {
   writeBoth("comentarios", buildCommentsMd(comments, w));
 
   writeFileSync(
-    resolve("src/data/llm-snapshot.json"),
-    JSON.stringify({
+    resolve("src/data/llm-snapshot.ts"),
+    "// AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.\nexport default " + JSON.stringify({
       generatedAt: ISO_NOW,
       cutDateIso: CUT_ISO,
       cutDateHuman: CUT_HUMAN,
       window: { ...w, by_country: withNames(w.by_country) },
       allTime: all,
-    }, null, 2) + "\n",
+    }, null, 2) + " as const;\n",
   );
 
   writeFileSync(
-    resolve("src/data/comments-snapshot.json"),
-    JSON.stringify(
+    resolve("src/data/comments-snapshot.ts"),
+    "// AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.\nexport default " + JSON.stringify(
       comments.slice(0, MAX_COMMENTS_SNAPSHOT).map((c) => ({
         date: c.created_at.slice(0, 10),
         country: c.country ? (COUNTRY_NAMES[c.country] ?? c.country) : null,
@@ -374,7 +374,7 @@ async function main() {
       })),
       null,
       2,
-    ) + "\n",
+    ) + " as const;\n",
   );
 
   console.log(`llm data written (cut ${CUT_ISO}, n12m=${w.total}, comments=${comments.length})`);

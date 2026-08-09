@@ -5,9 +5,9 @@ url: "https://3d.ceoencamiseta.com/llm/comentarios.md"
 universe: "últimos comentarios públicos"
 n: 500
 cut_date: "2026-08-09"
-updated: "2026-08-09T14:10:51.198Z"
+updated: "2026-08-09T14:13:20.562Z"
 language: "es"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1551 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Muro de los lamentos — comentarios anónimos
 
@@ -21,6 +21,12 @@ Comentarios públicos enviados a Las 3D del Trabajo (CEO en Camiseta) junto a su
 
 ---
 
+## Argentina · Hospitalidad / Turismo · 35-44 · 2026-08-09
+Dinero: 7/10 · Desarrollo: 9/10 · Diversión: 5/10
+
+Exceso de trabajo, trabajo reactivo no proactivo
+
+---
 ## Argentina · Salud · 45-54 · 2026-08-09
 Dinero: 9/10 · Desarrollo: 7/10 · Diversión: 7/10
 
@@ -3013,11 +3019,5 @@ en este momento mas alla de lo economico macro , me siento estancado en un traba
 Dinero: 8/10 · Desarrollo: 9/10 · Diversión: 9/10
 
 navidad 2025 por ser papá, el equipo funciona muy bien y todo en marcha viendo como sera el 2026
-
----
-## Argentina · 2025-12-22
-Dinero: 7/10 · Desarrollo: 8/10 · Diversión: 8/10
-
-La diversidad me enriquece
 
 ---
