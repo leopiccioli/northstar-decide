@@ -2,7 +2,7 @@
 // Canonical universe: last 12 months (see plan B4). Every citable sentence
 // must carry the project name, the N and the cut date.
 
-import snapshot from '@/data/llm-snapshot.json';
+import snapshot from '../data/llm-snapshot';
 
 export interface StatRow {
   key: string;
