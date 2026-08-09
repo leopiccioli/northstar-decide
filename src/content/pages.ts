@@ -7,7 +7,7 @@ import {
   CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES, ELIGIBLE_SECTORS, LIMITS,
   lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME, PUBLISH_THRESHOLD,
   PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow, UNIVERSE_LINE,
-  WINDOW, worstAvgSector, worstFunSector,
+  WINDOW, worstFunSector,
 } from './facts';
 
 export type Block =

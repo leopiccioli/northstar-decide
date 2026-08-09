@@ -13,7 +13,7 @@ const FILES = [
     title: "Estadísticas agregadas",
     txt: "/llm/stats.txt",
     md: "/llm/stats.md",
-    desc: "Promedios de los últimos 12 meses y desglose por país, sector y rango etario (sólo grupos con N≥5), con el N de cada fila.",
+    desc: "Promedios de los últimos 12 meses y desglose por país, sector y rango etario (sólo se ordenan grupos con N≥30; los menores van aparte, sin promedio), con el N de cada fila.",
   },
   {
     title: "Hallazgos citables",
