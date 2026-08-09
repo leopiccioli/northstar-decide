@@ -86,20 +86,9 @@
 
   <body>
     <div id="root"></div>
-    <noscript>
-      <h1>Las 3D del Trabajo</h1>
-      <p>Herramienta gratuita y anónima para medir tu trabajo en 3 dimensiones — Dinero, Desarrollo y Diversión — en 20 segundos. Creada por CEO en Camiseta.</p>
-      <p>Esta página necesita JavaScript para funcionar. Mientras tanto, podés explorar:</p>
-      <ul>
-        <li><a href="/comentarios">Muro de los lamentos: comentarios anónimos sobre el trabajo</a></li>
-        <li><a href="/por-pais">Estadísticas por país</a></li>
-        <li><a href="/por-sector">Estadísticas por sector</a></li>
-        <li><a href="/por-edad">Estadísticas por rango etario</a></li>
-        <li><a href="https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-comments">Comentarios en texto plano (para LLMs)</a></li>
-        <li><a href="https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-stats">Estadísticas en texto plano (para LLMs)</a></li>
-        <li><a href="/llms.txt">llms.txt</a></li>
-      </ul>
-    </noscript>
+    <!-- No <noscript> fallback here: every route is prerendered at build time
+         (scripts/prerender.ts) with its own <h1> and real content. -->
+
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- Deferred Analytics - Load after page is interactive to improve FCP/LCP -->
