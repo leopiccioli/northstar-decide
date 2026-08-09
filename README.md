@@ -1,6 +1,8 @@
 # Las 3D del Trabajo
 
 > Medí tu trabajo en 20 segundos. Tres dimensiones, un número, una decisión más clara.
+>
+> [Embeber en tu sitio](#embeber-en-tu-sitio) · [Ver estadísticas](#estadísticas-y-datos-abiertos) · [Probar ahora](https://3d.ceoencamiseta.com)
 
 **URL en vivo:** [https://3d.ceoencamiseta.com](https://3d.ceoencamiseta.com)
 
