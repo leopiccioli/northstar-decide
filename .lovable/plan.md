@@ -1,56 +1,46 @@
-## Rebrand: "3D para Decidir" → "Las 3D del Trabajo"
+# README para GitHub de Las 3D del Trabajo
 
-Cambio de nombre puro, sin tocar dominio, DB, ni tracking IDs. El dominio `3d.ceoencamiseta.com` se mantiene (el "3D" del subdominio sigue siendo coherente).
+Reemplazar el README.md actual (plantilla de Lovable) por un README centrado en el producto, sin tocar ningún otro archivo del proyecto.
 
-### 1. Título en el hero (EntryScreen)
+## Contenido propuesto
 
-Actualmente el H1 hace un truco visual: "3**D** para Decidir" con la "D" que tickea como brújula. Hay dos formas de mantener ese gesto:
+1. **Encabezado y badge de URL**
+   - Título: Las 3D del Trabajo
+   - Subtítulo: medí tu trabajo en 20 segundos en tres dimensiones.
+   - Link a https://3d.ceoencamiseta.com y a CEO en Camiseta.
 
-- **Opción A (recomendada):** "Las 3**D** del Trabajo" — la "D" de "3D" sigue tickeando, y "del Trabajo" reemplaza "para Decidir". El sublabel actual `tu trabajo` se elimina (queda redundante).
-- **Opción B:** dejar el sublabel como "para decidir" en gris debajo, si querés conservar el guiño.
+2. **Qué es**
+   - Mini-app web gratuita y anónima para puntuar el trabajo en Dinero, Desarrollo y Diversión (1–10).
+   - No da consejos ni interpretaciones: muestra datos para que la persona decida.
 
-Ir con A salvo que digas lo contrario.
+3. **Por qué medir las 3D**
+   - Citar la idea del capítulo 14 de *Sé tu propio CEO*: las tres D son Dinero, Desarrollo y Diversión.
+   - Resumir la tensión clásica entre elegir por dinero vs. por lo que nos gusta.
+   - Explicar que cada D es una variable que evoluciona con el tiempo y que medirlas ayuda a tomar decisiones con menos sesgo.
+   - No incluir datos estáticos de la comunidad; solo enlazar a las páginas de estadísticas dinámicas.
 
-### 2. Copys, títulos y metadata (buscar/reemplazar global)
+4. **Páginas públicas**
+   - Inicio: medición principal.
+   - Landings SEO: /test-burnout, /cambiar-de-trabajo, /cambiar-de-trabajo-a-los-40, /cambiar-de-trabajo-a-los-50.
+   - Muro de los lamentos: /comentarios.
+   - Estadísticas: /por-pais, /por-sector, /por-edad.
+   - Datos abiertos: /datos-llm, /llm/index.md, /llm/stats.md, /llm/comentarios.md.
+   - Widget embebible: /embed-docs.
 
-Reemplazar **"3D para Decidir" → "Las 3D del Trabajo"** en:
+5. **Stack y cómo correrlo (sección breve al final)**
+   - Vite + React + TypeScript + Tailwind CSS + shadcn/ui.
+   - Supabase Edge Functions para guardar resultados, emails, recordatorios y endpoints de datos abiertos.
+   - Scripts: `npm run dev` (genera snapshots LLM y levanta Vite), `npm run build`, `npm run test`.
+   - Nota: el backend corre en Lovable Cloud / Supabase.
 
-- `index.html`: `<title>`, `og:title`, JSON-LD `WebSite.name`, `<h1>` del `<noscript>`.
-- SEO por ruta: `src/pages/Index.tsx`, `TestBurnoutPage.tsx`, `NotFound.tsx`, `DatosLlmPage.tsx`, `EmbedPage.tsx`, `EmbedDocsPage.tsx`.
-- Header: `src/components/SiteHeader.tsx` (aria-label).
-- Comentarios/imágenes compartibles: `CommentShareCard.tsx`, `generateCommentImage.ts` (card visual + og de comentarios).
-- Widget embebible: `public/embed.js` (comentario + `iframe.title`).
-- Emails/LLM data: `scripts/generate-llm-data.ts` (regenera los `.md` estáticos) y edge functions `llm-index`, `llm-stats`, `llm-comments` (redeploy).
-- Archivos estáticos: `public/llms.txt`, `public/llm/index.md`, `public/llm/stats.md`, `public/llm/comentarios.md` — se regeneran corriendo `generate-llm-data.ts`.
+6. **Privacidad y créditos**
+   - Respuestas anónimas, email opcional, comentarios sin identificadores.
+   - Creado por CEO en Camiseta.
 
-### 3. Cosas que NO cambian
+## Archivo a modificar
 
-- Dominio `3d.ceoencamiseta.com` y todas las URLs canónicas/sitemap.
-- Nombres de tablas, RPCs, edge functions, cron jobs, Event IDs de pixels (X, Meta, GA).
-- Copys internos que dicen solo "3D" o "las 3D" (dimensiones) — ya son consistentes con el nombre nuevo.
-- Landing pages `/test-burnout`, `/cambiar-de-trabajo*` — el H1 propio de cada una se mantiene; solo cambia la mención al producto en subtítulos/FAQs si aparece.
-- Memoria del proyecto: actualizo el `mem://index.md` Core rule que hoy dice "3D para Decidir".
+- `README.md` (sobrescribir completo).
 
-### 4. Emails ya enviados / cache social
+## Archivos que NO se tocan
 
-- Emails ya despachados (Resend) mantienen el nombre viejo — no se pueden reescribir. Los futuros salen con el nombre nuevo (los templates viven en `send-reminders` y `resend-measurement` — reviso si mencionan el nombre y actualizo).
-- Previews de LinkedIn/Slack/X van a seguir mostrando el título viejo hasta que refresquen su cache (24-48h típicamente, o forzando en el debugger de cada plataforma).
-
-### 5. Pregunta abierta antes de ejecutar
-
-- **Tagline / sublabel del hero:** hoy dice `tu trabajo` debajo. Con el nombre nuevo "Las 3D del **Trabajo**" queda redundante. Propongo eliminarlo y dejar el hook `La mayoría tolera un trabajo mediocre…` como único texto de apoyo. ¿OK, o preferís otro subtítulo (ej. "Medí, decidí")?
-
----
-
-### Detalle técnico
-
-Ejecución en una sola tanda:
-
-1. Reemplazo literal `3D para Decidir` → `Las 3D del Trabajo` en los 19 archivos listados por `rg`.
-2. Edit puntual en `EntryScreen.tsx` líneas 48-58 para el H1 nuevo + quitar sublabel.
-3. Correr `bun run scripts/generate-llm-data.ts` para regenerar los 3 `.md` bajo `public/llm/`.
-4. Redeploy de las 3 edge functions `llm-*`.
-5. Update de `mem://index.md`.
-6. Review rápido de templates en `send-reminders/index.ts` y `resend-measurement/index.ts` por si mencionan el nombre del producto.
-
-No hay migraciones de DB, ni cambios de rutas, ni cambios de sitemap.
+- Ningún archivo fuente, config, edge function ni datos públicos. Solo README.md.
