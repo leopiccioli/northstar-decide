@@ -34,16 +34,40 @@ function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-function table(label: string, caption: string, rows: StatRow[]): string {
+/**
+ * Groups below the publication threshold are rendered without the average
+ * column so they can never be read as a ranking.
+ */
+function table(label: string, caption: string, rows: StatRow[], comparable = true): string {
   return [
     '<table>',
     `<caption>${esc(caption)}</caption>`,
-    `<thead><tr><th>${esc(label)}</th><th>N</th><th>Dinero</th><th>Desarrollo</th><th>Diversión</th><th>Promedio</th></tr></thead>`,
+    `<thead><tr><th>${esc(label)}</th><th>N</th><th>Dinero</th><th>Desarrollo</th><th>Diversión</th>${comparable ? '<th>Promedio</th>' : ''}</tr></thead>`,
     '<tbody>',
-    ...rows.map((r) => `<tr><th scope="row">${esc(r.key)}</th><td>${r.n}</td><td>${r.dinero}</td><td>${r.desarrollo}</td><td>${r.diversion}</td><td>${r.promedio}</td></tr>`),
+    ...rows.map((r) => `<tr><th scope="row">${esc(r.key)}</th><td>${r.n}</td><td>${r.dinero}</td><td>${r.desarrollo}</td><td>${r.diversion}</td>${comparable ? `<td>${r.promedio}</td>` : ''}</tr>`),
     '</tbody></table>',
   ].join('');
 }
+
+/** Comparable block + transparency block, matching src/content/pages.ts. */
+function statSection(label: string, what: string, eligibleRows: StatRow[], belowRows: StatRow[]): string {
+  let out = table(
+    label,
+    `${what} con muestra suficiente (N≥${PUBLISH_THRESHOLD}) según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`,
+    eligibleRows,
+  );
+  if (belowRows.length) {
+    out += `<p>${esc(NOT_COMPARABLE_NOTE)}</p>`;
+    out += table(
+      label,
+      `${what} con muestra insuficiente (N<${PUBLISH_THRESHOLD}) — no comparable. ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`,
+      belowRows,
+      false,
+    );
+  }
+  return out;
+}
+
 
 function ul(items: string[]): string {
   return `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
