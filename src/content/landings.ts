@@ -1,8 +1,8 @@
 // Shared landing copy: consumed by the React pages and by the build-time
 // prerender script, so the crawler HTML matches the rendered page.
 
-import { UserContext } from '@/types/decision';
-import { FAQItem } from '@/components/landing/FAQ';
+import type { UserContext } from '@/types/decision';
+import type { FAQItem } from '@/components/landing/FAQ';
 
 export interface LandingDef {
   path: string;
