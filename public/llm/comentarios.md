@@ -1,11 +1,12 @@
 ---
 title: "Muro de los lamentos — comentarios anónimos (Las 3D del Trabajo)"
 project: "Las 3D del Trabajo"
-url: "https://3d.ceoencamiseta.com/llm/comentarios.md"
+url: "https://3d.ceoencamiseta.com/llm/comentarios.txt"
+mirror_md: "https://3d.ceoencamiseta.com/llm/comentarios.md"
 universe: "últimos comentarios públicos"
 n: 500
 cut_date: "2026-08-09"
-updated: "2026-08-09T15:21:57.687Z"
+updated: "2026-08-09T15:27:52.007Z"
 language: "es"
 citation: "Las 3D del Trabajo (CEO en Camiseta), n=1554 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
