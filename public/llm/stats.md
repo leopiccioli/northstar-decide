@@ -1,6 +1,6 @@
 # Estadísticas agregadas — Las 3D del Trabajo
 > Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
-- **Última actualización:** 2026-08-09T13:43:03.371Z
+- **Última actualización:** 2026-08-09T14:06:41.313Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Promedios globales (Dinero, Desarrollo, Diversión, escala 1–10) y desglose por país, sector laboral y rango etario reportado.
 - **Limitaciones:**
@@ -9,7 +9,7 @@
   - Snapshot estático: se actualiza en cada deploy.
 - **Versión en vivo (siempre fresca):** https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-stats
 ---## Global
-- Mediciones totales: 12905
+- Mediciones totales: 12906
 - Promedio Dinero: 6/10
 - Promedio Desarrollo: 6.3/10
 - Promedio Diversión: 5.7/10
