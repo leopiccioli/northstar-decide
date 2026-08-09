@@ -1,6 +1,6 @@
 # Muro de los lamentos — comentarios anónimos
 > Snapshot estático del proyecto **Las 3D del Trabajo** (CEO en Camiseta).
-- **Última actualización:** 2026-08-09T13:16:11.969Z
+- **Última actualización:** 2026-08-09T13:42:16.919Z
 - **Fuente original:** https://3d.ceoencamiseta.com
 - **Qué contiene:** Últimos 500 comentarios públicos enviados por personas sobre su trabajo, junto a sus puntajes de Dinero, Desarrollo y Diversión (1–10), país, sector y rango etario opcionales.
 - **Limitaciones:**
@@ -9,7 +9,13 @@
   - Snapshot estático: se actualiza en cada deploy de la plataforma.
   - Total listados: 500.
 - **Versión en vivo (siempre fresca):** https://bcokciysbyuaeodnsxas.supabase.co/functions/v1/llm-comments
----## Argentina · Finanzas / Banca / Seguros · 45-54 · 2026-08-09
+---## Argentina · Salud · 45-54 · 2026-08-09
+Dinero: 9/10 · Desarrollo: 7/10 · Diversión: 7/10
+
+Dinero
+
+---
+## Argentina · Finanzas / Banca / Seguros · 45-54 · 2026-08-09
 Dinero: 9/10 · Desarrollo: 9/10 · Diversión: 7/10
 
 exceso de trabajo
@@ -3001,11 +3007,5 @@ navidad 2025 por ser papá, el equipo funciona muy bien y todo en marcha viendo 
 Dinero: 7/10 · Desarrollo: 8/10 · Diversión: 8/10
 
 La diversidad me enriquece
-
----
-## Puerto Rico · 2025-12-21
-Dinero: 5/10 · Desarrollo: 5/10 · Diversión: 8/10
-
-.
 
 ---
