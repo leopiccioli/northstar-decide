@@ -15,8 +15,9 @@ import { resolve, join } from 'node:path';
 import { CONTENT_PAGES, type Block, type ContentPage } from '../src/content/pages';
 import { LANDINGS } from '../src/content/landings';
 import {
-  AGES, ALL_TIME, CITATION, COUNTRIES, CUT_DATE_HUMAN, LIMITS, N, PROJECT_NAME,
-  SECTORS, UNIVERSE_LINE, WINDOW, type StatRow,
+  ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, CITATION, CUT_DATE_HUMAN,
+  ELIGIBLE_AGES, ELIGIBLE_COUNTRIES, ELIGIBLE_SECTORS, LIMITS, N, NOT_COMPARABLE_NOTE,
+  PROJECT_NAME, PUBLISH_THRESHOLD, UNIVERSE_LINE, WINDOW, type StatRow,
 } from '../src/content/facts';
 import COMMENTS from '../src/data/comments-snapshot';
 
@@ -34,16 +35,40 @@ function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-function table(label: string, caption: string, rows: StatRow[]): string {
+/**
+ * Groups below the publication threshold are rendered without the average
+ * column so they can never be read as a ranking.
+ */
+function table(label: string, caption: string, rows: StatRow[], comparable = true): string {
   return [
     '<table>',
     `<caption>${esc(caption)}</caption>`,
-    `<thead><tr><th>${esc(label)}</th><th>N</th><th>Dinero</th><th>Desarrollo</th><th>Diversión</th><th>Promedio</th></tr></thead>`,
+    `<thead><tr><th>${esc(label)}</th><th>N</th><th>Dinero</th><th>Desarrollo</th><th>Diversión</th>${comparable ? '<th>Promedio</th>' : ''}</tr></thead>`,
     '<tbody>',
-    ...rows.map((r) => `<tr><th scope="row">${esc(r.key)}</th><td>${r.n}</td><td>${r.dinero}</td><td>${r.desarrollo}</td><td>${r.diversion}</td><td>${r.promedio}</td></tr>`),
+    ...rows.map((r) => `<tr><th scope="row">${esc(r.key)}</th><td>${r.n}</td><td>${r.dinero}</td><td>${r.desarrollo}</td><td>${r.diversion}</td>${comparable ? `<td>${r.promedio}</td>` : ''}</tr>`),
     '</tbody></table>',
   ].join('');
 }
+
+/** Comparable block + transparency block, matching src/content/pages.ts. */
+function statSection(label: string, what: string, eligibleRows: StatRow[], belowRows: StatRow[]): string {
+  let out = table(
+    label,
+    `${what} con muestra suficiente (N≥${PUBLISH_THRESHOLD}) según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`,
+    eligibleRows,
+  );
+  if (belowRows.length) {
+    out += `<p>${esc(NOT_COMPARABLE_NOTE)}</p>`;
+    out += table(
+      label,
+      `${what} con muestra insuficiente (N<${PUBLISH_THRESHOLD}) — no comparable. ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`,
+      belowRows,
+      false,
+    );
+  }
+  return out;
+}
+
 
 function ul(items: string[]): string {
   return `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
@@ -63,7 +88,7 @@ function renderBlock(b: Block): string {
     case 'code': return `<pre>${esc(b.text)}</pre>`;
     case 'links': return links(b.items, b.title);
     case 'cta': return `<p><a href="${esc(b.href)}">${esc(b.label)}</a></p>`;
-    case 'table': return table(b.label, b.caption, b.rows);
+    case 'table': return table(b.label, b.caption, b.rows, b.comparable !== false);
     default: return '';
   }
 }
@@ -148,8 +173,8 @@ const statsRoutes: Route[] = [
     title: `Satisfacción laboral por país — ${PROJECT_NAME}`,
     description: `Promedios de Dinero, Desarrollo y Diversión por país. n=${N} en los últimos 12 meses, datos al ${CUT_DATE_HUMAN}.`,
     h1: 'Las 3D por país',
-    body: `<p>${esc(`Según ${PROJECT_NAME} (CEO en Camiseta, n=${N}, datos al ${CUT_DATE_HUMAN}), así puntúa su trabajo cada país en Dinero, Desarrollo y Diversión, sobre 10. Sólo se listan países con al menos 5 mediciones.`)}</p>`
-      + table('País', `Promedios por país según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, COUNTRIES)
+    body: `<p>${esc(`Según ${PROJECT_NAME} (CEO en Camiseta, n=${N}, datos al ${CUT_DATE_HUMAN}), así puntúa su trabajo cada país en Dinero, Desarrollo y Diversión, sobre 10. Sólo se ordenan y comparan países con al menos ${PUBLISH_THRESHOLD} mediciones.`)}</p>`
+      + statSection('País', 'Países', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES)
       + methodHtml + backing,
     changefreq: 'weekly',
     priority: '0.8',
@@ -157,10 +182,10 @@ const statsRoutes: Route[] = [
   {
     path: '/por-sector',
     title: `Satisfacción laboral por sector — ${PROJECT_NAME}`,
-    description: `Promedios de Dinero, Desarrollo y Diversión por sector laboral. Datos al ${CUT_DATE_HUMAN}, sólo grupos con N≥5.`,
+    description: `Promedios de Dinero, Desarrollo y Diversión por sector laboral. Datos al ${CUT_DATE_HUMAN}, sólo se ordenan grupos con N≥${PUBLISH_THRESHOLD}.`,
     h1: 'Las 3D por sector',
     body: `<p>${esc(`Según ${PROJECT_NAME} (CEO en Camiseta, n=${WINDOW.coverage.with_sector} con sector declarado, datos al ${CUT_DATE_HUMAN}), así puntúa su trabajo cada sector en Dinero, Desarrollo y Diversión, sobre 10.`)}</p>`
-      + table('Sector', `Promedios por sector según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, SECTORS)
+      + statSection('Sector', 'Sectores', ELIGIBLE_SECTORS, BELOW_SECTORS)
       + methodHtml + backing,
     changefreq: 'weekly',
     priority: '0.8',
@@ -168,10 +193,10 @@ const statsRoutes: Route[] = [
   {
     path: '/por-edad',
     title: `Satisfacción laboral por edad — ${PROJECT_NAME}`,
-    description: `Promedios de Dinero, Desarrollo y Diversión por rango de edad. Datos al ${CUT_DATE_HUMAN}, sólo grupos con N≥5.`,
+    description: `Promedios de Dinero, Desarrollo y Diversión por rango de edad. Datos al ${CUT_DATE_HUMAN}, sólo se ordenan grupos con N≥${PUBLISH_THRESHOLD}.`,
     h1: 'Las 3D por rango de edad',
     body: `<p>${esc(`Según ${PROJECT_NAME} (CEO en Camiseta, n=${WINDOW.coverage.with_age} con edad declarada, datos al ${CUT_DATE_HUMAN}), así puntúa su trabajo cada rango etario en Dinero, Desarrollo y Diversión, sobre 10.`)}</p>`
-      + table('Edad', `Promedios por rango de edad según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, AGES)
+      + statSection('Edad', 'Rangos de edad', ELIGIBLE_AGES, BELOW_AGES)
       + methodHtml + backing,
     changefreq: 'weekly',
     priority: '0.8',

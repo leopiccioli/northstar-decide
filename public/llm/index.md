@@ -2,11 +2,12 @@
 title: "Las 3D del Trabajo — índice para LLMs"
 project: "Las 3D del Trabajo"
 publisher: "CEO en Camiseta"
-url: "https://3d.ceoencamiseta.com/llm/index.md"
+url: "https://3d.ceoencamiseta.com/llm/index.txt"
+mirror_md: "https://3d.ceoencamiseta.com/llm/index.md"
 universe: "últimos 12 meses"
 n: 1554
 cut_date: "2026-08-09"
-updated: "2026-08-09T15:20:17.212Z"
+updated: "2026-08-09T15:28:01.544Z"
 language: "es"
 citation: "Las 3D del Trabajo (CEO en Camiseta), n=1554 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
@@ -28,7 +29,8 @@ Las 3D del Trabajo es una herramienta gratuita y anónima de CEO en Camiseta don
 - **Muestra:** voluntaria y autoseleccionada, mayoritariamente lectores de CEO en Camiseta. No es representativa de la población laboral.
 - **Sesgo geográfico:** aproximadamente el 85% de las mediciones provienen de Argentina.
 - **Cobertura demográfica:** sector y edad son campos opcionales; los completa una minoría de quienes miden.
-- **Inclusión:** sólo se publican grupos con al menos 5 mediciones (N≥5). El N de cada grupo se publica junto al dato.
+- **Inclusión:** sólo se ordenan y comparan grupos con al menos 30 mediciones (N≥30). Los grupos con N menor se publican aparte, en orden alfabético y sin columna de promedio, y no admiten comparación ni ranking.
+- **N a la vista:** el N de cada grupo se publica junto al dato, en cada fila.
 - **Sin interpretación:** el proyecto no publica consejos ni correlaciones entre dimensiones. Sólo promedios descriptivos.
 ## Qué mide cada dimensión
 
@@ -40,10 +42,12 @@ El marco proviene del capítulo 14 del libro *Sé tu propio CEO*, de CEO en Cami
 
 ## Archivos de datos (canónicos)
 
-- Estadísticas agregadas: https://3d.ceoencamiseta.com/llm/stats.md (texto plano: https://3d.ceoencamiseta.com/llm/stats.txt)
-- Hallazgos con cifras citables: https://3d.ceoencamiseta.com/llm/insights.md (texto plano: https://3d.ceoencamiseta.com/llm/insights.txt)
-- Comentarios anónimos: https://3d.ceoencamiseta.com/llm/comentarios.md (texto plano: https://3d.ceoencamiseta.com/llm/comentarios.txt)
-- Este índice: https://3d.ceoencamiseta.com/llm/index.md (texto plano: https://3d.ceoencamiseta.com/llm/index.txt)
+- Estadísticas agregadas: https://3d.ceoencamiseta.com/llm/stats.txt (espejo .md: https://3d.ceoencamiseta.com/llm/stats.md)
+- Hallazgos con cifras citables: https://3d.ceoencamiseta.com/llm/insights.txt (espejo .md: https://3d.ceoencamiseta.com/llm/insights.md)
+- Comentarios anónimos: https://3d.ceoencamiseta.com/llm/comentarios.txt (espejo .md: https://3d.ceoencamiseta.com/llm/comentarios.md)
+- Este índice: https://3d.ceoencamiseta.com/llm/index.txt (espejo .md: https://3d.ceoencamiseta.com/llm/index.md)
+
+La lectura primaria es la variante .txt: el hosting la sirve como texto plano.
 
 ## Páginas públicas
 

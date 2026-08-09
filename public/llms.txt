@@ -2,8 +2,8 @@
 
 > Herramienta anónima y gratuita de CEO en Camiseta para puntuar el trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. Publica sus datos agregados como texto abierto y citable.
 
-Universo: últimos 12 meses (2025-08-09 a 2026-08-09) · n=1552 · datos al 9 de agosto de 2026.
-Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com
+Universo: últimos 12 meses (2025-08-09 a 2026-08-09) · n=1554 · datos al 9 de agosto de 2026.
+Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1554 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com
 
 ## Datos
 
@@ -27,7 +27,7 @@ Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los ú
 - [Hallazgos](https://3d.ceoencamiseta.com/hallazgos)
 - [¿Qué sector tiene la Diversión más baja?](https://3d.ceoencamiseta.com/hallazgos/sector-con-menos-diversion)
 - [¿Qué sector paga mejor, según quienes lo viven?](https://3d.ceoencamiseta.com/hallazgos/sector-que-mejor-paga)
-- [¿Qué país puntúa más bajo su trabajo?](https://3d.ceoencamiseta.com/hallazgos/pais-que-puntua-mas-bajo)
+- [¿Cómo puntúa su trabajo Argentina?](https://3d.ceoencamiseta.com/hallazgos/como-puntua-argentina)
 - [¿Cuál de las tres D puntúa más bajo?](https://3d.ceoencamiseta.com/hallazgos/dimension-mas-baja)
 - [Estoy aburrido en mi trabajo, pero pagan bien](https://3d.ceoencamiseta.com/aburrido-en-mi-trabajo-pero-pagan-bien)
 - [Cuándo renunciar sin tener otro trabajo](https://3d.ceoencamiseta.com/cuando-renunciar-sin-otro-trabajo)
@@ -38,12 +38,6 @@ Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los ú
 - [Salud: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/salud)
 - [Retail / Comercio: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/retail)
 - [Tecnología / Software: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/tecnologia)
-- [Educación: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/educacion)
-- [Finanzas / Banca / Seguros: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/finanzas)
-- [Gobierno / Sector público: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/gobierno)
-- [Agro: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/agro)
-- [Energía: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/energia)
-- [Medios / Comunicación: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/medios)
 - [Método y límites](https://3d.ceoencamiseta.com/metodologia)
 - [Cómo citar estos datos](https://3d.ceoencamiseta.com/como-citar)
 - [Muro de los lamentos](https://3d.ceoencamiseta.com/comentarios): comentarios anónimos con sus 3D.

@@ -8,6 +8,7 @@ import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
+import { BelowThresholdTable } from '@/components/stats/BelowThresholdTable';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'age_range' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
@@ -122,6 +123,14 @@ export default function AgeStatsPage() {
       return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
     });
   }, [stats, sortColumn, sortDirection]);
+
+  const belowStats = useMemo(
+    () =>
+      stats
+        .filter((s) => s.count < MIN_RESPONSES_THRESHOLD)
+        .map((s) => ({ key: s.age_range, count: s.count, dinero: s.dinero, desarrollo: s.desarrollo, diversion: s.diversion })),
+    [stats],
+  );
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -262,6 +271,8 @@ export default function AgeStatsPage() {
             </div>
           </div>
         )}
+
+        {!isLoading && <BelowThresholdTable label="Edad" rows={belowStats} />}
 
         {!isLoading && tableStats.length === 0 && !error && (
           <div className="p-8 text-center text-muted-foreground text-sm border border-border rounded-sm">

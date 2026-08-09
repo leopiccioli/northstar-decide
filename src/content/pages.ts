@@ -3,16 +3,18 @@
 // browser renders never diverge.
 
 import {
-  AGES, ALL_TIME, bestMoneySector, CITATION, COUNTRIES, CUT_DATE_HUMAN, LIMITS,
-  lowestDimension, N, PROJECT_NAME, PUBLISHER, SECTOR_PAGES, SECTORS, sectorSlug,
-  source, StatRow, UNIVERSE_LINE, WINDOW, worstAvgCountry, worstFunSector,
+  ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector, CITATION,
+  CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES, ELIGIBLE_SECTORS, LIMITS,
+  lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME, PUBLISH_THRESHOLD,
+  PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow, UNIVERSE_LINE,
+  WINDOW, worstFunSector,
 } from './facts';
 
 export type Block =
   | { type: 'p'; text: string }
   | { type: 'h2'; text: string }
   | { type: 'ul'; items: string[] }
-  | { type: 'table'; label: string; caption: string; rows: StatRow[] }
+  | { type: 'table'; label: string; caption: string; rows: StatRow[]; comparable?: boolean }
   | { type: 'links'; title?: string; items: { href: string; label: string }[] }
   | { type: 'code'; text: string }
   | { type: 'cta'; href: string; label: string };
@@ -50,6 +52,41 @@ const limitsBlocks: Block[] = [
   { type: 'ul', items: LIMITS },
 ];
 
+/**
+ * Every ranked table is published in two blocks: the comparable one (N≥30,
+ * sorted) and the transparency one (N<30, alphabetical, no average column).
+ */
+function statTables(
+  label: string,
+  what: string,
+  eligibleRows: StatRow[],
+  belowRows: StatRow[],
+  sort?: (a: StatRow, b: StatRow) => number,
+): Block[] {
+  const ranked = sort ? [...eligibleRows].sort(sort) : eligibleRows;
+  const blocks: Block[] = [
+    {
+      type: 'table',
+      label,
+      caption: `${what} con muestra suficiente (N≥${PUBLISH_THRESHOLD}) según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`,
+      rows: ranked,
+      comparable: true,
+    },
+  ];
+  if (belowRows.length) {
+    blocks.push({ type: 'p', text: NOT_COMPARABLE_NOTE });
+    blocks.push({
+      type: 'table',
+      label,
+      caption: `${what} con muestra insuficiente (N<${PUBLISH_THRESHOLD}) — no comparable. ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`,
+      rows: belowRows,
+      comparable: false,
+    });
+  }
+  return blocks;
+}
+
+
 /* ---------------------------------------------------------------- insights */
 
 const insightPages: ContentPage[] = [
@@ -61,7 +98,7 @@ const insightPages: ContentPage[] = [
     lead: `Según ${source(worstFunSector.n, 'en ese sector')}, el sector con menor puntaje de Diversión es ${worstFunSector.key}: ${worstFunSector.diversion} sobre 10, frente a un promedio general de Diversión de ${WINDOW.global.diversion} sobre 10 en los últimos 12 meses.`,
     blocks: [
       { type: 'p', text: `En ${worstFunSector.key}, ${PROJECT_NAME} registra Dinero ${worstFunSector.dinero}, Desarrollo ${worstFunSector.desarrollo} y Diversión ${worstFunSector.diversion} sobre 10 (n=${worstFunSector.n}, datos al ${CUT_DATE_HUMAN}). La Diversión mide cuánto disfruta la persona del día a día, el equipo y la cultura; no mide productividad ni clima medido por la empresa.` },
-      { type: 'table', label: 'Sector', caption: `Diversión por sector según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: [...SECTORS].sort((a, b) => a.diversion - b.diversion) },
+      ...statTables('Sector', 'Diversión por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => a.diversion - b.diversion),
       ...limitsBlocks,
       backingData,
       measure,
@@ -72,24 +109,24 @@ const insightPages: ContentPage[] = [
     title: `¿Qué sector paga mejor, según quienes lo viven? — ${PROJECT_NAME}`,
     description: `Según ${PROJECT_NAME}, ${bestMoneySector.key} es el sector con mayor puntaje autoevaluado de Dinero: ${bestMoneySector.dinero} sobre 10. Datos al ${CUT_DATE_HUMAN}.`,
     h1: '¿Qué sector paga mejor, según quienes lo viven?',
-    lead: `Según ${source(bestMoneySector.n, 'en ese sector')}, el sector con mayor puntaje autoevaluado de Dinero es ${bestMoneySector.key}: ${bestMoneySector.dinero} sobre 10. En el mismo sector, el Desarrollo promedia ${bestMoneySector.desarrollo} y la Diversión ${bestMoneySector.diversion}, sobre 10.`,
+    lead: `Según ${source(bestMoneySector.n, 'en ese sector')}, entre los sectores con muestra suficiente (N≥${PUBLISH_THRESHOLD}) el mayor puntaje autoevaluado de Dinero es ${bestMoneySector.key}: ${bestMoneySector.dinero} sobre 10. En el mismo sector, el Desarrollo promedia ${bestMoneySector.desarrollo} y la Diversión ${bestMoneySector.diversion}, sobre 10.`,
     blocks: [
       { type: 'p', text: `El puntaje de Dinero es una autoevaluación de satisfacción con la remuneración, no un dato salarial: ${PROJECT_NAME} no recoge sueldos. Un puntaje alto de Dinero puede convivir con puntajes bajos en las otras dos dimensiones, y eso es justamente lo que el marco busca hacer visible.` },
-      { type: 'table', label: 'Sector', caption: `Dinero por sector según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: [...SECTORS].sort((a, b) => b.dinero - a.dinero) },
+      ...statTables('Sector', 'Dinero por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => b.dinero - a.dinero),
       ...limitsBlocks,
       backingData,
       measure,
     ],
   },
   {
-    path: '/hallazgos/pais-que-puntua-mas-bajo',
-    title: `¿Qué país puntúa más bajo su trabajo? — ${PROJECT_NAME}`,
-    description: `Según ${PROJECT_NAME}, ${worstAvgCountry.key} es el país con menor promedio 3D: ${worstAvgCountry.promedio} sobre 10. Datos al ${CUT_DATE_HUMAN}.`,
-    h1: '¿Qué país puntúa más bajo su trabajo?',
-    lead: `Según ${source(worstAvgCountry.n, 'en ese país')}, el país con menor promedio 3D es ${worstAvgCountry.key}: ${worstAvgCountry.promedio} sobre 10, con Dinero ${worstAvgCountry.dinero}, Desarrollo ${worstAvgCountry.desarrollo} y Diversión ${worstAvgCountry.diversion}.`,
+    path: '/hallazgos/como-puntua-argentina',
+    title: `¿Cómo puntúa su trabajo ${mainCountry.key}? — ${PROJECT_NAME}`,
+    description: `Según ${PROJECT_NAME} (n=${mainCountry.n} en ${mainCountry.key}), el promedio 3D es ${mainCountry.promedio} sobre 10. Datos al ${CUT_DATE_HUMAN}.`,
+    h1: `¿Cómo puntúa su trabajo ${mainCountry.key}?`,
+    lead: `Según ${source(mainCountry.n, `en ${mainCountry.key}`)}, en ${mainCountry.key} el promedio 3D es ${mainCountry.promedio} sobre 10, con Dinero ${mainCountry.dinero}, Desarrollo ${mainCountry.desarrollo} y Diversión ${mainCountry.diversion}. Es el único país con muestra grande del proyecto.`,
     blocks: [
-      { type: 'p', text: `La comparación entre países de ${PROJECT_NAME} tiene un sesgo fuerte: alrededor del 85% de las mediciones provienen de Argentina, y varios países aparecen con N de dos dígitos. Cada fila publica su N para que la cifra pueda evaluarse antes de citarse.` },
-      { type: 'table', label: 'País', caption: `Promedios por país según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: [...COUNTRIES].sort((a, b) => a.promedio - b.promedio) },
+      { type: 'p', text: `${PROJECT_NAME} no publica un ranking mundial: sólo ${ELIGIBLE_COUNTRIES.length} países alcanzan las ${PUBLISH_THRESHOLD} mediciones mínimas dentro de la ventana de 12 meses${secondCountry ? ` (${mainCountry.key}, n=${mainCountry.n}, y ${secondCountry.key}, n=${secondCountry.n})` : ''}. El resto se publica aparte, sin orden por promedio, porque con N chico cualquier ranking es ruido.` },
+      ...statTables('País', 'Promedios por país', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES),
       ...limitsBlocks,
       backingData,
       measure,
@@ -108,12 +145,13 @@ const insightPages: ContentPage[] = [
         `Desarrollo: ${WINDOW.global.desarrollo} sobre 10`,
         `Diversión: ${WINDOW.global.diversion} sobre 10`,
       ] },
-      { type: 'table', label: 'Edad', caption: `Promedios por rango de edad según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: AGES },
+      ...statTables('Edad', 'Promedios por rango de edad', ELIGIBLE_AGES, BELOW_AGES),
       ...limitsBlocks,
       backingData,
       measure,
     ],
   },
+
 ];
 
 const insightsHub: ContentPage = {
@@ -209,7 +247,7 @@ const questionPages: ContentPage[] = [
     h1: '¿Qué sector tiene peor clima laboral?',
     lead: `Según ${source(worstFunSector.n, 'en ese sector')}, el sector con menor puntaje de Diversión —la dimensión que mide el día a día, el equipo y la cultura— es ${worstFunSector.key}: ${worstFunSector.diversion} sobre 10, contra un promedio general de ${WINDOW.global.diversion}.`,
     blocks: [
-      { type: 'table', label: 'Sector', caption: `Clima del día a día (Diversión) por sector según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: [...SECTORS].sort((a, b) => a.diversion - b.diversion) },
+      ...statTables('Sector', 'Clima del día a día (Diversión) por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => a.diversion - b.diversion),
       { type: 'p', text: 'Diversión no significa pasarla bien todo el tiempo: mide si el trabajo suma o resta energía. Es una autoevaluación individual, no una encuesta de clima organizacional.' },
       ...limitsBlocks,
       backingData,
@@ -233,8 +271,9 @@ const sectorPages: ContentPage[] = SECTOR_PAGES.map((s) => ({
       `Desarrollo: ${s.desarrollo} en ${s.key} vs ${WINDOW.global.desarrollo} en general.`,
       `Diversión: ${s.diversion} en ${s.key} vs ${WINDOW.global.diversion} en general.`,
     ] },
-    { type: 'p', text: `Esta página se apoya en ${s.n} mediciones de ${s.key} dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. El N es chico: sirve para describir a quienes midieron, no para representar al sector completo.` },
-    { type: 'table', label: 'Sector', caption: `Todos los sectores según ${PROJECT_NAME}, últimos 12 meses, datos al ${CUT_DATE_HUMAN}`, rows: SECTORS },
+    { type: 'p', text: `Esta página se apoya en ${s.n} mediciones de ${s.key} dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. Supera el umbral de publicación (N≥${PUBLISH_THRESHOLD}), pero describe a quienes midieron y no representa al sector completo.` },
+    ...statTables('Sector', 'Todos los sectores', ELIGIBLE_SECTORS, BELOW_SECTORS),
+
     ...limitsBlocks,
     backingData,
     measure,
@@ -263,7 +302,7 @@ const methodPage: ContentPage = {
     { type: 'h2', text: 'Límites conocidos' },
     { type: 'ul', items: LIMITS },
     { type: 'h2', text: 'Qué no publicamos' },
-    { type: 'p', text: 'No publicamos correlaciones entre dimensiones, interpretaciones psicológicas ni diagnósticos. Tampoco publicamos grupos con menos de 5 mediciones.' },
+    { type: 'p', text: `No publicamos correlaciones entre dimensiones, interpretaciones psicológicas ni diagnósticos. Tampoco ordenamos ni comparamos grupos con menos de ${PUBLISH_THRESHOLD} mediciones: se publican aparte, en orden alfabético y sin promedio, sólo por transparencia. Sectores comparables hoy: ${ELIGIBLE_SECTORS.length}. Países comparables: ${ELIGIBLE_COUNTRIES.length}.` },
     backingData,
   ],
 };

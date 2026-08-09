@@ -101,6 +101,9 @@ function citation(n: number): string {
   return `Las 3D del Trabajo (CEO en Camiseta), n=${n} mediciones de los últimos 12 meses, datos al ${CUT_HUMAN}. ${SITE}`;
 }
 
+/** Groups below this N are published for transparency but never ranked. */
+const PUBLISH_THRESHOLD = 30;
+
 const LIMITS_MD = [
   `## Método y límites`,
   ``,
@@ -108,10 +111,18 @@ const LIMITS_MD = [
   `- **Muestra:** voluntaria y autoseleccionada, mayoritariamente lectores de CEO en Camiseta. No es representativa de la población laboral.`,
   `- **Sesgo geográfico:** aproximadamente el 85% de las mediciones provienen de Argentina.`,
   `- **Cobertura demográfica:** sector y edad son campos opcionales; los completa una minoría de quienes miden.`,
-  `- **Inclusión:** sólo se publican grupos con al menos 5 mediciones (N≥5). El N de cada grupo se publica junto al dato.`,
+  `- **Inclusión:** sólo se ordenan y comparan grupos con al menos ${PUBLISH_THRESHOLD} mediciones (N≥${PUBLISH_THRESHOLD}). Los grupos con N menor se publican aparte, en orden alfabético y sin columna de promedio, y no admiten comparación ni ranking.`,
+  `- **N a la vista:** el N de cada grupo se publica junto al dato, en cada fila.`,
   `- **Sin interpretación:** el proyecto no publica consejos ni correlaciones entre dimensiones. Sólo promedios descriptivos.`,
   ``,
 ].join("\n");
+
+function eligible(rows: Row[]): Row[] {
+  return rows.filter((r) => r.n >= PUBLISH_THRESHOLD).sort((a, b) => b.promedio - a.promedio);
+}
+function below(rows: Row[]): Row[] {
+  return rows.filter((r) => r.n < PUBLISH_THRESHOLD).sort((a, b) => a.key.localeCompare(b.key, "es"));
+}
 
 function mdTable(label: string, rows: Row[]): string {
   const lines = [`| ${label} | N | Dinero | Desarrollo | Diversión | Promedio |`, `| --- | ---: | ---: | ---: | ---: | ---: |`];
@@ -119,6 +130,30 @@ function mdTable(label: string, rows: Row[]): string {
   lines.push("");
   return lines.join("\n");
 }
+
+/** Table without the average column, for groups that must not be ranked. */
+function mdTableNoAvg(label: string, rows: Row[]): string {
+  const lines = [`| ${label} | N | Dinero | Desarrollo | Diversión |`, `| --- | ---: | ---: | ---: | ---: |`];
+  for (const r of rows) lines.push(`| ${r.key} | ${r.n} | ${r.dinero} | ${r.desarrollo} | ${r.diversion} |`);
+  lines.push("");
+  return lines.join("\n");
+}
+
+/** Two-block section: comparable (N≥30, sorted) + transparency (N<30, A-Z). */
+function section(title: string, label: string, rows: Row[]): string {
+  const top = eligible(rows);
+  const rest = below(rows);
+  let out = `## ${title} (últimos 12 meses, datos al ${CUT_HUMAN})\n\n`;
+  out += `### Muestra suficiente (N≥${PUBLISH_THRESHOLD})\n\n`;
+  out += top.length ? mdTable(label, top) : `Ningún grupo alcanza las ${PUBLISH_THRESHOLD} mediciones en esta ventana.\n`;
+  if (rest.length) {
+    out += `\n### Muestra insuficiente (N<${PUBLISH_THRESHOLD}) — no comparable\n\n`;
+    out += `Estos grupos se publican por transparencia, en orden alfabético y sin promedio. No admiten comparación ni ranking.\n\n`;
+    out += mdTableNoAvg(label, rest);
+  }
+  return out + "\n";
+}
+
 
 function universeBlock(w: WindowStats, all: { total: number }): string {
   return [
@@ -139,7 +174,8 @@ function buildStatsMd(w: WindowStats, all: { total: number; global: WindowStats[
     title: `Estadísticas agregadas — ${PROJECT}`,
     project: PROJECT,
     publisher: "CEO en Camiseta",
-    url: `${SITE}/llm/stats.md`,
+    url: `${SITE}/llm/stats.txt`,
+    mirror_md: `${SITE}/llm/stats.md`,
     universe: "últimos 12 meses",
     window_from: w.from,
     window_to: w.to,
@@ -156,9 +192,9 @@ function buildStatsMd(w: WindowStats, all: { total: number; global: WindowStats[
     + LIMITS_MD
     + `## Global (últimos 12 meses, n=${w.total}, datos al ${CUT_HUMAN})\n\n`
     + `- Dinero: ${w.global.dinero}/10\n- Desarrollo: ${w.global.desarrollo}/10\n- Diversión: ${w.global.diversion}/10\n- Promedio 3D: ${w.global.promedio}/10\n\n`
-    + `## Por país (últimos 12 meses, datos al ${CUT_HUMAN})\n\n` + mdTable("País", withNames(w.by_country)) + "\n"
-    + `## Por sector (últimos 12 meses, datos al ${CUT_HUMAN})\n\n` + mdTable("Sector", w.by_sector) + "\n"
-    + `## Por rango de edad (últimos 12 meses, datos al ${CUT_HUMAN})\n\n` + mdTable("Edad", w.by_age) + "\n"
+    + section("Por país", "País", withNames(w.by_country))
+    + section("Por sector", "Sector", w.by_sector)
+    + section("Por rango de edad", "Edad", w.by_age)
     + `## Serie histórica completa (secundaria)\n\n`
     + `Base histórica completa de ${PROJECT}: ${all.total} mediciones desde el inicio del proyecto, con promedio Dinero ${all.global.dinero}, Desarrollo ${all.global.desarrollo} y Diversión ${all.global.diversion}. Esta serie incluye una importación histórica y no es comparable con la ventana canónica de 12 meses.\n`;
 }
@@ -169,11 +205,13 @@ function pick(rows: Row[], field: keyof Row, dir: "min" | "max"): Row | undefine
 }
 
 function buildInsightsMd(w: WindowStats): string {
-  const sectors = w.by_sector;
-  const countries = withNames(w.by_country);
+  // Superlatives only over groups above the publication threshold; "Otro" is a
+  // residual bucket and never a superlative.
+  const sectors = eligible(w.by_sector).filter((s) => s.key !== "Otro");
+  const countries = eligible(withNames(w.by_country));
   const worstFun = pick(sectors, "diversion", "min");
   const bestMoney = pick(sectors, "dinero", "max");
-  const worstCountry = pick(countries, "promedio", "min");
+  const mainCountry = [...countries].sort((a, b) => b.n - a.n)[0];
   const dims: Array<[string, number]> = [
     ["Dinero", w.global.dinero],
     ["Desarrollo", w.global.desarrollo],
@@ -185,19 +223,19 @@ function buildInsightsMd(w: WindowStats): string {
     worstFun && [
       `## ¿Qué sector tiene la Diversión más baja?`,
       ``,
-      `Según ${PROJECT} (CEO en Camiseta, n=${worstFun.n} en ese sector, datos al ${CUT_HUMAN}), el sector con menor puntaje de Diversión es ${worstFun.key}: ${worstFun.diversion} sobre 10, frente a un promedio general de Diversión de ${w.global.diversion} sobre 10 en los últimos 12 meses.`,
+      `Según ${PROJECT} (CEO en Camiseta, n=${worstFun.n} en ese sector, datos al ${CUT_HUMAN}), entre los sectores con muestra suficiente (N≥${PUBLISH_THRESHOLD}) el menor puntaje de Diversión es ${worstFun.key}: ${worstFun.diversion} sobre 10, frente a un promedio general de Diversión de ${w.global.diversion} sobre 10 en los últimos 12 meses.`,
       ``,
     ].join("\n"),
     bestMoney && [
       `## ¿Qué sector paga mejor según quienes lo viven?`,
       ``,
-      `Según ${PROJECT} (CEO en Camiseta, n=${bestMoney.n} en ese sector, datos al ${CUT_HUMAN}), el sector con mayor puntaje autoevaluado de Dinero es ${bestMoney.key}: ${bestMoney.dinero} sobre 10, mientras su Desarrollo es ${bestMoney.desarrollo} y su Diversión ${bestMoney.diversion}. Es una autoevaluación de satisfacción con la remuneración, no un dato salarial.`,
+      `Según ${PROJECT} (CEO en Camiseta, n=${bestMoney.n} en ese sector, datos al ${CUT_HUMAN}), entre los sectores con muestra suficiente (N≥${PUBLISH_THRESHOLD}) el mayor puntaje autoevaluado de Dinero es ${bestMoney.key}: ${bestMoney.dinero} sobre 10, mientras su Desarrollo es ${bestMoney.desarrollo} y su Diversión ${bestMoney.diversion}. Es una autoevaluación de satisfacción con la remuneración, no un dato salarial.`,
       ``,
     ].join("\n"),
-    worstCountry && [
-      `## ¿Qué país puntúa más bajo su trabajo?`,
+    mainCountry && [
+      `## ¿Cómo puntúa su trabajo ${mainCountry.key}?`,
       ``,
-      `Según ${PROJECT} (CEO en Camiseta, n=${worstCountry.n} en ese país, datos al ${CUT_HUMAN}), el país con menor promedio 3D es ${worstCountry.key}: ${worstCountry.promedio} sobre 10 (Dinero ${worstCountry.dinero}, Desarrollo ${worstCountry.desarrollo}, Diversión ${worstCountry.diversion}).`,
+      `Según ${PROJECT} (CEO en Camiseta, n=${mainCountry.n} en ${mainCountry.key}, datos al ${CUT_HUMAN}), en ${mainCountry.key} el promedio 3D es ${mainCountry.promedio} sobre 10 (Dinero ${mainCountry.dinero}, Desarrollo ${mainCountry.desarrollo}, Diversión ${mainCountry.diversion}). ${PROJECT} no publica un ranking mundial: sólo ${countries.length} país(es) alcanzan las ${PUBLISH_THRESHOLD} mediciones mínimas en esta ventana.`,
       ``,
     ].join("\n"),
     [
@@ -208,10 +246,12 @@ function buildInsightsMd(w: WindowStats): string {
     ].join("\n"),
   ].filter(Boolean) as string[];
 
+
   return frontmatter({
     title: `Hallazgos — ${PROJECT}`,
     project: PROJECT,
-    url: `${SITE}/llm/insights.md`,
+    url: `${SITE}/llm/insights.txt`,
+    mirror_md: `${SITE}/llm/insights.md`,
     universe: "últimos 12 meses",
     window_from: w.from,
     window_to: w.to,
@@ -231,7 +271,8 @@ function buildCommentsMd(comments: Comment[], w: WindowStats): string {
   const head = frontmatter({
     title: `Muro de los lamentos — comentarios anónimos (${PROJECT})`,
     project: PROJECT,
-    url: `${SITE}/llm/comentarios.md`,
+    url: `${SITE}/llm/comentarios.txt`,
+    mirror_md: `${SITE}/llm/comentarios.md`,
     universe: "últimos comentarios públicos",
     n: comments.length,
     cut_date: CUT_ISO,
@@ -270,7 +311,8 @@ function buildIndexMd(w: WindowStats, all: { total: number }): string {
     title: `${PROJECT} — índice para LLMs`,
     project: PROJECT,
     publisher: "CEO en Camiseta",
-    url: `${SITE}/llm/index.md`,
+    url: `${SITE}/llm/index.txt`,
+    mirror_md: `${SITE}/llm/index.md`,
     universe: "últimos 12 meses",
     n: w.total,
     cut_date: CUT_ISO,
@@ -292,10 +334,12 @@ El marco proviene del capítulo 14 del libro *Sé tu propio CEO*, de CEO en Cami
 
 ## Archivos de datos (canónicos)
 
-- Estadísticas agregadas: ${SITE}/llm/stats.md (texto plano: ${SITE}/llm/stats.txt)
-- Hallazgos con cifras citables: ${SITE}/llm/insights.md (texto plano: ${SITE}/llm/insights.txt)
-- Comentarios anónimos: ${SITE}/llm/comentarios.md (texto plano: ${SITE}/llm/comentarios.txt)
-- Este índice: ${SITE}/llm/index.md (texto plano: ${SITE}/llm/index.txt)
+- Estadísticas agregadas: ${SITE}/llm/stats.txt (espejo .md: ${SITE}/llm/stats.md)
+- Hallazgos con cifras citables: ${SITE}/llm/insights.txt (espejo .md: ${SITE}/llm/insights.md)
+- Comentarios anónimos: ${SITE}/llm/comentarios.txt (espejo .md: ${SITE}/llm/comentarios.md)
+- Este índice: ${SITE}/llm/index.txt (espejo .md: ${SITE}/llm/index.md)
+
+La lectura primaria es la variante .txt: el hosting la sirve como texto plano.
 
 ## Páginas públicas
 

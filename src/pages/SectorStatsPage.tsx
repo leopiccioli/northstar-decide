@@ -7,6 +7,7 @@ import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
+import { BelowThresholdTable } from '@/components/stats/BelowThresholdTable';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'sector' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
@@ -116,6 +117,14 @@ export default function SectorStatsPage() {
       return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
     });
   }, [stats, sortColumn, sortDirection]);
+
+  const belowStats = useMemo(
+    () =>
+      stats
+        .filter((s) => s.count < MIN_RESPONSES_THRESHOLD)
+        .map((s) => ({ key: s.sector, count: s.count, dinero: s.dinero, desarrollo: s.desarrollo, diversion: s.diversion })),
+    [stats],
+  );
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -256,6 +265,8 @@ export default function SectorStatsPage() {
             </div>
           </div>
         )}
+
+        {!isLoading && <BelowThresholdTable label="Sector" rows={belowStats} />}
 
         {!isLoading && tableStats.length === 0 && !error && (
           <div className="p-8 text-center text-muted-foreground text-sm border border-border rounded-sm">

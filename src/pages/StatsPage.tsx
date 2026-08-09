@@ -7,6 +7,7 @@ import { CountryMap } from '@/components/stats/CountryMap';
 import { StatsLegend } from '@/components/stats/StatsLegend';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
+import { BelowThresholdTable } from '@/components/stats/BelowThresholdTable';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
 import logoImage from '@/assets/3d-logo.svg';
@@ -150,6 +151,14 @@ export default function StatsPage() {
     
     return { min, q1, q2, q3, max };
   }, [stats]);
+
+  const belowStats = useMemo(
+    () =>
+      stats
+        .filter((s) => s.count < MIN_RESPONSES_THRESHOLD)
+        .map((s) => ({ key: getCountryName(s.country), count: s.count, dinero: s.dinero, desarrollo: s.desarrollo, diversion: s.diversion })),
+    [stats],
+  );
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -325,6 +334,8 @@ export default function StatsPage() {
             </div>
           </div>
         )}
+
+        {!isLoading && <BelowThresholdTable label="País" rows={belowStats} />}
       </main>
     </div>
   );
