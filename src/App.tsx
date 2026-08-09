@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import { SiteHeader } from "./components/SiteHeader";
+import { CONTENT_PAGES } from "./content/pages";
 
 function ConditionalHeader() {
   const { pathname } = useLocation();
@@ -26,6 +27,7 @@ const CambiarDeTrabajo50Page = lazy(() => import("./pages/CambiarDeTrabajo50Page
 const EmbedPage = lazy(() => import("./pages/EmbedPage"));
 const EmbedDocsPage = lazy(() => import("./pages/EmbedDocsPage"));
 const DatosLlmPage = lazy(() => import("./pages/DatosLlmPage"));
+const ContentPage = lazy(() => import("./pages/ContentPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Lazy load toasters - not needed for initial render
@@ -67,6 +69,9 @@ const App = () => (
             <Route path="/embed" element={<EmbedPage />} />
             <Route path="/embed-docs" element={<EmbedDocsPage />} />
             <Route path="/datos-llm" element={<DatosLlmPage />} />
+            {CONTENT_PAGES.map((p) => (
+              <Route key={p.path} path={p.path} element={<ContentPage />} />
+            ))}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
