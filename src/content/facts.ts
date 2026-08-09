@@ -47,29 +47,57 @@ export const CITATION = `${PROJECT_NAME} (${PUBLISHER}), n=${N} mediciones de lo
 
 export const UNIVERSE_LINE = `Universo: últimos 12 meses (${WINDOW.from} a ${WINDOW.to}) · n=${N} · datos al ${CUT_DATE_HUMAN}.`;
 
+/** Groups below this N are published for transparency but never ranked. */
+export const PUBLISH_THRESHOLD = 30;
+
+export const NOT_COMPARABLE_NOTE = `Los grupos con menos de ${PUBLISH_THRESHOLD} mediciones se publican por transparencia, en orden alfabético y sin promedio: no admiten comparación ni ranking.`;
+
 export const LIMITS: string[] = [
   'Autoevaluación anónima: cada persona puntúa su propio trabajo de 1 a 10. No hay evaluación externa ni validación clínica.',
   'Muestra voluntaria y autoseleccionada, mayoritariamente lectores de CEO en Camiseta. No es representativa de la población laboral.',
   'Sesgo geográfico: aproximadamente el 85% de las mediciones provienen de Argentina.',
   'Sector y edad son campos opcionales, completados por una minoría de quienes miden.',
-  'Sólo se publican grupos con al menos 5 mediciones (N≥5) y el N va siempre junto al dato.',
+  `Inclusión: sólo se ordenan y comparan grupos con al menos ${PUBLISH_THRESHOLD} mediciones (N≥${PUBLISH_THRESHOLD}). Los grupos con N menor se publican aparte, en orden alfabético y sin promedio, y no admiten ranking.`,
+  'El N va siempre junto al dato, en cada fila de cada tabla.',
   'No se publican correlaciones entre dimensiones ni interpretaciones: sólo promedios descriptivos.',
 ];
+
+export const SECTORS: StatRow[] = WINDOW.by_sector;
+export const COUNTRIES: StatRow[] = WINDOW.by_country;
+export const AGES: StatRow[] = WINDOW.by_age;
+
+const byAvg = (a: StatRow, b: StatRow) => b.promedio - a.promedio;
+const byName = (a: StatRow, b: StatRow) => a.key.localeCompare(b.key, 'es');
+
+function eligible(rows: StatRow[]): StatRow[] {
+  return rows.filter((r) => r.n >= PUBLISH_THRESHOLD).sort(byAvg);
+}
+function belowThreshold(rows: StatRow[]): StatRow[] {
+  return rows.filter((r) => r.n < PUBLISH_THRESHOLD).sort(byName);
+}
+
+export const ELIGIBLE_SECTORS = eligible(SECTORS);
+export const ELIGIBLE_COUNTRIES = eligible(COUNTRIES);
+export const ELIGIBLE_AGES = eligible(AGES);
+export const BELOW_SECTORS = belowThreshold(SECTORS);
+export const BELOW_COUNTRIES = belowThreshold(COUNTRIES);
+export const BELOW_AGES = belowThreshold(AGES);
+
+/** "Otro" is a residual bucket, never a superlative. */
+const RANKABLE_SECTORS = ELIGIBLE_SECTORS.filter((s) => s.key !== 'Otro');
 
 function byField(rows: StatRow[], field: keyof StatRow, dir: 'min' | 'max'): StatRow {
   const sorted = [...rows].sort((a, b) => (a[field] as number) - (b[field] as number));
   return dir === 'min' ? sorted[0] : sorted[sorted.length - 1];
 }
 
-export const SECTORS: StatRow[] = WINDOW.by_sector;
-export const COUNTRIES: StatRow[] = WINDOW.by_country;
-export const AGES: StatRow[] = WINDOW.by_age;
-
-export const worstFunSector = byField(SECTORS, 'diversion', 'min');
-export const bestMoneySector = byField(SECTORS, 'dinero', 'max');
-export const worstAvgCountry = byField(COUNTRIES, 'promedio', 'min');
-export const bestAvgSector = byField(SECTORS, 'promedio', 'max');
-export const worstAvgSector = byField(SECTORS, 'promedio', 'min');
+export const worstFunSector = byField(RANKABLE_SECTORS, 'diversion', 'min');
+export const bestMoneySector = byField(RANKABLE_SECTORS, 'dinero', 'max');
+export const bestAvgSector = byField(RANKABLE_SECTORS, 'promedio', 'max');
+export const worstAvgSector = byField(RANKABLE_SECTORS, 'promedio', 'min');
+/** Country with the largest sample: the only one that carries the country story. */
+export const mainCountry = [...ELIGIBLE_COUNTRIES].sort((a, b) => b.n - a.n)[0];
+export const secondCountry = [...ELIGIBLE_COUNTRIES].sort((a, b) => b.n - a.n)[1];
 
 export const lowestDimension: { name: string; value: number } = (() => {
   const dims = [
@@ -92,10 +120,10 @@ export function sectorSlug(name: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-/** Sectors with a defensible N get their own page. */
-export const SECTOR_PAGES: StatRow[] = SECTORS.filter((s) => s.n >= 10 && s.key !== 'Otro')
-  .sort((a, b) => b.n - a.n);
+/** Only sectors above the publication threshold get their own page. */
+export const SECTOR_PAGES: StatRow[] = RANKABLE_SECTORS.slice().sort((a, b) => b.n - a.n);
 
 export function fmt(n: number): string {
   return n.toLocaleString('es-AR');
 }
+
