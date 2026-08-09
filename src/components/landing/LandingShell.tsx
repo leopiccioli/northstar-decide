@@ -7,6 +7,8 @@ import { SITE_CONFIG } from '@/config/urls';
 import { getPostHog } from '@/lib/posthog';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { UNIVERSE_LINE } from '@/content/facts';
 
 interface LandingShellProps {
   // SEO
@@ -113,6 +115,20 @@ export function LandingShell({
           </div>
 
           {belowForm}
+
+          {/* Internal link economy: data that backs this page */}
+          <nav className="space-y-3 text-center" aria-label="Datos que respaldan esta página">
+            <h2 className="text-xl font-semibold">Los datos que respaldan esta página</h2>
+            <p className="text-sm text-foreground/60">{UNIVERSE_LINE}</p>
+            <ul className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+              <li><Link to="/hallazgos" className="underline underline-offset-4">Hallazgos</Link></li>
+              <li><Link to="/por-sector" className="underline underline-offset-4">Por sector</Link></li>
+              <li><Link to="/por-pais" className="underline underline-offset-4">Por país</Link></li>
+              <li><Link to="/por-edad" className="underline underline-offset-4">Por edad</Link></li>
+              <li><Link to="/metodologia" className="underline underline-offset-4">Método y límites</Link></li>
+              <li><Link to="/como-citar" className="underline underline-offset-4">Cómo citar</Link></li>
+            </ul>
+          </nav>
 
         </section>
       </main>

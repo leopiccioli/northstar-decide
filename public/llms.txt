@@ -1,26 +1,58 @@
 # Las 3D del Trabajo
 
-> Herramienta para medir tu trabajo en 3 dimensiones (Dinero, Desarrollo, Diversión) en 20 segundos y tomar mejores decisiones laborales. Creada por CEO en Camiseta.
+> Herramienta anónima y gratuita de CEO en Camiseta para puntuar el trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. Publica sus datos agregados como texto abierto y citable.
 
-# Datos principales
+Universo: últimos 12 meses (2025-08-09 a 2026-08-09) · n=1552 · datos al 9 de agosto de 2026.
+Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1552 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com
 
-https://3d.ceoencamiseta.com/llm/index.md
-https://3d.ceoencamiseta.com/llm/stats.md
-https://3d.ceoencamiseta.com/llm/comentarios.md
+## Datos
 
-## Página humana
+- [Índice del proyecto](https://3d.ceoencamiseta.com/llm/index.txt): qué mide, universo, método y límites.
+- [Estadísticas agregadas](https://3d.ceoencamiseta.com/llm/stats.txt): promedios por país, sector y edad, con el N de cada grupo.
+- [Hallazgos citables](https://3d.ceoencamiseta.com/llm/insights.txt): preguntas frecuentes respondidas con una cifra, su N y su fecha.
+- [Comentarios anónimos](https://3d.ceoencamiseta.com/llm/comentarios.txt): texto libre enviado por personas junto a sus 3D.
 
-- [Datos abiertos para LLMs](https://3d.ceoencamiseta.com/datos-llm): Explica qué es cada archivo, su última actualización y sus limitaciones.
+## Cómo citar
+
+- [Cómo citar estos datos](https://3d.ceoencamiseta.com/como-citar): cadena de cita lista para copiar.
+- [Método y límites](https://3d.ceoencamiseta.com/metodologia): universo, sesgos y criterios de inclusión.
 
 ## Páginas
 
-- [Inicio](https://3d.ceoencamiseta.com/): Medí tu trabajo en 3D — Dinero, Desarrollo, Diversión.
-- [Test de burnout](https://3d.ceoencamiseta.com/test-burnout): Test anónimo de burnout laboral en 20 segundos.
-- [Cambiar de trabajo](https://3d.ceoencamiseta.com/cambiar-de-trabajo)
+- [Inicio](https://3d.ceoencamiseta.com/): medí tu trabajo en 3D.
+- [Test de burnout en 20 segundos](https://3d.ceoencamiseta.com/test-burnout)
+- [¿Cambiar de trabajo? Medilo antes de decidir](https://3d.ceoencamiseta.com/cambiar-de-trabajo)
 - [Cambiar de trabajo a los 40](https://3d.ceoencamiseta.com/cambiar-de-trabajo-a-los-40)
 - [Cambiar de trabajo a los 50](https://3d.ceoencamiseta.com/cambiar-de-trabajo-a-los-50)
-- [Muro de los lamentos](https://3d.ceoencamiseta.com/comentarios): Comentarios anónimos sobre el trabajo junto a sus 3D.
+- [Hallazgos](https://3d.ceoencamiseta.com/hallazgos)
+- [¿Qué sector tiene la Diversión más baja?](https://3d.ceoencamiseta.com/hallazgos/sector-con-menos-diversion)
+- [¿Qué sector paga mejor, según quienes lo viven?](https://3d.ceoencamiseta.com/hallazgos/sector-que-mejor-paga)
+- [¿Qué país puntúa más bajo su trabajo?](https://3d.ceoencamiseta.com/hallazgos/pais-que-puntua-mas-bajo)
+- [¿Cuál de las tres D puntúa más bajo?](https://3d.ceoencamiseta.com/hallazgos/dimension-mas-baja)
+- [Estoy aburrido en mi trabajo, pero pagan bien](https://3d.ceoencamiseta.com/aburrido-en-mi-trabajo-pero-pagan-bien)
+- [Cuándo renunciar sin tener otro trabajo](https://3d.ceoencamiseta.com/cuando-renunciar-sin-otro-trabajo)
+- [¿Es burnout o solo cansancio?](https://3d.ceoencamiseta.com/burnout-o-cansancio)
+- [¿Qué sector tiene peor clima laboral?](https://3d.ceoencamiseta.com/peor-clima-laboral-por-sector)
+- [Consultoría: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/consultoria)
+- [Industria / Manufactura: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/industria)
+- [Salud: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/salud)
+- [Retail / Comercio: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/retail)
+- [Tecnología / Software: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/tecnologia)
+- [Educación: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/educacion)
+- [Finanzas / Banca / Seguros: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/finanzas)
+- [Gobierno / Sector público: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/gobierno)
+- [Agro: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/agro)
+- [Energía: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/energia)
+- [Medios / Comunicación: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/medios)
+- [Método y límites](https://3d.ceoencamiseta.com/metodologia)
+- [Cómo citar estos datos](https://3d.ceoencamiseta.com/como-citar)
+- [Muro de los lamentos](https://3d.ceoencamiseta.com/comentarios): comentarios anónimos con sus 3D.
 - [Estadísticas por país](https://3d.ceoencamiseta.com/por-pais)
 - [Estadísticas por sector](https://3d.ceoencamiseta.com/por-sector)
 - [Estadísticas por edad](https://3d.ceoencamiseta.com/por-edad)
-- [Embeber 3D](https://3d.ceoencamiseta.com/embed-docs)
+- [Datos abiertos para LLMs](https://3d.ceoencamiseta.com/datos-llm)
+- [Embeber en tu sitio](https://3d.ceoencamiseta.com/embed-docs)
+
+## Opcional
+
+- [Archivos en Markdown](https://3d.ceoencamiseta.com/llm/stats.md): mismos contenidos con extensión .md.

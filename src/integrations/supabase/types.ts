@@ -340,6 +340,7 @@ export type Database = {
           option_name: string
         }[]
       }
+      get_stats_window: { Args: { months?: number }; Returns: Json }
       normalize_country: { Args: { input: string }; Returns: string }
       refresh_age_range_stats: { Args: never; Returns: undefined }
       refresh_all_stats: { Args: never; Returns: undefined }

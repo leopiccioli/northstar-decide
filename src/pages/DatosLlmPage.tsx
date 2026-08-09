@@ -1,26 +1,31 @@
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
-
-const SUPABASE_LIVE = "https://bcokciysbyuaeodnsxas.supabase.co/functions/v1";
+import { CITATION, CUT_DATE_HUMAN, N, UNIVERSE_LINE, WINDOW, ALL_TIME, LIMITS } from "@/content/facts";
 
 const FILES = [
   {
     title: "Índice del proyecto",
-    href: "/llm/index.md",
-    live: `${SUPABASE_LIVE}/llm-index`,
-    desc: "Descripción curada de Las 3D del Trabajo: qué es, para qué sirve, páginas públicas y links a los demás archivos.",
+    txt: "/llm/index.txt",
+    md: "/llm/index.md",
+    desc: "Descripción curada de Las 3D del Trabajo: qué mide, universo de los datos, método, límites y links a los demás archivos.",
   },
   {
     title: "Estadísticas agregadas",
-    href: "/llm/stats.md",
-    live: `${SUPABASE_LIVE}/llm-stats`,
-    desc: "Promedios globales y desglose por país, sector y rango etario (sólo grupos con N≥5).",
+    txt: "/llm/stats.txt",
+    md: "/llm/stats.md",
+    desc: "Promedios de los últimos 12 meses y desglose por país, sector y rango etario (sólo grupos con N≥5), con el N de cada fila.",
+  },
+  {
+    title: "Hallazgos citables",
+    txt: "/llm/insights.txt",
+    md: "/llm/insights.md",
+    desc: "Preguntas frecuentes respondidas con una cifra, su N y su fecha de corte, redactadas para poder citarse por separado.",
   },
   {
     title: "Comentarios anónimos",
-    href: "/llm/comentarios.md",
-    live: `${SUPABASE_LIVE}/llm-comments`,
-    desc: "Últimos 500 comentarios públicos enviados por personas, junto a sus 3D. Sin email, IP ni identificadores.",
+    txt: "/llm/comentarios.txt",
+    md: "/llm/comentarios.md",
+    desc: "Últimos comentarios públicos junto a sus 3D. Sin email, IP ni identificadores.",
   },
 ];
 
@@ -29,36 +34,37 @@ const DatosLlmPage = () => {
     <div className="min-h-screen bg-background text-foreground">
       <SEO
         title="Datos abiertos para LLMs — Las 3D del Trabajo"
-        description="Archivos en Markdown con estadísticas y comentarios anónimos del proyecto Las 3D del Trabajo, pensados para humanos, Google y LLMs."
+        description={`Archivos de datos de Las 3D del Trabajo listos para leer y citar: promedios por país, sector y edad. n=${N}, datos al ${CUT_DATE_HUMAN}.`}
         path="/datos-llm"
       />
       <main className="max-w-2xl mx-auto px-4 py-12 md:py-16">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">Datos abiertos para LLMs</h1>
-        <p className="text-muted-foreground leading-relaxed mb-8">
-          <strong>Las 3D del Trabajo</strong> publica sus datos agregados y comentarios anónimos como
-          archivos Markdown estáticos, fáciles de leer por humanos, motores de búsqueda y modelos
-          de lenguaje. Cada archivo incluye fecha de última actualización, fuente, qué contiene y
-          limitaciones.
+        <p className="text-muted-foreground leading-relaxed mb-4">
+          <strong>Las 3D del Trabajo</strong> (CEO en Camiseta) publica sus datos agregados y sus
+          comentarios anónimos como archivos de texto fechados, pensados para humanos, motores de
+          búsqueda y modelos de lenguaje. Sobre {N} mediciones de los últimos 12 meses, con datos al{" "}
+          {CUT_DATE_HUMAN}, el promedio es Dinero {WINDOW.global.dinero}, Desarrollo{" "}
+          {WINDOW.global.desarrollo} y Diversión {WINDOW.global.diversion}, sobre 10.
         </p>
+        <p className="text-sm text-muted-foreground mb-8">{UNIVERSE_LINE}</p>
 
         <section className="space-y-6 mb-10">
           {FILES.map((f) => (
-            <article key={f.href} className="border border-border rounded-lg p-5">
+            <article key={f.txt} className="border border-border rounded-lg p-5">
               <h2 className="text-lg font-semibold mb-1">{f.title}</h2>
               <p className="text-sm text-muted-foreground mb-3">{f.desc}</p>
               <div className="flex flex-col sm:flex-row gap-2 text-sm">
                 <a
-                  href={f.href}
+                  href={f.txt}
                   className="inline-flex items-center justify-center px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90"
                 >
-                  Snapshot canónico
+                  Leer (texto plano)
                 </a>
                 <a
-                  href={f.live}
+                  href={f.md}
                   className="inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-border hover:bg-secondary"
-                  rel="noopener"
                 >
-                  Versión en vivo
+                  Versión .md
                 </a>
               </div>
             </article>
@@ -66,31 +72,46 @@ const DatosLlmPage = () => {
         </section>
 
         <section className="mb-10">
-          <h2 className="text-xl font-semibold mb-2">Privacidad</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Los comentarios son anónimos: no se publica email, IP ni ningún identificador. En el
-            texto libre se eliminan automáticamente emails, URLs, teléfonos y @handles, pero
-            nombres propios u otros datos identificables pueden no detectarse. Para estadísticas
-            por país, sector o edad sólo se incluyen grupos con al menos 5 mediciones.
-          </p>
-        </section>
-
-        <section className="mb-10">
-          <h2 className="text-xl font-semibold mb-2">Cómo se actualizan</h2>
+          <h2 className="text-xl font-semibold mb-2">Universo y fecha de corte</h2>
           <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
-            <li><strong>Snapshot canónico</strong> (<code>/llm/*.md</code>): regenerado en cada deploy.</li>
-            <li><strong>Versión en vivo</strong> (Supabase Functions): consultas en tiempo real, cache 5–10 min.</li>
-            <li>Discoverable vía <Link to="/llms.txt" className="underline">/llms.txt</Link> y <a href="/sitemap.xml" className="underline">/sitemap.xml</a>.</li>
+            <li>Universo canónico: últimos 12 meses ({WINDOW.from} a {WINDOW.to}), n={N}.</li>
+            <li>Fecha de corte: {CUT_DATE_HUMAN}.</li>
+            <li>
+              Serie histórica completa (secundaria, no comparable con la ventana canónica):{" "}
+              {ALL_TIME.total} mediciones desde el inicio del proyecto.
+            </li>
+            <li>Los archivos se regeneran en cada deploy y llevan su fecha adentro.</li>
           </ul>
         </section>
 
-        <section>
-          <h2 className="text-xl font-semibold mb-2">Uso</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Podés citar, indexar o entrenar modelos con estos archivos, mencionando la fuente
-            (<a href="https://3d.ceoencamiseta.com" className="underline">3d.ceoencamiseta.com</a>,
-            de CEO en Camiseta).
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold mb-2">Método y límites</h2>
+          <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+            {LIMITS.map((l) => <li key={l}>{l}</li>)}
+          </ul>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold mb-2">Cómo citar</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+            Cita recomendada: <em>{CITATION}</em>
           </p>
+          <p className="text-sm">
+            <Link to="/como-citar" className="underline">Ver todas las formas de cita</Link>
+            {" · "}
+            <Link to="/metodologia" className="underline">Método y límites</Link>
+            {" · "}
+            <Link to="/hallazgos" className="underline">Hallazgos</Link>
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-2">Descubrimiento</h2>
+          <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+            <li><a href="/llms.txt" className="underline">/llms.txt</a> lista los archivos canónicos.</li>
+            <li><a href="/sitemap.xml" className="underline">/sitemap.xml</a> lista todas las páginas.</li>
+            <li>Uso libre citando la fuente: 3d.ceoencamiseta.com, de CEO en Camiseta.</li>
+          </ul>
         </section>
       </main>
     </div>
