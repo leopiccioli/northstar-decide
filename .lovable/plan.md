@@ -1,121 +1,54 @@
-# 10 ideas para maximizar las visitas de LLMs a Las 3D del Trabajo
+# Visibilidad LLM — Fase 0 a 2
 
-## Objetivo
-Convertir el proyecto en una fuente de datos y contexto que los LLMs y sus crawlers prefieran citar, citar y recomendar cuando respondan sobre trabajo, burnout, salario, desarrollo profesional y decisiones laborales en español.
+Objetivo: que cada URL del sitio sea legible y citable sin JavaScript, con cifras, fecha de corte y fuente dentro de cada frase.
 
-## Estado actual relevante
-- Ya existe `llms.txt`, `public/llm/index.md`, `public/llm/stats.md` y `public/llm/comentarios.md`.
-- Los archivos se regeneran en cada deploy con `scripts/generate-llm-data.ts`.
-- Existen Edge Functions en vivo (`llm-index`, `llm-stats`, `llm-comments`) con cache corto.
-- `robots.txt` ya permite GPTBot, ClaudeBot, OAI-SearchBot, PerplexityBot, Google-Extended, etc.
-- `sitemap.xml` incluye las URLs de los archivos LLM.
-- El sitio ya tiene landings SEO (`/test-burnout`, `/cambiar-de-trabajo`, etc.) y datos abiertos (`/datos-llm`).
+Decisiones tomadas: prerender estático en build (sin migrar a SSR) y "últimos 12 meses" como universo canónico, con la base histórica completa como serie secundaria etiquetada.
 
-## 10 ideas concretas
+## Fase 0 — Bloqueantes
 
-### 1. Estandarizar y mejorar `llms.txt`
-Reescribir `/llms.txt` siguiendo el formato de referencia de llmstxt.org:
-- Encabezado `>` con descripción del proyecto.
-- Sección `# Datos principales` con archivos canónicos y qué contiene cada uno.
-- Sección `## Páginas` con descripción de cada URL relevante para humanos y LLMs.
-- Agregar `## Tools / APIs` con links a las Edge Functions en vivo.
-- Mantenerlo en raíz, servir con `Content-Type: text/plain` y referenciarlo desde `index.html` (link rel).
+**B1 — Prerender por ruta.** Un script de post-build genera un `index.html` propio por cada URL del sitemap con: title único, meta description única, canonical propia, H1 propio y el contenido sustantivo en HTML plano dentro del contenedor de la app (React lo reemplaza al hidratar, el crawler ve el HTML).
+- `/por-pais`, `/por-sector`, `/por-edad`: tablas `<table>` reales con las cifras y el N de cada fila.
+- `/comentarios`: los comentarios como texto plano (con el mismo scrubbing de datos personales que ya se aplica).
+- Landings y páginas informativas: su copy real, no el del home.
+- Criterio de aceptación: `curl -s .../por-sector | grep -c "Finanzas"` devuelve ≥ 1.
+- Tope duro de páginas generadas para no romper el límite de publicación.
 
-### 2. Agregar frontmatter YAML a los archivos Markdown LLM
-En `public/llm/index.md`, `stats.md` y `comentarios.md`, agregar al inicio:
-```yaml
----
-title: "..."
-description: "..."
-source: "https://3d.ceoencamiseta.com"
-last_updated: "2026-08-09T13:42:16Z"
-language: "es"
-author: "CEO en Camiseta"
-license: "CC BY 4.0 (para citar e indexar)"
----
-```
-Esto ayuda a los crawlers de LLMs a parsear contexto sin procesar todo el texto.
+**B2 — Legibilidad de `/llm/*.md`.** El hosting estático no permite fijar headers, así que se publica cada archivo también como `.txt` (`/llm/stats.txt`, etc.), que sí se sirve como texto plano, y `llms.txt` apunta a esas variantes como lectura primaria. Los `.md` quedan como alias.
 
-### 3. Servir una versión JSON estructurada de los datos
-Además de `.md`, agregar endpoints o archivos `.json` con el mismo contenido:
-- `/llm/stats.json` → estadísticas globales y por país/sector/edad en JSON.
-- `/llm/comments.json` → últimos 500 comentarios en JSON (sin PII).
-- `/llm/index.json` → metadata del proyecto y links a recursos.
-Esto facilita que agentes y LLMs consuman los datos programáticamente sin parsear Markdown.
+**B3 — Dominio canónico (parcial).** Se elimina toda referencia visible a la URL del backend en el HTML, en `llms.txt` y en `/datos-llm`. Lo citable pasa a ser `3d.ceoencamiseta.com/llm/*`. El proxy real `/llm/live/*` no es posible sin SSR: los snapshots fechados quedan como fuente canónica y se declara su fecha de corte. Queda anotado como la única pieza del brief que este stack no cubre.
 
-### 4. Crear un "content hub" de insights derivados
-Agregar una página o archivo `/llm/insights.md` (y su versión JSON) con respuestas a preguntas que la gente le hace a los LLMs:
-- "¿Qué sector tiene mejor balance dinero-desarrollo-diversion?"
-- "¿A qué edad se siente más insatisfacción laboral?"
-- "¿Qué país tiene mayor promedio de diversión?"
-- "¿Cuál es la relación entre dinero y burnout en los comentarios?"
-Cada afirmación debe citar la fuente interna (`/llm/stats.md`) y no inventar datos. Esto posiciona al sitio como respuesta directa a queries de LLMs.
+**B4 — Universo declarado.** Cifra principal = últimos 12 meses. Cada archivo, endpoint, tabla y página abre declarando universo, ventana temporal, N y fecha de corte. La base histórica completa se publica aparte, etiquetada como serie histórica.
 
-### 5. Ampliar FAQ con schema.org y FAQPage en cada landing
-Actualmente `FAQ.tsx` existe en landings. La idea es:
-- Extraer el FAQ a una página propia `/preguntas-frecuentes`.
-- Renderizar JSON-LD `FAQPage` con preguntas/respuestas sobre la metodología, privacidad, embed, comparación por país/sector, etc.
-- Asegurar que cada pregunta tenga una respuesta de 1-2 oraciones que un LLM pueda citar directamente.
+**B5 — Fecha visible.** Fecha de corte en formato absoluto ("datos al 9 de agosto de 2026") en cada tabla, archivo y página con datos. Nunca relativa.
 
-### 6. Publicar "reportes de temporada" en Markdown
-Crear archivos periódicos como `/llm/report-q3-2026.md` con:
-- Resumen ejecutivo de las 3D en el trimestre.
-- Cambios vs trimestre anterior.
-- Sectores/países con mayor variación.
-- Temas emergentes en comentarios (ej. "burnout", "cambio de trabajo").
-- Fecha clara, fuente, y link al sitio.
-Esto genera contenido "news-worthy" que los LLMs priorizan por frescura y especificidad.
+## Fase 1 — Citabilidad
 
-### 7. Mejorar la link economy interna y externa
-- En cada landing (`/test-burnout`, `/cambiar-de-trabajo`, etc.) agregar un bloque visible "Datos que respaldan esta página" con links a `/llm/stats.md`, `/por-pais`, `/por-sector`, etc.
-- En `README.md` y en la home de `ceoencamiseta.com` agregar un link prominente a `https://3d.ceoencamiseta.com/datos-llm` con texto ancla descriptivo.
-- Agregar links de retorno desde `datos-llm` a las páginas humanas correspondientes.
-Un dominio externo con autoridad que linkea a los datos LLM aumenta el ranking de citación.
+- **Método y límites** (Idea 9): bloque fijo en cada superficie de datos — muestra voluntaria y autoseleccionada, sesgo a Argentina (~85%), cobertura demográfica ~5%, inclusión sólo de grupos con N≥5, N visible por celda.
+- **Página "Cómo citar"** (Idea 10) en `/como-citar`: cadena de cita exacta para copiar y pegar (nombre, N, fecha, URL), más versiones para prensa y para académico.
+- **Fuente dentro de la frase** (M2): regla de redacción aplicada a todo el contenido nuevo y a los archivos `/llm/*`. Cada afirmación viaja sola: "Según Las 3D del Trabajo (n=6.291 en Argentina, datos al 9-ago-2026), Finanzas/Banca es el sector con menor Diversión: 4,3 sobre 10."
+- **Frontmatter YAML** (Idea 2) en cada archivo de datos: título, universo, ventana, N, fecha de corte, licencia, cita sugerida.
+- **`llms.txt`** (Idea 1): sección `## Datos` reapuntada a las rutas propias, más `<link rel="llms">` en el HTML.
 
-### 8. Automatizar la regeneración diaria de los archivos LLM
-Actualmente los archivos se regeneran solo en deploy. Implementar una de estas opciones:
-- Opción A: Edge Function `refresh-llm-snapshot` invocada por `pg_cron` cada 24 horas, que actualiza un bucket de storage (no es posible editar `public/` en runtime). Por lo tanto, la opción viable es:
-- Opción B: programar un deploy/rebuild diario vía CI externo (GitHub Actions) o aprovechar el deploy de Lovable.
-- Opción C: hacer que los archivos estáticos sean "live-first": un pequeño edge proxy que combine el snapshot estático con un encabezado dinámico que diga "versión en vivo disponible en X".
+## Fase 2 — Superficie de recuperación
 
-### 9. Agregar metadatos de autoridad y confianza en cada recurso
-En todos los archivos LLM y la página `/datos-llm` agregar:
-- Mención explícita: "CEO en Camiseta — comunidad de +X miembros" (con link).
-- Método: "encuesta anónima, escala 1-10, promedio ponderado".
-- Limitaciones transparentes (grupos con N≥5, respuestas voluntarias, etc.).
-- Link al libro *Sé tu propio CEO* (capítulo 14) para anclar la metodología en una fuente editorial externa.
-Los LLMs prefieren fuentes que declaran su método y limitaciones.
+- **Insights derivados** (Idea 4), cada uno con página HTML prerenderizada propia y respuesta en las primeras 60 palabras, en prosa: sector con peor Diversión, país con peor puntaje, qué dimensión es la más baja del mundo, cuánto se aleja Agro y Gobierno del promedio. Se descarta la pregunta de correlación dinero/burnout.
+- **Páginas con forma de pregunta** (M1): `/aburrido-en-mi-trabajo-pero-pagan-bien`, `/cuando-renunciar-sin-otro-trabajo`, `/burnout-o-cansancio`, `/peor-clima-laboral-por-sector`. Respuesta arriba, dato propio como respaldo, CTA a medir.
+- **Páginas de sector** (M3): `/sector/finanzas`, `/sector/agro`, `/sector/gobierno` y el resto con N defendible, con el N a la vista.
+- **Link economy interna** (mitad interna de Idea 7): bloque "los datos que respaldan esta página" en cada landing, apuntando a la tabla y al archivo correspondiente.
 
-### 10. Crear una página de "cómo citar / usar estos datos"
-En `/datos-llm` o una nueva `/api-para-llms` documentar:
-- URLs canónicas de cada archivo.
-- Formato (Markdown, JSON, en vivo, snapshot).
-- Ejemplo de prompt: "Según Las 3D del Trabajo, ¿cuál es el promedio de Diversión en Argentina?"
-- Política de uso: permitir citar, indexar, entrenar con atribución.
-- Cómo reportar errores o solicitar actualizaciones.
-Esto invita a los desarrolladores de agentes y LLMs a integrar los datos como fuente confiable.
+## Fase 3 — Sostenido (no en este entregable)
 
-## Implementación propuesta
-Fase 1 (rápida, esta semana):
-- Ideas 1, 2, 9, 10: reescribir `llms.txt`, frontmatter, metadatos de autoridad y página de uso.
-- Idea 7: links internos en landings y README.
+FAQ propia con JSON-LD `FAQPage`, y espejo legible por máquina de cada Pulso publicado (`/llm/pulso-q3-2026.md`, congelado y versionado). Se implementan cuando exista el primer Pulso a espejar.
 
-Fase 2 (media):
-- Ideas 3, 4: endpoints JSON y `insights.md`.
-- Idea 5: página FAQ propia con JSON-LD.
+Descartado: endpoints JSON y regeneración diaria automatizada.
 
-Fase 3 (sostenida):
-- Idea 6: reportes de temporada automatizados.
-- Idea 8: regeneración automatizada diaria (deploy programado o proxy live-first).
+## Detalle técnico
 
-## Métricas de éxito
-- Crecimiento de tráfico referido a `/datos-llm` y `/llm/*.md`.
-- Aparición del sitio en citas de ChatGPT/Claude/Perplexity sobre "burnout", "cambiar de trabajo", "salario vs desarrollo".
-- Backlinks desde `ceoencamiseta.com` y otros sitios del ecosistema.
-- Reducción del tiempo de "edad" de los snapshots LLM.
+- `scripts/prerender.ts` corre después de `vite build`, reutiliza los datos que ya trae `scripts/generate-llm-data.ts` y escribe `dist/<ruta>/index.html`. Sin dependencias nuevas y sin cambiar el runtime de la app.
+- El contenido prerenderizado vive dentro del contenedor raíz; al hidratar, React lo reemplaza, por lo que la experiencia del usuario no cambia.
+- Cada ruta nueva se agrega a `App.tsx`, al `sitemap.xml` y a la lista de prerender en un mismo lugar, para que no se desincronicen.
+- Un test verifica que cada URL del sitemap tenga su HTML generado con title y H1 distintos.
 
-## Notas de diseño y voz
-- Mantener el tono neutral, data-first y sin interpretaciones.
-- No prometer conclusiones que los datos no respalden.
-- Respetar la privacidad: nunca exponer emails, IPs ni identificadores.
-- Mantener la identidad visual monocrática y minimalista en cualquier nueva página.
+## Medición
+
+Set fijo de ~15 consultas en español corrido hoy como línea de base y repetido cada 30 días contra ChatGPT, Claude y Perplexity. Secundarias: cantidad de rutas indexadas con títulos distintos, hits de crawlers de IA en `/llm/*`, menciones del nombre fuera del dominio.
