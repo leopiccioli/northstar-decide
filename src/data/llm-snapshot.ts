@@ -1,39 +1,39 @@
 // AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.
 export default {
-  "generatedAt": "2026-08-09T15:28:01.544Z",
-  "cutDateIso": "2026-08-09",
-  "cutDateHuman": "9 de agosto de 2026",
+  "generatedAt": "2026-08-11T14:52:17.092Z",
+  "cutDateIso": "2026-08-11",
+  "cutDateHuman": "11 de agosto de 2026",
   "window": {
-    "to": "2026-08-09",
-    "from": "2025-08-09",
-    "total": 1554,
+    "to": "2026-08-11",
+    "from": "2025-08-11",
+    "total": 1566,
     "by_age": [
       {
-        "n": 57,
+        "n": 59,
         "key": "25-34",
         "dinero": 7.1,
-        "promedio": 7,
-        "diversion": 6.6,
+        "promedio": 7.1,
+        "diversion": 6.7,
         "desarrollo": 7.4
       },
       {
-        "n": 188,
+        "n": 196,
         "key": "35-44",
         "dinero": 6.6,
         "promedio": 6.3,
-        "diversion": 5.9,
-        "desarrollo": 6.5
+        "diversion": 5.8,
+        "desarrollo": 6.4
       },
       {
-        "n": 56,
+        "n": 57,
         "key": "55-64",
         "dinero": 6.5,
         "promedio": 6.2,
         "diversion": 6,
-        "desarrollo": 6.1
+        "desarrollo": 6.2
       },
       {
-        "n": 124,
+        "n": 126,
         "key": "45-54",
         "dinero": 6.2,
         "promedio": 5.8,
@@ -49,9 +49,9 @@ export default {
     },
     "months": 12,
     "coverage": {
-      "with_age": 429,
-      "with_sector": 420,
-      "with_country": 1553
+      "with_age": 442,
+      "with_sector": 431,
+      "with_country": 1565
     },
     "by_sector": [
       {
@@ -79,20 +79,28 @@ export default {
         "desarrollo": 6.9
       },
       {
-        "n": 32,
-        "key": "Tecnología / Software",
-        "dinero": 6.6,
-        "promedio": 6.5,
-        "diversion": 6.3,
-        "desarrollo": 6.8
-      },
-      {
         "n": 11,
         "key": "Medios / Comunicación",
         "dinero": 6.7,
         "promedio": 6.5,
         "diversion": 6.4,
         "desarrollo": 6.4
+      },
+      {
+        "n": 49,
+        "key": "Industria / Manufactura",
+        "dinero": 7,
+        "promedio": 6.5,
+        "diversion": 5.7,
+        "desarrollo": 6.7
+      },
+      {
+        "n": 33,
+        "key": "Tecnología / Software",
+        "dinero": 6.6,
+        "promedio": 6.4,
+        "diversion": 6.1,
+        "desarrollo": 6.6
       },
       {
         "n": 28,
@@ -103,14 +111,6 @@ export default {
         "desarrollo": 6.8
       },
       {
-        "n": 47,
-        "key": "Industria / Manufactura",
-        "dinero": 7,
-        "promedio": 6.4,
-        "diversion": 5.6,
-        "desarrollo": 6.7
-      },
-      {
         "n": 6,
         "key": "Hospitalidad / Turismo",
         "dinero": 5.8,
@@ -119,7 +119,7 @@ export default {
         "desarrollo": 7.3
       },
       {
-        "n": 70,
+        "n": 71,
         "key": "Consultoría",
         "dinero": 6.1,
         "promedio": 6.2,
@@ -127,7 +127,7 @@ export default {
         "desarrollo": 6.5
       },
       {
-        "n": 43,
+        "n": 46,
         "key": "Salud",
         "dinero": 6.6,
         "promedio": 6.2,
@@ -135,12 +135,12 @@ export default {
         "desarrollo": 6.3
       },
       {
-        "n": 18,
+        "n": 19,
         "key": "Agro",
         "dinero": 7.4,
-        "promedio": 6.1,
-        "diversion": 5.2,
-        "desarrollo": 5.7
+        "promedio": 6,
+        "diversion": 5,
+        "desarrollo": 5.5
       },
       {
         "n": 37,
@@ -159,12 +159,12 @@ export default {
         "desarrollo": 6.3
       },
       {
-        "n": 26,
+        "n": 29,
         "key": "Finanzas / Banca / Seguros",
         "dinero": 5.9,
-        "promedio": 5.5,
+        "promedio": 5.4,
         "diversion": 4.7,
-        "desarrollo": 5.9
+        "desarrollo": 5.8
       },
       {
         "n": 24,
@@ -185,7 +185,7 @@ export default {
         "desarrollo": 8
       },
       {
-        "n": 26,
+        "n": 25,
         "key": "Chile",
         "dinero": 7.2,
         "promedio": 7,
@@ -201,12 +201,12 @@ export default {
         "desarrollo": 7
       },
       {
-        "n": 24,
+        "n": 26,
         "key": "Uruguay",
         "dinero": 6.7,
         "promedio": 6.6,
-        "diversion": 5.6,
-        "desarrollo": 7.6
+        "diversion": 5.7,
+        "desarrollo": 7.5
       },
       {
         "n": 79,
@@ -257,7 +257,7 @@ export default {
         "desarrollo": 6.5
       },
       {
-        "n": 1297,
+        "n": 1308,
         "key": "Argentina",
         "dinero": 6.4,
         "promedio": 6.3,
@@ -283,7 +283,7 @@ export default {
     ]
   },
   "allTime": {
-    "total": 12909,
+    "total": 12922,
     "global": {
       "dinero": 6,
       "promedio": 6,

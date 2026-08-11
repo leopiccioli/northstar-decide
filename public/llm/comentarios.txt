@@ -5,14 +5,14 @@ url: "https://3d.ceoencamiseta.com/llm/comentarios.txt"
 mirror_md: "https://3d.ceoencamiseta.com/llm/comentarios.md"
 universe: "últimos comentarios públicos"
 n: 500
-cut_date: "2026-08-09"
-updated: "2026-08-09T15:28:01.544Z"
+cut_date: "2026-08-11"
+updated: "2026-08-11T14:52:17.092Z"
 language: "es"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1554 mediciones de los últimos 12 meses, datos al 9 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1566 mediciones de los últimos 12 meses, datos al 11 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Muro de los lamentos — comentarios anónimos
 
-Comentarios públicos enviados a Las 3D del Trabajo (CEO en Camiseta) junto a sus puntajes de Dinero, Desarrollo y Diversión. Datos al 9 de agosto de 2026. Total listado: 500.
+Comentarios públicos enviados a Las 3D del Trabajo (CEO en Camiseta) junto a sus puntajes de Dinero, Desarrollo y Diversión. Datos al 11 de agosto de 2026. Total listado: 500.
 
 ## Método y límites
 
@@ -22,6 +22,54 @@ Comentarios públicos enviados a Las 3D del Trabajo (CEO en Camiseta) junto a su
 
 ---
 
+## Argentina · 55-64 · 2026-08-11
+Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 6/10
+
+bajo sueldo en funcion del cargo, faltan desafios
+
+---
+## Uruguay · Industria / Manufactura · 35-44 · 2026-08-11
+Dinero: 8/10 · Desarrollo: 8/10 · Diversión: 8/10
+
+Enfoque en lo importante
+
+---
+## Argentina · Finanzas / Banca / Seguros · 35-44 · 2026-08-10
+Dinero: 4/10 · Desarrollo: 6/10 · Diversión: 6/10
+
+estoy bien pero siento que estoy muy comodo y voy a pagar eso en el futuro. Hoy no tengo necesidad de aprender cosas nuevas y cuando quiero hacerlo no lo logro
+
+---
+## Uruguay · Salud · 35-44 · 2026-08-10
+Dinero: 6/10 · Desarrollo: 6/10 · Diversión: 5/10
+
+trabajo más efectivo, pocas horas bien aprovechadas y pagas.
+
+---
+## Argentina · Finanzas / Banca / Seguros · 35-44 · 2026-08-10
+Dinero: 7/10 · Desarrollo: 6/10 · Diversión: 6/10
+
+Aburrimiento
+
+---
+## Argentina · Tecnología / Software · 45-54 · 2026-08-09
+Dinero: 9/10 · Desarrollo: 2/10 · Diversión: 1/10
+
+Irme
+
+---
+## Argentina · Salud · 35-44 · 2026-08-09
+Dinero: 6/10 · Desarrollo: 5/10 · Diversión: 6/10
+
+Necesito más de todo dinero diversión y desarrollo
+
+---
+## Argentina · Industria / Manufactura · 45-54 · 2026-08-09
+Dinero: 6/10 · Desarrollo: 8/10 · Diversión: 7/10
+
+El dinero  y poder ingresar a una empresa mas consolidada teniendo mas de 40 años, con 20 de experiencia
+
+---
 ## Argentina · Consultoría · 35-44 · 2026-08-09
 Dinero: 8/10 · Desarrollo: 7/10 · Diversión: 4/10
 
@@ -2972,53 +3020,5 @@ New job
 Dinero: 6/10 · Desarrollo: 8/10 · Diversión: 7/10
 
 Hola, enero 2026, haciendo orden de finanzas. Hoy estoy semi conforme con el dinero, pero tambien lo he desatendido asique estoy retomando el orden para saber como me siento con respecto a lo que gano. En desarrollo, finalmente me he decidido a tomar posesion de mi lugar como comercial de la empresa, es algo que me da pavor, le temo, y trato de huir, pero en el fondo sé que es miedo al exito y a exponerme y fallar. Veo mi poca tolerancia a fallar. Voy a ir a por ella. Y en diversion, la verdad que está baja, lo remoto tiene a ser aburrido y eso continua. Pero tengo en claro que si voy regularmente a la ofi cada 3 meses, eso se regula, seguire con ese plan. Ofi nos vemos en marzo/abril 2026
-
----
-## Argentina · 2026-01-01
-Dinero: 7/10 · Desarrollo: 5/10 · Diversión: 6/10
-
-.
-
----
-## Argentina · 2025-12-31
-Dinero: 3/10 · Desarrollo: 7/10 · Diversión: 9/10
-
-ReCAP
-
----
-## Argentina · 2025-12-31
-Dinero: 6/10 · Desarrollo: 1/10 · Diversión: 1/10
-
-odio mi trabajo
-
----
-## Argentina · 2025-12-31
-Dinero: 9/10 · Desarrollo: 8/10 · Diversión: 5/10
-
-Subí dinero, me desarrollé mucho en nuevo sector y me dolió y me estresé. No me divertí en ese camino.
-
----
-## Argentina · Industria / Manufactura · 35-44 · 2025-12-31
-Dinero: 9/10 · Desarrollo: 9/10 · Diversión: 10/10
-
-Cambié de trabajo a principios de Octubre
-
----
-## Argentina · 2025-12-29
-Dinero: 8/10 · Desarrollo: 6/10 · Diversión: 6/10
-
-estoy en un año de quiebre, para evaluar a mitad de año y empezar a buscar opciones si no se desenvuelve como espero
-
----
-## México · Agro · 35-44 · 2025-12-28
-Dinero: 9/10 · Desarrollo: 7/10 · Diversión: 6/10
-
-Después de meses de desempleo, estoy por cumplir 3 meses laborando. No en lo que hubiese querido, pero estoy generando ingresos.
-
----
-## Argentina · Consultoría · 35-44 · 2025-12-27
-Dinero: 3/10 · Desarrollo: 7/10 · Diversión: 7/10
-
-Me independicé, pero aún no logré un régimen suficiente.
 
 ---
