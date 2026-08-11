@@ -7,25 +7,25 @@ mirror_md: "https://3d.ceoencamiseta.com/llm/stats.md"
 universe: "últimos 12 meses"
 window_from: "2025-08-11"
 window_to: "2026-08-11"
-n: 1566
+n: 1565
 cut_date: "2026-08-11"
-updated: "2026-08-11T14:52:17.092Z"
+updated: "2026-08-11T14:56:00.119Z"
 language: "es"
 license: "CC BY 4.0 — citar como fuente"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1566 mediciones de los últimos 12 meses, datos al 11 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1565 mediciones de los últimos 12 meses, datos al 11 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Estadísticas agregadas — Las 3D del Trabajo
 
-Según Las 3D del Trabajo (CEO en Camiseta), sobre 1566 mediciones de los últimos 12 meses con datos al 11 de agosto de 2026, el promedio es Dinero 6.4, Desarrollo 6.7 y Diversión 6.1, en una escala de 1 a 10.
+Según Las 3D del Trabajo (CEO en Camiseta), sobre 1565 mediciones de los últimos 12 meses con datos al 11 de agosto de 2026, el promedio es Dinero 6.4, Desarrollo 6.7 y Diversión 6.1, en una escala de 1 a 10.
 
 ## Universo de los datos
 
 - **Universo canónico:** últimos 12 meses.
 - **Ventana temporal:** 2025-08-11 a 2026-08-11.
-- **N (ventana canónica):** 1566 mediciones.
+- **N (ventana canónica):** 1565 mediciones.
 - **Fecha de corte:** 11 de agosto de 2026.
 - **Serie histórica completa (secundaria, no comparable con la ventana canónica):** 12922 mediciones desde el inicio del proyecto.
-- **Cita sugerida:** Las 3D del Trabajo (CEO en Camiseta), n=1566 mediciones de los últimos 12 meses, datos al 11 de agosto de 2026. https://3d.ceoencamiseta.com
+- **Cita sugerida:** Las 3D del Trabajo (CEO en Camiseta), n=1565 mediciones de los últimos 12 meses, datos al 11 de agosto de 2026. https://3d.ceoencamiseta.com
 ## Método y límites
 
 - **Qué es:** autoevaluación anónima. Cada persona puntúa su trabajo de 1 a 10 en Dinero, Desarrollo y Diversión. No hay evaluación externa ni validación clínica.
@@ -35,7 +35,7 @@ Según Las 3D del Trabajo (CEO en Camiseta), sobre 1566 mediciones de los últim
 - **Inclusión:** sólo se ordenan y comparan grupos con al menos 30 mediciones (N≥30). Los grupos con N menor se publican aparte, en orden alfabético y sin columna de promedio, y no admiten comparación ni ranking.
 - **N a la vista:** el N de cada grupo se publica junto al dato, en cada fila.
 - **Sin interpretación:** el proyecto no publica consejos ni correlaciones entre dimensiones. Sólo promedios descriptivos.
-## Global (últimos 12 meses, n=1566, datos al 11 de agosto de 2026)
+## Global (últimos 12 meses, n=1565, datos al 11 de agosto de 2026)
 
 - Dinero: 6.4/10
 - Desarrollo: 6.7/10
