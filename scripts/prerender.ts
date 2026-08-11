@@ -383,7 +383,11 @@ function main() {
     writeFileSync(join(dir, 'index.html'), html);
   }
 
-  writeFileSync(join(DIST, 'sitemap.xml'), sitemap());
+  const xml = sitemap();
+  writeFileSync(join(DIST, 'sitemap.xml'), xml);
+  // Mirror into public/ so the dev preview and the repo never serve a stale
+  // hand-edited sitemap; the build copy in dist/ is the one that gets published.
+  writeFileSync(resolve('public/sitemap.xml'), xml);
   writeFileSync(join(DIST, 'llms.txt'), llmsTxt());
   writeFileSync(resolve('public/llms.txt'), llmsTxt());
 
