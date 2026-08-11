@@ -1,6 +1,86 @@
 // AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.
 export default [
   {
+    "date": "2026-08-11",
+    "country": "Argentina",
+    "sector": null,
+    "age": "55-64",
+    "dinero": 7,
+    "desarrollo": 7,
+    "diversion": 6,
+    "text": "bajo sueldo en funcion del cargo, faltan desafios"
+  },
+  {
+    "date": "2026-08-11",
+    "country": "Uruguay",
+    "sector": "Industria / Manufactura",
+    "age": "35-44",
+    "dinero": 8,
+    "desarrollo": 8,
+    "diversion": 8,
+    "text": "Enfoque en lo importante"
+  },
+  {
+    "date": "2026-08-10",
+    "country": "Argentina",
+    "sector": "Finanzas / Banca / Seguros",
+    "age": "35-44",
+    "dinero": 4,
+    "desarrollo": 6,
+    "diversion": 6,
+    "text": "estoy bien pero siento que estoy muy comodo y voy a pagar eso en el futuro. Hoy no tengo necesidad de aprender cosas nuevas y cuando quiero hacerlo no lo logro"
+  },
+  {
+    "date": "2026-08-10",
+    "country": "Uruguay",
+    "sector": "Salud",
+    "age": "35-44",
+    "dinero": 6,
+    "desarrollo": 6,
+    "diversion": 5,
+    "text": "trabajo más efectivo, pocas horas bien aprovechadas y pagas."
+  },
+  {
+    "date": "2026-08-10",
+    "country": "Argentina",
+    "sector": "Finanzas / Banca / Seguros",
+    "age": "35-44",
+    "dinero": 7,
+    "desarrollo": 6,
+    "diversion": 6,
+    "text": "Aburrimiento"
+  },
+  {
+    "date": "2026-08-09",
+    "country": "Argentina",
+    "sector": "Tecnología / Software",
+    "age": "45-54",
+    "dinero": 9,
+    "desarrollo": 2,
+    "diversion": 1,
+    "text": "Irme"
+  },
+  {
+    "date": "2026-08-09",
+    "country": "Argentina",
+    "sector": "Salud",
+    "age": "35-44",
+    "dinero": 6,
+    "desarrollo": 5,
+    "diversion": 6,
+    "text": "Necesito más de todo dinero diversión y desarrollo"
+  },
+  {
+    "date": "2026-08-09",
+    "country": "Argentina",
+    "sector": "Industria / Manufactura",
+    "age": "45-54",
+    "dinero": 6,
+    "desarrollo": 8,
+    "diversion": 7,
+    "text": "El dinero  y poder ingresar a una empresa mas consolidada teniendo mas de 40 años, con 20 de experiencia"
+  },
+  {
     "date": "2026-08-09",
     "country": "Argentina",
     "sector": "Consultoría",
@@ -2919,85 +2999,5 @@ export default [
     "desarrollo": 8,
     "diversion": 8,
     "text": "poco sueldo"
-  },
-  {
-    "date": "2026-02-03",
-    "country": "España",
-    "sector": null,
-    "age": null,
-    "dinero": 10,
-    "desarrollo": 7,
-    "diversion": 9,
-    "text": "Dinero"
-  },
-  {
-    "date": "2026-02-02",
-    "country": "México",
-    "sector": null,
-    "age": null,
-    "dinero": 10,
-    "desarrollo": 10,
-    "diversion": 10,
-    "text": "Poco sueldo."
-  },
-  {
-    "date": "2026-02-02",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 3,
-    "desarrollo": 3,
-    "diversion": 4,
-    "text": "Mejoras las 3 D, pido mucho?"
-  },
-  {
-    "date": "2026-02-02",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 4,
-    "desarrollo": 7,
-    "diversion": 4,
-    "text": "El esfuerzo en ventas y marketing es enorme"
-  },
-  {
-    "date": "2026-02-02",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 10,
-    "desarrollo": 8,
-    "diversion": 7,
-    "text": "Ganas más dinero, y que no sea tan monótono todo."
-  },
-  {
-    "date": "2026-02-02",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 7,
-    "desarrollo": 4,
-    "diversion": 4,
-    "text": "Poca motivacion, lejos de la trinchera"
-  },
-  {
-    "date": "2026-02-02",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 8,
-    "desarrollo": 6,
-    "diversion": 8,
-    "text": "Reconocimiento y poder hacer lo que planeo"
-  },
-  {
-    "date": "2026-02-02",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 6,
-    "desarrollo": 5,
-    "diversion": 4,
-    "text": "Mayor sueldo, desafios, trabajo remoto"
   }
 ] as const;
