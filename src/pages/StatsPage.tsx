@@ -14,7 +14,7 @@ import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
 import { SiteFooter } from '@/components/SiteFooter';
 import { statsDatasetJsonLd } from '@/content/schema';
-import { CUT_DATE_HUMAN, ELIGIBLE_COUNTRIES, N } from '@/content/facts';
+import { countryPath, CUT_DATE_HUMAN, ELIGIBLE_COUNTRIES, N } from '@/content/facts';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'country' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
