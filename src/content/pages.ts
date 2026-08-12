@@ -168,6 +168,22 @@ function relatedBlocks(cut: Cut, key: string): Block[] {
   return blocks;
 }
 
+const sectorLink = (key: string) => {
+  const href = sectorPath(key);
+  return href ? { href, label: `${key}: cómo puntúa su trabajo` } : null;
+};
+const countryLink = (key: string) => {
+  const href = countryPath(key);
+  return href ? { href, label: `${key}: cómo puntúa su trabajo` } : null;
+};
+
+/** Link from an insight back to the detail page of the group it cites. */
+function evidenceLinks(...maybe: ({ href: string; label: string } | null)[]): Block[] {
+  const items = maybe.filter((x): x is { href: string; label: string } => x !== null);
+  return items.length ? [{ type: 'links', title: 'La página completa de este dato', items }] : [];
+}
+
+
 /* ---------------------------------------------------------------- insights */
 
 
