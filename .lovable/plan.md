@@ -1,41 +1,54 @@
-# Hacer más rápido el camino "llego y respondo"
+# Quitar PostHog + optimizaciones separadas por riesgo SEO/LLM
 
-Medí el sitio publicado antes de escribir esto. Lo que arrastra hoy a quien entra por primera vez:
+## Parte A — Quitar PostHog
 
-- El bundle inicial es **un solo archivo de 694 KB (215 KB comprimido)** que se descarga y se parsea antes de poder tocar nada.
-- Adentro de ese archivo, sin necesitarse para responder las 3D, están: **posthog-js** entero, el **cliente de Supabase** entero y **todo el texto de las páginas de contenido** (hallazgos, sectores, países, edades). Verificado buscando `phc_trVH`, `supabase.co` y `sector-con-menos-diversion` dentro del JS publicado.
-- En mobile la primera pantalla es **Context**, y está en carga diferida: el visitante ve el spinner y espera un segundo archivo antes de poder elegir su situación.
-- El HTML prerenderizado de la home mete un `<article>` con título y muro de links **dentro de `#root`, sin estilos**. Es correcto para buscadores, pero el humano ve ese bloque en blanco y negro hasta que React lo reemplaza.
+PostHog está en 6 archivos y es la librería más grande que hoy viaja en el bundle inicial sin necesitarse para responder las 3D.
 
-Abajo, ordenado por impacto sobre el tiempo hasta la primera respuesta.
+- `src/lib/posthog.ts` — se elimina el archivo entero.
+- `src/main.tsx` — sacar el `initPostHog` diferido.
+- `src/lib/analytics.ts` — sacar el bloque PostHog de `trackEvent` (incluido el `identify` por email en `save_result`). Meta Pixel, X Pixel y GA4 quedan intactos.
+- `src/pages/EmbedPage.tsx` — sacar el `capture('embed_view')`.
+- `src/components/landing/LandingShell.tsx` — sacar el `capture('lp_view')`.
+- `package.json` — desinstalar `posthog-js`.
 
-## Fase 1 — Sacar del arranque lo que no se usa para responder
+Nota: los eventos `embed_view` y `lp_view` sólo se mandaban a PostHog. Si querés conservarlos, los puedo redirigir a GA4 en la misma pasada — decime.
 
-1. **posthog-js con import dinámico.** Hoy `initPostHog` se difiere, pero la librería igual viaja en el bundle inicial. Pasar a `await import('posthog-js')` dentro de `initPostHog`, y que `getPostHog()` devuelva `null` hasta que cargue (ya está preparado para eso). Es la porción más grande de JS que hoy nadie necesita para puntuar.
-2. **Supabase fuera de la pantalla de entrada.** Lo único que pide la entrada es el contador de mediciones (`get_measurement_count`). Reemplazarlo por un `fetch` directo al endpoint RPC con la clave pública ya presente en el entorno. El cliente completo sigue igual, pero se carga recién en la pantalla de resultado, que es donde se guarda.
-3. **Contenido editorial fuera del bundle inicial.** `App.tsx` importa `CONTENT_PAGES` sólo para declarar rutas, y eso arrastra todo el texto de las páginas de datos. Dejar en el arranque únicamente la lista de paths y mover el contenido al módulo que ya se carga diferido (`ContentPage`).
-4. **Proveedores que no se usan en la home.** `QueryClientProvider` y `TooltipProvider` están en la raíz, pero React Query y el tooltip los usa sólo `/comentarios` (que además ya trae su propio `TooltipProvider`). Bajarlos a esa página.
+## Parte B — Optimizaciones SIN ningún riesgo para SEO ni LLMs
 
-## Fase 2 — Sacar la espera de la primera pantalla
+Ninguna de estas toca el HTML prerenderizado, ni el sitemap, ni los `.md`/`.txt` para LLMs, ni el texto visible.
 
-5. **Invertir qué se carga diferido.** Mobile se saltea la entrada y arranca en Context, que hoy es diferida: spinner garantizado. Poner **Context como import directo** (es una pantalla chica: etiquetas y botones) y dejar **Entry como diferida**, ya que es sólo desktop. Quien entra desde el celular ve la primera pregunta sin un segundo viaje a la red.
-6. **Precargar Input antes del click, no después.** Hoy se precarga 500 ms después de que Context aparece. Dispararlo también en el primer `pointerdown` sobre cualquier opción, para que la pantalla de sliders esté lista en el momento del click.
+1. **Supabase fuera de la pantalla de entrada.** Lo único que pide es el contador (`get_measurement_count`); pasa a un `fetch` al endpoint RPC. El cliente completo se carga recién al guardar el resultado.
+2. **Contenido editorial fuera del bundle inicial.** `App.tsx` importa `CONTENT_PAGES` sólo para declarar rutas y eso arrastra todo el texto de hallazgos, países, sectores y edades al primer archivo. Queda una lista liviana de paths; el contenido se carga con la página. El prerender sigue leyendo el contenido igual que hoy en tiempo de build, así que las 36 rutas estáticas y el sitemap no cambian.
+3. **Proveedores que no se usan en la home.** `QueryClientProvider` y `TooltipProvider` están en la raíz pero los usa sólo `/comentarios`. Bajarlos a esa página.
+4. **Invertir la carga diferida de las pantallas.** Mobile arranca en Context, que hoy es diferida: spinner garantizado en el grupo más grande. Context pasa a import directo y Entry (sólo desktop) pasa a diferida.
+5. **Precargar Input en el `pointerdown`,** no 500 ms después de que aparece Context.
+6. **Contador sin salto.** Pintar el número del snapshot del build desde el primer frame y reemplazarlo cuando responde la base.
+7. **Fuentes propias.** Space Grotesk y JetBrains Mono hoy vienen de Google Fonts: conexión nueva + hoja de estilos + archivo. Alojarlas en el proyecto con `font-display: swap`. Mismo aspecto, un salto de red menos, y mejora Core Web Vitals (o sea, si algo, ayuda al SEO).
 
-## Fase 3 — Percepción y red
+## Parte C — Lo que SÍ toca terreno SEO/LLM (decidir aparte)
 
-7. **Contador sin salto.** La entrada y las landings muestran "N mediciones" recién cuando responde la base. Pintar de entrada el número del snapshot del build y reemplazarlo cuando llega el dato real: se ve un número desde el primer frame.
-8. **Fuentes propias.** Hoy Space Grotesk y JetBrains Mono vienen de Google Fonts: dos conexiones nuevas, una hoja de estilos y recién después el archivo de fuente. Alojar en el proyecto los pesos que realmente se usan (Space Grotesk 400/500/700) con `font-display: swap`, y dejar el mono sólo donde hace falta. Mismo aspecto, un salto de red menos.
-9. **El flash del bloque prerenderizado.** Hay dos caminos y prefiero que elijas:
-   - **A (mínimo):** dejarlo como está — es lo más seguro para SEO y el flash dura lo que tarda la hidratación.
-   - **B:** darle al bloque prerenderizado de la home unos estilos en línea con la paleta del sitio (fondo oscuro, título centrado) para que el primer frame ya se parezca a la pantalla de entrada en vez de a un documento sin formato.
+8. **Estilar el bloque prerenderizado de la home.** Hoy el `<article>` que inyecta el prerender vive dentro de `#root` sin estilos: el humano ve texto plano hasta que hidrata React.
+   - *Riesgo:* cualquier cosa que lo achique, lo oculte o lo mueva fuera del flujo puede leerse como contenido escondido, y es exactamente el bloque que hoy lee un crawler que no ejecuta JS.
+   - *Mitigación si lo hacemos:* sólo colores y tipografía en línea, sin `display:none`, sin `height:0`, sin `overflow:hidden`, y el texto queda íntegro.
+   - *Mi recomendación:* no tocarlo. La ganancia es estética y dura menos de un segundo; el riesgo cae sobre la pieza que sostiene la indexación.
+
+9. **Diferir el `<script>` de GA4 / píxeles aún más (o cargarlos sólo tras la primera interacción).**
+   - *Riesgo:* no es SEO, es de medición — perdés parte de los pageviews de quien rebota rápido.
+   - *Mi recomendación:* dejarlo como está ahora que sale PostHog; el peso restante ya es chico.
+
+10. **Partir el bundle por ruta también para las páginas de contenido.**
+    - *Riesgo:* ninguno para el crawler (todo está prerenderizado), pero si el `code-splitting` se pasa de fino, las páginas de datos tardan más en hidratar y eso sí puede empeorar los Core Web Vitals medidos en campo.
+    - *Mi recomendación:* hacer sólo el corte del punto 2 y no ir más fino.
 
 ## Detalles técnicos
 
-- Sin dependencias nuevas y sin cambios de diseño (salvo el punto 9B, si lo elegís).
-- Archivos tocados: `src/lib/posthog.ts`, `src/lib/analytics.ts`, `src/App.tsx`, `src/components/decision/DecisionFlow.tsx`, `src/components/decision/EntryScreen.tsx`, `src/components/landing/LandingShell.tsx`, `src/hooks/usePrefetch.ts`, `src/pages/CommentsPage.tsx`, `src/content/pages.ts` (sólo separar paths del contenido), `index.html` y `scripts/prerender.ts` (sólo el punto 9B).
-- No se toca `src/integrations/supabase/client.ts`.
-- Verificación: comparar el tamaño del chunk de entrada antes y después del build, y abrir el preview en viewport mobile para confirmar que la primera pantalla ya no muestra spinner.
+- Sin dependencias nuevas; se quita una (`posthog-js`).
+- Sin cambios de diseño ni de copy en ninguna página.
+- Archivos tocados en A+B: `src/lib/posthog.ts` (borrar), `src/main.tsx`, `src/lib/analytics.ts`, `src/pages/EmbedPage.tsx`, `src/components/landing/LandingShell.tsx`, `src/App.tsx`, `src/components/decision/DecisionFlow.tsx`, `src/components/decision/EntryScreen.tsx`, `src/hooks/usePrefetch.ts`, `src/pages/CommentsPage.tsx`, `src/content/pages.ts` (sólo separar paths de contenido), `index.html` + los archivos de fuente.
+- No se toca `src/integrations/supabase/client.ts`, ni `scripts/prerender.ts`, ni `llms.txt`, ni el sitemap.
+- Verificación: comparar el tamaño del chunk de entrada contra el actual (694 KB crudos / 215 KB comprimidos), y confirmar en el build que siguen saliendo las 36 rutas estáticas y el sitemap completo.
 
-## Alcance sugerido
+## Qué necesito de vos
 
-La Fase 1 es la que más pesa y no cambia nada visible. La Fase 2 es chica y es la que elimina el spinner del primer contacto en celular. La Fase 3 es afinado. Decime si arranco con 1+2, si hago todo, y qué preferís para el punto 9.
+- ¿Redirijo `embed_view` y `lp_view` a GA4, o los dejo morir con PostHog?
+- ¿Arranco con A+B (recomendado), o querés incluir alguno de los tres de la Parte C?
