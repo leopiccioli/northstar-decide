@@ -94,17 +94,7 @@ const ageLabel = (key: string) => `${key} años`;
 
 /* ------------------------------------------------------- internal linking */
 
-/** Detail pages that actually exist, so no link can ever point to a 404. */
-const SECTOR_PAGE_KEYS = new Set(SECTOR_PAGES.map((s) => s.key));
-const COUNTRY_PAGE_KEYS = new Set(COUNTRY_PAGES.map((c) => c.key));
-const AGE_PAGE_KEYS = new Set(AGE_PAGES.map((a) => a.key));
 
-export const sectorPath = (key: string) =>
-  SECTOR_PAGE_KEYS.has(key) ? `/sector/${sectorSlug(key)}` : null;
-export const countryPath = (key: string) =>
-  COUNTRY_PAGE_KEYS.has(key) ? `/pais/${countrySlug(key)}` : null;
-export const agePath = (key: string) =>
-  AGE_PAGE_KEYS.has(key) ? `/edad/${ageSlug(key)}` : null;
 
 type Cut = 'sector' | 'pais' | 'edad';
 
