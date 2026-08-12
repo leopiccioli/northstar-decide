@@ -355,6 +355,8 @@ const sectorPages: ContentPage[] = SECTOR_PAGES.map((s) => ({
     ] },
     { type: 'p', text: `Esta página se apoya en ${s.n} mediciones de ${s.key} dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. Supera el umbral de publicación (N≥${PUBLISH_THRESHOLD}), pero describe a quienes midieron y no representa al sector completo.` },
     ...statTables('Sector', 'Todos los sectores', ELIGIBLE_SECTORS, BELOW_SECTORS),
+    ...relatedBlocks('sector', s.key),
+
 
     ...limitsBlocks,
     backingData,
