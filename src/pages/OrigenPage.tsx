@@ -66,7 +66,7 @@ export default function OrigenPage() {
       isAccessibleForFree: true,
       author: { '@type': 'Person', name: 'Leo Piccioli' },
       datePublished: '2007-12-10',
-      dateModified: '2026-08-12',
+      dateModified: CUT_DATE_ISO,
       publisher: { '@type': 'Organization', name: 'CEO en Camiseta', url: 'https://ceoencamiseta.com' },
     },
     {
