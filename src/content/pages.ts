@@ -475,6 +475,8 @@ const extraInsightPages: ContentPage[] = [
       { type: 'ul', items: dimensionRanking.map((d, i) => `${i + 1}. ${d.name}: ${d.value} sobre 10.`) },
       { type: 'p', text: `Las tres dimensiones se puntúan por separado y no se combinan en un índice único: el promedio 3D de ${WINDOW.global.promedio} sobre 10 se publica sólo como referencia. Comparar Dinero contra Diversión sirve para ver qué está comprando cada persona con su sueldo, no para decidir por ella.` },
       ...statTables('Sector', 'Las tres dimensiones por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (x, y) => y.dinero - x.dinero),
+      { type: 'links', title: 'Cada sector en detalle', items: SECTOR_PAGES.map((s) => ({ href: `/sector/${sectorSlug(s.key)}`, label: s.key })) },
+
       ...limitsBlocks,
       backingData,
       measure,
