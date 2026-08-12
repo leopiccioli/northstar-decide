@@ -90,6 +90,9 @@ export default function OrigenPage() {
         <meta property="og:description" content={ORIGEN_META.description} />
         <meta property="og:url" content={url} />
         <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ORIGEN_META.title} />
+        <meta name="twitter:description" content={ORIGEN_META.description} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
