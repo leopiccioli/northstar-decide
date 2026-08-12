@@ -1,13 +1,15 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { DecisionState, UserContext, Scores } from '@/types/decision';
-import { EntryScreen } from './EntryScreen';
+import ContextScreen from './ContextScreen';
 import { ProgressIndicator } from './ProgressIndicator';
 import { trackFlowEvent } from '@/lib/analytics';
 import { decodeStateFromParams, loadPendingResult } from '@/lib/pendingResult';
 
 
-// Lazy load screens that are not shown initially
-const ContextScreen = lazy(() => import('./ContextScreen'));
+// Mobile (the majority) starts on ContextScreen, so it is imported eagerly —
+// lazy-loading it put a spinner in front of the very first question. EntryScreen
+// is desktop-only, so it is the one that gets deferred.
+const EntryScreen = lazy(() => import('./EntryScreen').then(m => ({ default: m.EntryScreen })));
 const InputScreen = lazy(() => import('./InputScreen'));
 const ResultScreen = lazy(() => import('./ResultScreen'));
 const CloseScreen = lazy(() => import('./CloseScreen'));
@@ -153,13 +155,13 @@ export function DecisionFlow({ initialContext }: DecisionFlowProps = {}) {
       )}
 
       {state.step === 'entry' && (
-        <EntryScreen onStart={handleStart} />
+        <Suspense fallback={<ScreenLoader />}>
+          <EntryScreen onStart={handleStart} />
+        </Suspense>
       )}
       
       {state.step === 'context' && (
-        <Suspense fallback={<ScreenLoader />}>
-          <ContextScreen onSelect={handleContextSelect} />
-        </Suspense>
+        <ContextScreen onSelect={handleContextSelect} />
       )}
       
       {state.step === 'input' && state.context && (

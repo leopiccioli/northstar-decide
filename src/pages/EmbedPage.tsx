@@ -2,7 +2,6 @@ import { useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { DecisionFlow } from '@/components/decision/DecisionFlow';
 import { UserContext } from '@/types/decision';
-import { getPostHog } from '@/lib/posthog';
 import { readThemeFromParams, buildThemeCSS } from '@/lib/embedTheme';
 
 const VALID: UserContext[] = ['improve', 'change', 'compare', 'burnout', 'check'];
@@ -20,11 +19,17 @@ export default function EmbedPage() {
   }, []);
 
   useEffect(() => {
-    getPostHog()?.capture('embed_view', {
-      source,
-      ctx: ctx ?? 'none',
-      themed: themeCSS ? 'auto' : 'default',
-    });
+    if (typeof window !== 'undefined' && window.gtag) {
+      try {
+        window.gtag('event', 'embed_view', {
+          source,
+          ctx: ctx ?? 'none',
+          themed: themeCSS ? 'auto' : 'default',
+        });
+      } catch (e) {
+        console.warn('GA4 error:', e);
+      }
+    }
   }, [ctx, source, themeCSS]);
 
   useEffect(() => {

@@ -29,6 +29,15 @@ export function usePrefetchInputScreen() {
 }
 
 /**
+ * Warm InputScreen the moment the user presses down on an option, so the module
+ * is in flight before the click event fires. Idempotent — the browser dedupes
+ * the module request.
+ */
+export function prefetchInputScreen() {
+  import('@/components/decision/InputScreen');
+}
+
+/**
  * Prefetch ContextScreen when user is on EntryScreen
  */
 export function usePrefetchContextScreen() {

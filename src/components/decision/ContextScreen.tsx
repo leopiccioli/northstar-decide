@@ -1,5 +1,5 @@
 import { UserContext, contextLabels } from '@/types/decision';
-import { usePrefetchInputScreen } from '@/hooks/usePrefetch';
+import { usePrefetchInputScreen, prefetchInputScreen } from '@/hooks/usePrefetch';
 import { trackFlowEvent } from '@/lib/analytics';
 
 interface ContextScreenProps {
@@ -33,6 +33,7 @@ export default function ContextScreen({ onSelect }: ContextScreenProps) {
           {orderedIds.map((id, index) => (
             <button
               key={id}
+              onPointerDown={prefetchInputScreen}
               onClick={() => {
                 trackFlowEvent('select_context', { context: id });
                 onSelect(id);

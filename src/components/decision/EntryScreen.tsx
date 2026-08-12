@@ -1,7 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 
 import { usePrefetchContextScreen } from '@/hooks/usePrefetch';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchMeasurementCount, FALLBACK_MEASUREMENT_COUNT } from '@/lib/measurementCount';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { trackFlowEvent } from '@/lib/analytics';
 
@@ -14,7 +14,9 @@ interface EntryScreenProps {
 
 export function EntryScreen({ onStart }: EntryScreenProps) {
   const [didTick, setDidTick] = useState(false);
-  const [count, setCount] = useState<number | null>(null);
+  // Seeded from the build-time snapshot so the number is on screen from the
+  // first frame; replaced by the live value as soon as it lands.
+  const [count, setCount] = useState<number | null>(FALLBACK_MEASUREMENT_COUNT);
   const trackingData = useTrackingData();
 
   // Prefetch next screen while user reads entry
@@ -32,12 +34,11 @@ export function EntryScreen({ onStart }: EntryScreenProps) {
 
   // Fetch measurement count (social proof) — non-blocking
   useEffect(() => {
-    let cancelled = false;
-    supabase.rpc('get_measurement_count').then(({ data, error }) => {
-      if (cancelled || error || data == null) return;
-      setCount(Number(data));
+    const ctrl = new AbortController();
+    fetchMeasurementCount(ctrl.signal).then((value) => {
+      if (value != null) setCount(value);
     });
-    return () => { cancelled = true; };
+    return () => ctrl.abort();
   }, []);
 
   return (

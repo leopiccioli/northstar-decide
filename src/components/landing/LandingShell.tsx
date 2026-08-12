@@ -4,8 +4,7 @@ import { DecisionFlow } from '@/components/decision/DecisionFlow';
 import { UserContext } from '@/types/decision';
 import { FAQ, FAQItem } from './FAQ';
 import { SITE_CONFIG } from '@/config/urls';
-import { getPostHog } from '@/lib/posthog';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchMeasurementCount, FALLBACK_MEASUREMENT_COUNT } from '@/lib/measurementCount';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UNIVERSE_LINE } from '@/content/facts';
@@ -36,19 +35,24 @@ export function LandingShell({
   belowForm,
 }: LandingShellProps) {
   const url = `${SITE_CONFIG.baseUrl}${path}`;
-  const [count, setCount] = useState<number | null>(null);
+  const [count, setCount] = useState<number | null>(FALLBACK_MEASUREMENT_COUNT);
 
   useEffect(() => {
-    getPostHog()?.capture('lp_view', { landing: landingId });
+    if (typeof window !== 'undefined' && window.gtag) {
+      try {
+        window.gtag('event', 'lp_view', { landing: landingId });
+      } catch (e) {
+        console.warn('GA4 error:', e);
+      }
+    }
   }, [landingId]);
 
   useEffect(() => {
-    let cancelled = false;
-    supabase.rpc('get_measurement_count').then(({ data, error }) => {
-      if (cancelled || error || data == null) return;
-      setCount(Number(data));
+    const ctrl = new AbortController();
+    fetchMeasurementCount(ctrl.signal).then((value) => {
+      if (value != null) setCount(value);
     });
-    return () => { cancelled = true; };
+    return () => ctrl.abort();
   }, []);
 
   return (

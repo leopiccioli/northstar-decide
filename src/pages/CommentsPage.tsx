@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { List, LayoutGrid, ArrowRight } from "lucide-react";
@@ -382,4 +382,14 @@ const MosaicView = ({ comments, formatDate, ctaPosition, onSelect }: ViewProps) 
   </section>
 );
 
-export default CommentsPage;
+// React Query is only used on this page, so the client lives here instead of
+// the app root — that keeps @tanstack/react-query out of the entry chunk.
+const queryClient = new QueryClient();
+
+const CommentsPageWithQuery = () => (
+  <QueryClientProvider client={queryClient}>
+    <CommentsPage />
+  </QueryClientProvider>
+);
+
+export default CommentsPageWithQuery;
