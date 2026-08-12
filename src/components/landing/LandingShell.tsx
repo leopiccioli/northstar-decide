@@ -35,7 +35,7 @@ export function LandingShell({
   belowForm,
 }: LandingShellProps) {
   const url = `${SITE_CONFIG.baseUrl}${path}`;
-  const [count, setCount] = useState<number | null>(null);
+  const [count, setCount] = useState<number | null>(FALLBACK_MEASUREMENT_COUNT);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.gtag) {
@@ -48,12 +48,11 @@ export function LandingShell({
   }, [landingId]);
 
   useEffect(() => {
-    let cancelled = false;
-    supabase.rpc('get_measurement_count').then(({ data, error }) => {
-      if (cancelled || error || data == null) return;
-      setCount(Number(data));
+    const ctrl = new AbortController();
+    fetchMeasurementCount(ctrl.signal).then((value) => {
+      if (value != null) setCount(value);
     });
-    return () => { cancelled = true; };
+    return () => ctrl.abort();
   }, []);
 
   return (
