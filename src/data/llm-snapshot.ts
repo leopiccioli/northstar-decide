@@ -1,12 +1,12 @@
 // AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.
 export default {
-  "generatedAt": "2026-08-12T14:02:11.668Z",
+  "generatedAt": "2026-08-12T15:06:53.056Z",
   "cutDateIso": "2026-08-12",
   "cutDateHuman": "12 de agosto de 2026",
   "window": {
     "to": "2026-08-12",
     "from": "2025-08-12",
-    "total": 1563,
+    "total": 1562,
     "by_age": [
       {
         "n": 59,
@@ -51,7 +51,7 @@ export default {
     "coverage": {
       "with_age": 442,
       "with_sector": 431,
-      "with_country": 1563
+      "with_country": 1562
     },
     "by_sector": [
       {
@@ -257,7 +257,7 @@ export default {
         "desarrollo": 6.5
       },
       {
-        "n": 1307,
+        "n": 1306,
         "key": "Argentina",
         "dinero": 6.4,
         "promedio": 6.3,
