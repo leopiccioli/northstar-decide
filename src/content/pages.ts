@@ -419,6 +419,8 @@ const agePages: ContentPage[] = AGE_PAGES.map((a) => ({
     ] },
     { type: 'p', text: `Esta página se apoya en ${a.n} mediciones de personas de ${a.key} años dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. La edad es un campo opcional: la completó una minoría de quienes midieron.` },
     ...statTables('Edad', 'Todos los rangos de edad', ELIGIBLE_AGES, BELOW_AGES),
+    ...relatedBlocks('edad', a.key),
+
     ...limitsBlocks,
     backingData,
     measure,
