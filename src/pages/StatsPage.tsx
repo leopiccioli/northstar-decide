@@ -12,6 +12,9 @@ import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import type { CountryFullStat } from '@/types/stats';
 import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
+import { SiteFooter } from '@/components/SiteFooter';
+import { statsDatasetJsonLd } from '@/content/schema';
+import { CUT_DATE_HUMAN, ELIGIBLE_COUNTRIES, N } from '@/content/facts';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'country' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
@@ -184,6 +187,14 @@ export default function StatsPage() {
         title="3D por país — comparativa global de trabajo"
         description="Cómo puntúan Dinero, Desarrollo y Diversión en el trabajo según el país. Datos de la comunidad CEO en Camiseta."
         path="/por-pais"
+        jsonLd={statsDatasetJsonLd({
+          path: '/por-pais',
+          name: 'Las 3D del Trabajo por país',
+          description: `Promedios de Dinero, Desarrollo y Diversión por país, con el N de cada grupo. n=${N} en los últimos 12 meses, datos al ${CUT_DATE_HUMAN}.`,
+          n: N,
+          rows: ELIGIBLE_COUNTRIES,
+          dimensionName: 'País',
+        })}
       />
       {/* Page sub-header */}
       <div className="border-b border-border">
@@ -337,6 +348,7 @@ export default function StatsPage() {
 
         {!isLoading && <BelowThresholdTable label="País" rows={belowStats} />}
       </main>
+      <SiteFooter />
     </div>
   );
 }
