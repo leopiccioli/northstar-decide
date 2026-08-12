@@ -7,7 +7,7 @@ import notaAsset from '@/assets/iprofesional-2007.png.asset.json';
  * Static content page. Everything editable each quarter lives in ORIGEN_DATA.
  */
 export const ORIGEN_DATA = {
-  respuestas: 'Más de 10.000 respuestas',
+  respuestas: 'Más de 11.000 respuestas históricas desde el lanzamiento. Los informes y estadísticas publicados usan una ventana canónica de los últimos 12 meses (n=1.563 al 12 de agosto de 2026). Actualizado: agosto 2026.',
   actualizado: 'agosto 2026',
 };
 
@@ -16,7 +16,7 @@ export const ORIGEN_META = {
   title: 'El origen de las 3D: Dinero, Desarrollo y Diversión (desde 2007)',
   description: 'Las 3D las creó Leo Piccioli en 2007. Hoy son un termómetro con más de 10.000 respuestas.',
   h1: 'El origen de las 3D',
-  lead: 'Las 3D —Dinero, Desarrollo y Diversión— es un marco creado por Leo Piccioli en 2007 para evaluar qué le dan las empresas a su gente. Desde 2025 cualquiera puede medir su empresa en 3d.ceoencamiseta.com. Ya lo hicieron más de 10.000 personas.',
+  lead: 'Las 3D —Dinero, Desarrollo y Diversión— es un marco creado por Leo Piccioli en 2007 para evaluar qué le dan las empresas a su gente. Desde 2025 cualquiera puede medir su empresa en 3d.ceoencamiseta.com. Ya lo hicieron más de 11.000 personas desde el lanzamiento.',
   quote: 'Las compañías le dan a la gente tres D: dinero, desarrollo y diversión.',
   attribution: 'Leo Piccioli, gerente general de Officenet — iProfesional, 10 de diciembre de 2007',
   notaUrl: 'https://www.iprofesional.com/management/58267-las-companias-tienen-que-dar-dinero-desarrollo-y-diversion',
@@ -38,7 +38,7 @@ export const ORIGEN_META = {
     },
     {
       q: '¿Cuántas personas respondieron?',
-      a: 'Más de 10.000 personas midieron su empresa con las 3D (actualizado: agosto 2026).',
+      a: 'Más de 11.000 personas midieron su empresa con las 3D desde el lanzamiento. Las estadísticas publicadas usan los últimos 12 meses de datos (actualizado: agosto 2026).',
     },
     {
       q: '¿Cómo respondo las 3D de mi empresa?',
@@ -122,7 +122,7 @@ export default function OrigenPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">Los datos</h2>
             <p className="text-base leading-relaxed text-foreground/80">
-              {ORIGEN_DATA.respuestas} (actualizado: {ORIGEN_DATA.actualizado}).
+              {ORIGEN_DATA.respuestas}
             </p>
           </section>
 

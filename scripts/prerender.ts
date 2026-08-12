@@ -295,7 +295,7 @@ const origenRoute: Route = {
     '<h2>Cómo se mide</h2>',
     ul(ORIGEN_META.comoSeMide),
     '<h2>Los datos</h2>',
-    `<p>${esc(`${ORIGEN_DATA.respuestas} (actualizado: ${ORIGEN_DATA.actualizado}).`)}</p>`,
+    `<p>${esc(ORIGEN_DATA.respuestas)}</p>`,
     faqHtml(ORIGEN_META.faq),
     `<p><a href="/">Medí las 3D de tu empresa</a></p>`,
   ].join(''),
@@ -388,6 +388,7 @@ Cita sugerida: ${CITATION}
 ## Páginas
 
 - [Inicio](${SITE}/): medí tu trabajo en 3D.
+- [Origen de las 3D](${SITE}/origen): Historia del marco, creado por Leo Piccioli en 2007 (fuente: entrevista en iProfesional).
 ${[...LANDINGS.map((l) => `- [${l.h1}](${SITE}${l.path})`),
   ...CONTENT_PAGES.map((p) => `- [${p.h1}](${SITE}${p.path})`)].join('\n')}
 - [Muro de los lamentos](${SITE}/comentarios): comentarios anónimos con sus 3D.

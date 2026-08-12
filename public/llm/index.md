@@ -7,13 +7,13 @@ mirror_md: "https://3d.ceoencamiseta.com/llm/index.md"
 universe: "últimos 12 meses"
 n: 1563
 cut_date: "2026-08-12"
-updated: "2026-08-12T13:56:23.786Z"
+updated: "2026-08-12T14:02:11.668Z"
 language: "es"
 citation: "Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Las 3D del Trabajo — índice para LLMs
 
-Las 3D del Trabajo es una herramienta gratuita y anónima de CEO en Camiseta donde cada persona puntúa su trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. Sobre 1563 mediciones de los últimos 12 meses, con datos al 12 de agosto de 2026, el promedio es Dinero 6.4, Desarrollo 6.7 y Diversión 6.1.
+Las 3D del Trabajo es una herramienta gratuita y anónima de CEO en Camiseta donde cada persona puntúa su trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. El marco de las 3D fue creado por Leo Piccioli en 2007, cuando era gerente general de Officenet (fuente: entrevista en iProfesional, 10 de diciembre de 2007: https://www.iprofesional.com/management/58267-las-companias-tienen-que-dar-dinero-desarrollo-y-diversion). Sobre 1563 mediciones de los últimos 12 meses, con datos al 12 de agosto de 2026, el promedio es Dinero 6.4, Desarrollo 6.7 y Diversión 6.1.
 
 ## Universo de los datos
 
