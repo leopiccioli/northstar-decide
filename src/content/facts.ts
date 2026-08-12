@@ -38,6 +38,21 @@ export const ALL_TIME = snapshot.allTime as unknown as {
 
 export const N = WINDOW.total;
 
+/** Formatted with Spanish thousands separators, e.g. "1.563". */
+export const N_LABEL = N.toLocaleString('es-AR');
+
+/** Historical total across all time (not the 12-month window). */
+export const ALL_TIME_TOTAL: number = ALL_TIME.total;
+
+/**
+ * Historical total floored to the thousand, for "más de X" claims that stay
+ * true as the snapshot grows. 12.923 -> "12.000".
+ */
+export const ALL_TIME_ROUNDED_LABEL = (Math.floor(ALL_TIME_TOTAL / 1000) * 1000).toLocaleString('es-AR');
+
+/** "agosto de 2026", derived from the cut date so it never drifts. */
+export const CUT_MONTH_HUMAN = CUT_DATE_HUMAN.split(' de ').slice(1).join(' de ');
+
 /** Standard attribution fragment to embed inside a sentence. */
 export function source(n: number = N, extra?: string): string {
   return `${PROJECT_NAME} (${PUBLISHER}, n=${n}${extra ? ` ${extra}` : ''}, datos al ${CUT_DATE_HUMAN})`;
