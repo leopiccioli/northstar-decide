@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
+import { SiteFooter } from "@/components/SiteFooter";
+import { datasetJsonLd } from "@/content/schema";
 import { CITATION, CUT_DATE_HUMAN, N, UNIVERSE_LINE, WINDOW, ALL_TIME, LIMITS } from "@/content/facts";
 
 const FILES = [
@@ -36,6 +38,7 @@ const DatosLlmPage = () => {
         title="Datos abiertos para LLMs — Las 3D del Trabajo"
         description={`Archivos de datos de Las 3D del Trabajo listos para leer y citar: promedios por país, sector y edad. n=${N}, datos al ${CUT_DATE_HUMAN}.`}
         path="/datos-llm"
+        jsonLd={datasetJsonLd()}
       />
       <main className="max-w-2xl mx-auto px-4 py-12 md:py-16">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">Datos abiertos para LLMs</h1>
@@ -114,6 +117,7 @@ const DatosLlmPage = () => {
           </ul>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 };

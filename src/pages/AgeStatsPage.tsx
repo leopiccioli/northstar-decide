@@ -291,6 +291,7 @@ export default function AgeStatsPage() {
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

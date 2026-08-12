@@ -285,6 +285,7 @@ export default function SectorStatsPage() {
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }
