@@ -1,10 +1,7 @@
 import { lazy, Suspense } from "react";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import { SiteHeader } from "./components/SiteHeader";
-import { CONTENT_PAGES } from "./content/pages";
 
 function ConditionalHeader() {
   const { pathname } = useLocation();
@@ -28,14 +25,13 @@ const EmbedPage = lazy(() => import("./pages/EmbedPage"));
 const EmbedDocsPage = lazy(() => import("./pages/EmbedDocsPage"));
 const DatosLlmPage = lazy(() => import("./pages/DatosLlmPage"));
 const OrigenPage = lazy(() => import("./pages/OrigenPage"));
+// Catch-all: resolves the data-driven content pages by path and falls back to
+// NotFound. Kept lazy so the whole content corpus stays out of the entry chunk.
 const ContentPage = lazy(() => import("./pages/ContentPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Lazy load toasters - not needed for initial render
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
-
-const queryClient = new QueryClient();
 
 // Minimal loading fallback - just a centered spinner
 const PageLoader = () => (
@@ -45,42 +41,37 @@ const PageLoader = () => (
 );
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      {/* Lazy load toasters - they're not needed until user interaction */}
-      <Suspense fallback={null}>
-        <Toaster />
-        <Sonner />
+  <>
+    {/* Lazy load toasters - they're not needed until user interaction */}
+    <Suspense fallback={null}>
+      <Toaster />
+      <Sonner />
+    </Suspense>
+    <BrowserRouter>
+      <ConditionalHeader />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/r/:id" element={<ResultPage />} />
+          <Route path="/por-pais" element={<StatsPage />} />
+          <Route path="/por-sector" element={<SectorStatsPage />} />
+          <Route path="/por-edad" element={<AgeStatsPage />} />
+          <Route path="/comentarios" element={<CommentsPage />} />
+          <Route path="/completar" element={<CompletarPage />} />
+          <Route path="/test-burnout" element={<TestBurnoutPage />} />
+          <Route path="/cambiar-de-trabajo" element={<CambiarDeTrabajoPage />} />
+          <Route path="/cambiar-de-trabajo-a-los-40" element={<CambiarDeTrabajo40Page />} />
+          <Route path="/cambiar-de-trabajo-a-los-50" element={<CambiarDeTrabajo50Page />} />
+          <Route path="/embed" element={<EmbedPage />} />
+          <Route path="/embed-docs" element={<EmbedDocsPage />} />
+          <Route path="/datos-llm" element={<DatosLlmPage />} />
+          <Route path="/origen" element={<OrigenPage />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<ContentPage />} />
+        </Routes>
       </Suspense>
-      <BrowserRouter>
-        <ConditionalHeader />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/r/:id" element={<ResultPage />} />
-            <Route path="/por-pais" element={<StatsPage />} />
-            <Route path="/por-sector" element={<SectorStatsPage />} />
-            <Route path="/por-edad" element={<AgeStatsPage />} />
-            <Route path="/comentarios" element={<CommentsPage />} />
-            <Route path="/completar" element={<CompletarPage />} />
-            <Route path="/test-burnout" element={<TestBurnoutPage />} />
-            <Route path="/cambiar-de-trabajo" element={<CambiarDeTrabajoPage />} />
-            <Route path="/cambiar-de-trabajo-a-los-40" element={<CambiarDeTrabajo40Page />} />
-            <Route path="/cambiar-de-trabajo-a-los-50" element={<CambiarDeTrabajo50Page />} />
-            <Route path="/embed" element={<EmbedPage />} />
-            <Route path="/embed-docs" element={<EmbedDocsPage />} />
-            <Route path="/datos-llm" element={<DatosLlmPage />} />
-            <Route path="/origen" element={<OrigenPage />} />
-            {CONTENT_PAGES.map((p) => (
-              <Route key={p.path} path={p.path} element={<ContentPage />} />
-            ))}
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+    </BrowserRouter>
+  </>
 );
 
 export default App;
