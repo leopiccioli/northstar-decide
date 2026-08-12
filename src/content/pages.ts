@@ -250,6 +250,8 @@ const insightPages: ContentPage[] = [
         `Diversión: ${WINDOW.global.diversion} sobre 10`,
       ] },
       ...statTables('Edad', 'Promedios por rango de edad', ELIGIBLE_AGES, BELOW_AGES),
+      { type: 'links', title: 'Cada rango en detalle', items: AGE_PAGES.map((a) => ({ href: `/edad/${ageSlug(a.key)}`, label: ageLabel(a.key) })) },
+
       ...limitsBlocks,
       backingData,
       measure,
