@@ -8,7 +8,7 @@ import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
 import { SiteFooter } from '@/components/SiteFooter';
 import { statsDatasetJsonLd } from '@/content/schema';
-import { CUT_DATE_HUMAN, ELIGIBLE_AGES, WINDOW } from '@/content/facts';
+import { agePath, CUT_DATE_HUMAN, ELIGIBLE_AGES, WINDOW } from '@/content/facts';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
 import { BelowThresholdTable } from '@/components/stats/BelowThresholdTable';
