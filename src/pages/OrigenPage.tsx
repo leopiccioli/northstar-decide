@@ -2,21 +2,27 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { SITE_CONFIG } from '@/config/urls';
 import notaAsset from '@/assets/iprofesional-2007.png.asset.json';
+import {
+  ALL_TIME_ROUNDED_LABEL, CUT_DATE_HUMAN, CUT_DATE_ISO, CUT_MONTH_HUMAN, N_LABEL,
+} from '@/content/facts';
 
 /**
- * Static content page. Everything editable each quarter lives in ORIGEN_DATA.
+ * Static content page. Every figure comes from the data snapshot
+ * (src/content/facts.ts), so the copy, the meta tags, the JSON-LD and the
+ * prerendered HTML can never drift apart. Only the historical narrative
+ * (2007, Officenet, iProfesional) is hand-written.
  */
 export const ORIGEN_DATA = {
-  respuestas: 'Más de 11.000 respuestas históricas desde el lanzamiento. Los informes y estadísticas publicados usan una ventana canónica de los últimos 12 meses (n=1.563 al 12 de agosto de 2026). Actualizado: agosto 2026.',
-  actualizado: 'agosto 2026',
+  respuestas: `Más de ${ALL_TIME_ROUNDED_LABEL} respuestas históricas desde el lanzamiento. Los informes y estadísticas publicados usan una ventana canónica de los últimos 12 meses (n=${N_LABEL} al ${CUT_DATE_HUMAN}). Actualizado: ${CUT_MONTH_HUMAN}.`,
+  actualizado: CUT_MONTH_HUMAN,
 };
 
 export const ORIGEN_META = {
   path: '/origen',
   title: 'El origen de las 3D: Dinero, Desarrollo y Diversión (desde 2007)',
-  description: 'Las 3D las creó Leo Piccioli en 2007. Hoy son un termómetro con más de 10.000 respuestas.',
+  description: `Las 3D las creó Leo Piccioli en 2007. Hoy son un termómetro con más de ${ALL_TIME_ROUNDED_LABEL} respuestas.`,
   h1: 'El origen de las 3D',
-  lead: 'Las 3D —Dinero, Desarrollo y Diversión— es un marco creado por Leo Piccioli en 2007 para evaluar qué le dan las empresas a su gente. Desde 2025 cualquiera puede medir su empresa en 3d.ceoencamiseta.com. Ya lo hicieron más de 11.000 personas desde el lanzamiento.',
+  lead: `Las 3D —Dinero, Desarrollo y Diversión— es un marco creado por Leo Piccioli en 2007 para evaluar qué le dan las empresas a su gente. Desde 2025 cualquiera puede medir su empresa en 3d.ceoencamiseta.com. Ya lo hicieron más de ${ALL_TIME_ROUNDED_LABEL} personas desde el lanzamiento.`,
   quote: 'Las compañías le dan a la gente tres D: dinero, desarrollo y diversión.',
   attribution: 'Leo Piccioli, gerente general de Officenet — iProfesional, 10 de diciembre de 2007',
   notaUrl: 'https://www.iprofesional.com/management/58267-las-companias-tienen-que-dar-dinero-desarrollo-y-diversion',
@@ -38,7 +44,7 @@ export const ORIGEN_META = {
     },
     {
       q: '¿Cuántas personas respondieron?',
-      a: 'Más de 11.000 personas midieron su empresa con las 3D desde el lanzamiento. Las estadísticas publicadas usan los últimos 12 meses de datos (actualizado: agosto 2026).',
+      a: `Más de ${ALL_TIME_ROUNDED_LABEL} personas midieron su empresa con las 3D desde el lanzamiento. Las estadísticas publicadas usan los últimos 12 meses de datos (actualizado: ${CUT_MONTH_HUMAN}).`,
     },
     {
       q: '¿Cómo respondo las 3D de mi empresa?',
@@ -60,7 +66,7 @@ export default function OrigenPage() {
       isAccessibleForFree: true,
       author: { '@type': 'Person', name: 'Leo Piccioli' },
       datePublished: '2007-12-10',
-      dateModified: '2026-08-12',
+      dateModified: CUT_DATE_ISO,
       publisher: { '@type': 'Organization', name: 'CEO en Camiseta', url: 'https://ceoencamiseta.com' },
     },
     {
@@ -84,6 +90,9 @@ export default function OrigenPage() {
         <meta property="og:description" content={ORIGEN_META.description} />
         <meta property="og:url" content={url} />
         <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ORIGEN_META.title} />
+        <meta name="twitter:description" content={ORIGEN_META.description} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
