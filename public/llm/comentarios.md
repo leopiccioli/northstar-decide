@@ -5,14 +5,14 @@ url: "https://3d.ceoencamiseta.com/llm/comentarios.txt"
 mirror_md: "https://3d.ceoencamiseta.com/llm/comentarios.md"
 universe: "últimos comentarios públicos"
 n: 500
-cut_date: "2026-08-11"
-updated: "2026-08-11T14:56:10.335Z"
+cut_date: "2026-08-12"
+updated: "2026-08-12T13:54:45.518Z"
 language: "es"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1565 mediciones de los últimos 12 meses, datos al 11 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Muro de los lamentos — comentarios anónimos
 
-Comentarios públicos enviados a Las 3D del Trabajo (CEO en Camiseta) junto a sus puntajes de Dinero, Desarrollo y Diversión. Datos al 11 de agosto de 2026. Total listado: 500.
+Comentarios públicos enviados a Las 3D del Trabajo (CEO en Camiseta) junto a sus puntajes de Dinero, Desarrollo y Diversión. Datos al 12 de agosto de 2026. Total listado: 500.
 
 ## Método y límites
 
@@ -22,6 +22,12 @@ Comentarios públicos enviados a Las 3D del Trabajo (CEO en Camiseta) junto a su
 
 ---
 
+## Argentina · Educación · 18-24 · 2026-08-11
+Dinero: 7/10 · Desarrollo: 4/10 · Diversión: 8/10
+
+Mi ingreso. No está mal, pero tengo capacidad ociosa jajaja. Tengo tiempo e ideas, que me gustaría implementar para ganar más dinero. Aparte, sería en otra área de mi vida: por eso es que mi actual trabajo no me genera mucho desarrollo
+
+---
 ## Argentina · 55-64 · 2026-08-11
 Dinero: 7/10 · Desarrollo: 7/10 · Diversión: 6/10
 
@@ -3014,11 +3020,5 @@ Cambios
 Dinero: 10/10 · Desarrollo: 8/10 · Diversión: 2/10
 
 New job
-
----
-## Argentina · Hospitalidad / Turismo · 35-44 · 2026-01-03
-Dinero: 6/10 · Desarrollo: 8/10 · Diversión: 7/10
-
-Hola, enero 2026, haciendo orden de finanzas. Hoy estoy semi conforme con el dinero, pero tambien lo he desatendido asique estoy retomando el orden para saber como me siento con respecto a lo que gano. En desarrollo, finalmente me he decidido a tomar posesion de mi lugar como comercial de la empresa, es algo que me da pavor, le temo, y trato de huir, pero en el fondo sé que es miedo al exito y a exponerme y fallar. Veo mi poca tolerancia a fallar. Voy a ir a por ella. Y en diversion, la verdad que está baja, lo remoto tiene a ser aburrido y eso continua. Pero tengo en claro que si voy regularmente a la ofi cada 3 meses, eso se regula, seguire con ese plan. Ofi nos vemos en marzo/abril 2026
 
 ---
