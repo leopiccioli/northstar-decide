@@ -2,8 +2,8 @@
 
 > Herramienta anónima y gratuita de CEO en Camiseta para puntuar el trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. Publica sus datos agregados como texto abierto y citable.
 
-Universo: últimos 12 meses (2025-08-12 a 2026-08-12) · n=1563 · datos al 12 de agosto de 2026.
-Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com
+Universo: últimos 12 meses (2025-08-12 a 2026-08-12) · n=1562 · datos al 12 de agosto de 2026.
+Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com
 
 ## Datos
 
@@ -11,6 +11,7 @@ Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los ú
 - [Estadísticas agregadas](https://3d.ceoencamiseta.com/llm/stats.txt): promedios por país, sector y edad, con el N de cada grupo.
 - [Hallazgos citables](https://3d.ceoencamiseta.com/llm/insights.txt): preguntas frecuentes respondidas con una cifra, su N y su fecha.
 - [Comentarios anónimos](https://3d.ceoencamiseta.com/llm/comentarios.txt): texto libre enviado por personas junto a sus 3D.
+- [Todo en un archivo](https://3d.ceoencamiseta.com/llms-full.txt): los cuatro archivos anteriores concatenados, para un solo fetch.
 
 ## Cómo citar
 
@@ -30,6 +31,8 @@ Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los ú
 - [¿Qué sector paga mejor, según quienes lo viven?](https://3d.ceoencamiseta.com/hallazgos/sector-que-mejor-paga)
 - [¿Cómo puntúa su trabajo Argentina?](https://3d.ceoencamiseta.com/hallazgos/como-puntua-argentina)
 - [¿Cuál de las tres D puntúa más bajo?](https://3d.ceoencamiseta.com/hallazgos/dimension-mas-baja)
+- [¿Dinero o Diversión: cuál puntúa más alto?](https://3d.ceoencamiseta.com/hallazgos/dinero-o-diversion)
+- [¿El trabajo mejora con la edad?](https://3d.ceoencamiseta.com/hallazgos/el-trabajo-mejora-con-la-edad)
 - [Estoy aburrido en mi trabajo, pero pagan bien](https://3d.ceoencamiseta.com/aburrido-en-mi-trabajo-pero-pagan-bien)
 - [Cuándo renunciar sin tener otro trabajo](https://3d.ceoencamiseta.com/cuando-renunciar-sin-otro-trabajo)
 - [¿Es burnout o solo cansancio?](https://3d.ceoencamiseta.com/burnout-o-cansancio)
@@ -39,6 +42,12 @@ Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los ú
 - [Salud: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/salud)
 - [Retail / Comercio: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/retail)
 - [Tecnología / Software: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/sector/tecnologia)
+- [Argentina: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/pais/argentina)
+- [México: cómo puntúa su trabajo](https://3d.ceoencamiseta.com/pais/mexico)
+- [35-44 años: cómo puntúan su trabajo](https://3d.ceoencamiseta.com/edad/35-44)
+- [45-54 años: cómo puntúan su trabajo](https://3d.ceoencamiseta.com/edad/45-54)
+- [25-34 años: cómo puntúan su trabajo](https://3d.ceoencamiseta.com/edad/25-34)
+- [55-64 años: cómo puntúan su trabajo](https://3d.ceoencamiseta.com/edad/55-64)
 - [Método y límites](https://3d.ceoencamiseta.com/metodologia)
 - [Cómo citar estos datos](https://3d.ceoencamiseta.com/como-citar)
 - [Muro de los lamentos](https://3d.ceoencamiseta.com/comentarios): comentarios anónimos con sus 3D.
@@ -51,3 +60,6 @@ Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los ú
 ## Opcional
 
 - [Archivos en Markdown](https://3d.ceoencamiseta.com/llm/stats.md): mismos contenidos con extensión .md.
+- [Índice en Markdown](https://3d.ceoencamiseta.com/llm/index.md)
+- [Hallazgos en Markdown](https://3d.ceoencamiseta.com/llm/insights.md)
+- [Comentarios en Markdown](https://3d.ceoencamiseta.com/llm/comentarios.md)

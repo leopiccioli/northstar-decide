@@ -2,6 +2,9 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { SITE_CONFIG } from '@/config/urls';
 import { Block, ContentPage } from '@/content/pages';
+import { breadcrumbJsonLd, datasetJsonLd } from '@/content/schema';
+import { CUT_DATE_ISO } from '@/content/facts';
+import { SiteFooter } from '@/components/SiteFooter';
 
 function BlockView({ block }: { block: Block }) {
   switch (block.type) {
@@ -92,6 +95,7 @@ export function ContentPageView({ page }: { page: ContentPage }) {
       url,
       inLanguage: 'es',
       isAccessibleForFree: true,
+      dateModified: CUT_DATE_ISO,
       publisher: { '@type': 'Organization', name: 'CEO en Camiseta', url: 'https://ceoencamiseta.com' },
     },
   ];
@@ -106,6 +110,8 @@ export function ContentPageView({ page }: { page: ContentPage }) {
       })),
     });
   }
+  if (page.breadcrumb?.length) jsonLd.push(breadcrumbJsonLd(page.breadcrumb));
+  if (page.dataset) jsonLd.push(datasetJsonLd());
 
   return (
     <>
@@ -117,6 +123,13 @@ export function ContentPageView({ page }: { page: ContentPage }) {
         <meta property="og:description" content={page.description} />
         <meta property="og:url" content={url} />
         <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="Las 3D del Trabajo" />
+        <meta property="og:locale" content="es_AR" />
+        <meta property="og:image" content={`${SITE_CONFIG.baseUrl}/og-image.png`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={page.title} />
+        <meta name="twitter:description" content={page.description} />
+        <meta name="twitter:image" content={`${SITE_CONFIG.baseUrl}/og-image.png`} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
@@ -137,6 +150,7 @@ export function ContentPageView({ page }: { page: ContentPage }) {
             </section>
           ) : null}
         </article>
+        <SiteFooter />
       </main>
     </>
   );

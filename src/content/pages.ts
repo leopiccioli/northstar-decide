@@ -3,11 +3,11 @@
 // browser renders never diverge.
 
 import {
-  ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector, CITATION,
-  CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES, ELIGIBLE_SECTORS, LIMITS,
-  lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME, PUBLISH_THRESHOLD,
-  PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow, UNIVERSE_LINE,
-  WINDOW, worstFunSector,
+  AGE_PAGES, ageSlug, ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector,
+  CITATION, COUNTRY_PAGES, countrySlug, CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES,
+  ELIGIBLE_SECTORS, LIMITS, lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME,
+  PUBLISH_THRESHOLD, PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow,
+  UNIVERSE_LINE, WINDOW, worstFunSector,
 } from './facts';
 
 export type Block =
@@ -30,6 +30,10 @@ export interface ContentPage {
   lead: string;
   blocks: Block[];
   faq?: FAQEntry[];
+  /** Ancestors for BreadcrumbList, without the "Inicio" crumb. */
+  breadcrumb?: { name: string; path: string }[];
+  /** Pages whose whole content is the open dataset carry the Dataset schema. */
+  dataset?: boolean;
 }
 
 const measure: Block = { type: 'cta', href: '/', label: 'Medir mi trabajo en 20 segundos' };
@@ -280,6 +284,117 @@ const sectorPages: ContentPage[] = SECTOR_PAGES.map((s) => ({
   ],
 }));
 
+/* ----------------------------------------------------------- country pages */
+
+const countryPages: ContentPage[] = COUNTRY_PAGES.map((c) => ({
+  path: `/pais/${countrySlug(c.key)}`,
+  title: `${c.key}: Dinero, Desarrollo y Diversión en el trabajo — ${PROJECT_NAME}`,
+  description: `Promedios de ${c.key}: Dinero ${c.dinero}, Desarrollo ${c.desarrollo}, Diversión ${c.diversion} sobre 10 (n=${c.n}). Datos al ${CUT_DATE_HUMAN}.`,
+  h1: `${c.key}: cómo puntúa su trabajo`,
+  lead: `Según ${source(c.n, `en ${c.key}`)}, quienes trabajan en ${c.key} puntúan su trabajo con Dinero ${c.dinero}, Desarrollo ${c.desarrollo} y Diversión ${c.diversion} sobre 10, con un promedio 3D de ${c.promedio}. El promedio general de todos los países es ${WINDOW.global.promedio} sobre 10.`,
+  blocks: [
+    { type: 'h2', text: 'Comparación contra el promedio general' },
+    { type: 'ul', items: [
+      `Dinero: ${c.dinero} en ${c.key} vs ${WINDOW.global.dinero} en general.`,
+      `Desarrollo: ${c.desarrollo} en ${c.key} vs ${WINDOW.global.desarrollo} en general.`,
+      `Diversión: ${c.diversion} en ${c.key} vs ${WINDOW.global.diversion} en general.`,
+    ] },
+    { type: 'p', text: `Esta página se apoya en ${c.n} mediciones hechas desde ${c.key} dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. Supera el umbral de publicación (N≥${PUBLISH_THRESHOLD}), pero describe a quienes midieron y no representa a la población laboral del país.` },
+    ...statTables('País', 'Todos los países', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES),
+    ...limitsBlocks,
+    backingData,
+    measure,
+  ],
+  faq: [
+    { q: `¿Cuántas mediciones hay de ${c.key}?`, a: `${c.n} mediciones dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}.` },
+    { q: `¿Qué dimensión puntúa más bajo en ${c.key}?`, a: (() => {
+      const dims = [
+        { name: 'Dinero', value: c.dinero },
+        { name: 'Desarrollo', value: c.desarrollo },
+        { name: 'Diversión', value: c.diversion },
+      ].sort((a, b) => a.value - b.value);
+      return `${dims[0].name}: ${dims[0].value} sobre 10 (n=${c.n}, datos al ${CUT_DATE_HUMAN}).`;
+    })() },
+  ],
+}));
+
+/* --------------------------------------------------------------- age pages */
+
+const ageLabel = (key: string) => `${key} años`;
+
+const agePages: ContentPage[] = AGE_PAGES.map((a) => ({
+  path: `/edad/${ageSlug(a.key)}`,
+  title: `${ageLabel(a.key)}: cómo puntúan su trabajo — ${PROJECT_NAME}`,
+  description: `Promedios a los ${a.key} años: Dinero ${a.dinero}, Desarrollo ${a.desarrollo}, Diversión ${a.diversion} sobre 10 (n=${a.n}). Datos al ${CUT_DATE_HUMAN}.`,
+  h1: `${ageLabel(a.key)}: cómo puntúan su trabajo`,
+  lead: `Según ${source(a.n, `en el rango ${a.key}`)}, quienes tienen entre ${a.key.replace('-', ' y ')} años puntúan su trabajo con Dinero ${a.dinero}, Desarrollo ${a.desarrollo} y Diversión ${a.diversion} sobre 10, con un promedio 3D de ${a.promedio}. El promedio de todas las edades es ${WINDOW.global.promedio} sobre 10.`,
+  blocks: [
+    { type: 'h2', text: 'Comparación contra el promedio general' },
+    { type: 'ul', items: [
+      `Dinero: ${a.dinero} en ${a.key} vs ${WINDOW.global.dinero} en general.`,
+      `Desarrollo: ${a.desarrollo} en ${a.key} vs ${WINDOW.global.desarrollo} en general.`,
+      `Diversión: ${a.diversion} en ${a.key} vs ${WINDOW.global.diversion} en general.`,
+    ] },
+    { type: 'p', text: `Esta página se apoya en ${a.n} mediciones de personas de ${a.key} años dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. La edad es un campo opcional: la completó una minoría de quienes midieron.` },
+    ...statTables('Edad', 'Todos los rangos de edad', ELIGIBLE_AGES, BELOW_AGES),
+    ...limitsBlocks,
+    backingData,
+    measure,
+  ],
+}));
+
+/* --------------------------------------------------- more citable insights */
+
+const dimensionRanking = [
+  { name: 'Dinero', value: WINDOW.global.dinero },
+  { name: 'Desarrollo', value: WINDOW.global.desarrollo },
+  { name: 'Diversión', value: WINDOW.global.diversion },
+].sort((x, y) => y.value - x.value);
+
+const bestAge = [...ELIGIBLE_AGES].sort((x, y) => y.promedio - x.promedio)[0];
+const worstAge = [...ELIGIBLE_AGES].sort((x, y) => x.promedio - y.promedio)[0];
+
+const extraInsightPages: ContentPage[] = [
+  {
+    path: '/hallazgos/dinero-o-diversion',
+    title: `¿Dinero o Diversión: cuál puntúa más alto en el trabajo? — ${PROJECT_NAME}`,
+    description: `Según ${PROJECT_NAME} (n=${N}), Dinero promedia ${WINDOW.global.dinero} y Diversión ${WINDOW.global.diversion} sobre 10. Datos al ${CUT_DATE_HUMAN}.`,
+    h1: '¿Dinero o Diversión: cuál puntúa más alto?',
+    lead: `Según ${source()}, el trabajo promedio puntúa Dinero ${WINDOW.global.dinero} y Diversión ${WINDOW.global.diversion} sobre 10: la diferencia entre ambas es de ${Math.abs(WINDOW.global.dinero - WINDOW.global.diversion).toFixed(1)} puntos. La dimensión más alta de las tres es ${dimensionRanking[0].name} (${dimensionRanking[0].value}) y la más baja es ${dimensionRanking[2].name} (${dimensionRanking[2].value}).`,
+    blocks: [
+      { type: 'ul', items: dimensionRanking.map((d, i) => `${i + 1}. ${d.name}: ${d.value} sobre 10.`) },
+      { type: 'p', text: `Las tres dimensiones se puntúan por separado y no se combinan en un índice único: el promedio 3D de ${WINDOW.global.promedio} sobre 10 se publica sólo como referencia. Comparar Dinero contra Diversión sirve para ver qué está comprando cada persona con su sueldo, no para decidir por ella.` },
+      ...statTables('Sector', 'Las tres dimensiones por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (x, y) => y.dinero - x.dinero),
+      ...limitsBlocks,
+      backingData,
+      measure,
+    ],
+    faq: [
+      { q: '¿Cuál es la dimensión más alta del trabajo?', a: `${dimensionRanking[0].name}: ${dimensionRanking[0].value} sobre 10 (${PROJECT_NAME}, n=${N}, datos al ${CUT_DATE_HUMAN}).` },
+      { q: '¿Un sueldo alto sube la Diversión?', a: 'Los datos no muestran esa relación: el proyecto no publica correlaciones y los sectores con mayor puntaje de Dinero no son los de mayor Diversión.' },
+    ],
+  },
+  {
+    path: '/hallazgos/el-trabajo-mejora-con-la-edad',
+    title: `¿El trabajo mejora con la edad? — ${PROJECT_NAME}`,
+    description: `Según ${PROJECT_NAME}, el rango con mejor promedio 3D es ${bestAge?.key} (${bestAge?.promedio} sobre 10) y el más bajo ${worstAge?.key} (${worstAge?.promedio}). Datos al ${CUT_DATE_HUMAN}.`,
+    h1: '¿El trabajo mejora con la edad?',
+    lead: `Según ${source(WINDOW.coverage.with_age, 'con edad declarada')}, entre los rangos etarios con muestra suficiente (N≥${PUBLISH_THRESHOLD}) el mejor promedio 3D es ${bestAge?.key} años con ${bestAge?.promedio} sobre 10, y el más bajo es ${worstAge?.key} años con ${worstAge?.promedio}. La diferencia entre ambos extremos es de ${bestAge && worstAge ? (bestAge.promedio - worstAge.promedio).toFixed(1) : '0'} puntos.`,
+    blocks: [
+      { type: 'p', text: `La edad es un campo opcional: ${WINDOW.coverage.with_age} de las ${N} mediciones de la ventana canónica la declararon. Los rangos con menos de ${PUBLISH_THRESHOLD} mediciones se publican aparte, sin promedio y sin orden.` },
+      ...statTables('Edad', 'Promedios por rango de edad', ELIGIBLE_AGES, BELOW_AGES),
+      { type: 'links', title: 'Cada rango en detalle', items: AGE_PAGES.map((a) => ({ href: `/edad/${ageSlug(a.key)}`, label: `${ageLabel(a.key)}` })) },
+      ...limitsBlocks,
+      backingData,
+      measure,
+    ],
+    faq: [
+      { q: '¿A qué edad se puntúa mejor el trabajo?', a: `${bestAge?.key} años, con un promedio 3D de ${bestAge?.promedio} sobre 10 (n=${bestAge?.n}, datos al ${CUT_DATE_HUMAN}).` },
+      { q: '¿Sirve para decidir un cambio a los 40 o 50?', a: 'Sirve como referencia, no como recomendación: el promedio del rango no dice nada sobre un caso individual. Medir el propio trabajo y repetir la medición a los tres meses es más útil que compararse con la media.' },
+    ],
+  },
+];
+
 /* ------------------------------------------------------ method & how to cite */
 
 const methodPage: ContentPage = {
@@ -339,14 +454,46 @@ const citePage: ContentPage = {
   ],
 };
 
+// The hub lists every insight, including the ones defined after it.
+{
+  const hubLinks = insightsHub.blocks[0] as Extract<Block, { type: 'links' }>;
+  hubLinks.items.push(...extraInsightPages.map((p) => ({ href: p.path, label: p.h1 })));
+  insightsHub.blocks.splice(1, 0, {
+    type: 'links',
+    title: 'Los datos, corte por corte',
+    items: [
+      ...COUNTRY_PAGES.map((c) => ({ href: `/pais/${countrySlug(c.key)}`, label: `${c.key} (n=${c.n})` })),
+      ...SECTOR_PAGES.map((s) => ({ href: `/sector/${sectorSlug(s.key)}`, label: `${s.key} (n=${s.n})` })),
+      ...AGE_PAGES.map((a) => ({ href: `/edad/${ageSlug(a.key)}`, label: `${ageLabel(a.key)} (n=${a.n})` })),
+    ],
+  });
+}
+
+/** Ancestors derived from the path prefix, so every nested page gets crumbs. */
+const CRUMB_PREFIXES: { prefix: string; crumb: { name: string; path: string } }[] = [
+  { prefix: '/hallazgos/', crumb: { name: 'Hallazgos', path: '/hallazgos' } },
+  { prefix: '/sector/', crumb: { name: 'Las 3D por sector', path: '/por-sector' } },
+  { prefix: '/pais/', crumb: { name: 'Las 3D por país', path: '/por-pais' } },
+  { prefix: '/edad/', crumb: { name: 'Las 3D por rango de edad', path: '/por-edad' } },
+];
+
+function withBreadcrumb(p: ContentPage): ContentPage {
+  if (p.breadcrumb) return p;
+  const match = CRUMB_PREFIXES.find((c) => p.path.startsWith(c.prefix));
+  return match ? { ...p, breadcrumb: [match.crumb, { name: p.h1, path: p.path }] } : p;
+}
+
 export const CONTENT_PAGES: ContentPage[] = [
   insightsHub,
   ...insightPages,
+  ...extraInsightPages,
   ...questionPages,
   ...sectorPages,
-  methodPage,
-  citePage,
-];
+  ...countryPages,
+  ...agePages,
+  { ...methodPage, dataset: true },
+  { ...citePage, dataset: true },
+].map(withBreadcrumb);
 
 export const CONTENT_PAGES_BY_PATH: Record<string, ContentPage> = Object.fromEntries(
   CONTENT_PAGES.map((p) => [p.path, p]),

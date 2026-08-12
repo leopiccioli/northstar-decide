@@ -9,7 +9,7 @@
 // It also regenerates dist/sitemap.xml and dist/llms.txt from the same route
 // list, so the three can never drift apart.
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
 import { CONTENT_PAGES, type Block, type ContentPage } from '../src/content/pages';
@@ -17,8 +17,11 @@ import { LANDINGS } from '../src/content/landings';
 import {
   ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, CITATION, CUT_DATE_HUMAN,
   ELIGIBLE_AGES, ELIGIBLE_COUNTRIES, ELIGIBLE_SECTORS, LIMITS, N, NOT_COMPARABLE_NOTE,
-  PROJECT_NAME, PUBLISH_THRESHOLD, UNIVERSE_LINE, WINDOW, type StatRow,
+  PROJECT_NAME, PUBLISH_THRESHOLD, UNIVERSE_LINE, WINDOW, CUT_DATE_ISO, type StatRow,
 } from '../src/content/facts';
+import {
+  breadcrumbJsonLd, commentsJsonLd, datasetJsonLd, statsDatasetJsonLd,
+} from '../src/content/schema';
 import COMMENTS from '../src/data/comments-snapshot';
 import { ORIGEN_DATA, ORIGEN_META } from '../src/pages/OrigenPage';
 import NOTA_ASSET from '../src/assets/iprofesional-2007.png.asset.json';
@@ -97,6 +100,10 @@ function renderBlock(b: Block): string {
   }
 }
 
+function ldScript(nodes: Record<string, unknown>[]): string {
+  return `<script type="application/ld+json">${JSON.stringify(nodes)}</script>`;
+}
+
 function faqJsonLd(faq: { q: string; a: string }[]): string {
   return `<script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org',
@@ -118,6 +125,7 @@ interface Route {
   h1: string;
   body: string;
   jsonLd?: string;
+  lastmod?: string;
   changefreq?: string;
   priority?: string;
 }
@@ -144,7 +152,21 @@ const contentRoutes: Route[] = CONTENT_PAGES.map((p: ContentPage) => ({
   description: p.description,
   h1: p.h1,
   body: `<p>${esc(p.lead)}</p>${p.blocks.map(renderBlock).join('')}${p.faq?.length ? faqHtml(p.faq) : ''}`,
-  jsonLd: p.faq?.length ? faqJsonLd(p.faq) : undefined,
+  jsonLd: ldScript([
+    {
+      '@context': 'https://schema.org', '@type': 'Article',
+      headline: p.h1, description: p.description, url: `${SITE}${p.path}`,
+      inLanguage: 'es', isAccessibleForFree: true, dateModified: CUT_DATE_ISO,
+      publisher: { '@type': 'Organization', name: 'CEO en Camiseta', url: 'https://ceoencamiseta.com' },
+    },
+    ...(p.faq?.length ? [{
+      '@context': 'https://schema.org', '@type': 'FAQPage',
+      mainEntity: p.faq.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+    }] : []),
+    ...(p.breadcrumb?.length ? [breadcrumbJsonLd(p.breadcrumb)] : []),
+    ...(p.dataset ? [datasetJsonLd()] : []),
+  ]),
+  lastmod: CUT_DATE_ISO,
   changefreq: 'weekly',
   priority: '0.7',
 }));
@@ -180,6 +202,12 @@ const statsRoutes: Route[] = [
     body: `<p>${esc(`Según ${PROJECT_NAME} (CEO en Camiseta, n=${N}, datos al ${CUT_DATE_HUMAN}), así puntúa su trabajo cada país en Dinero, Desarrollo y Diversión, sobre 10. Sólo se ordenan y comparan países con al menos ${PUBLISH_THRESHOLD} mediciones.`)}</p>`
       + statSection('País', 'Países', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES)
       + methodHtml + backing,
+    jsonLd: ldScript([statsDatasetJsonLd({
+      path: '/por-pais', name: 'Las 3D del Trabajo por país',
+      description: `Promedios de Dinero, Desarrollo y Diversión por país, con el N de cada grupo. n=${N}, datos al ${CUT_DATE_HUMAN}.`,
+      n: N, rows: ELIGIBLE_COUNTRIES, dimensionName: 'País',
+    })]),
+    lastmod: CUT_DATE_ISO,
     changefreq: 'weekly',
     priority: '0.8',
   },
@@ -191,6 +219,12 @@ const statsRoutes: Route[] = [
     body: `<p>${esc(`Según ${PROJECT_NAME} (CEO en Camiseta, n=${WINDOW.coverage.with_sector} con sector declarado, datos al ${CUT_DATE_HUMAN}), así puntúa su trabajo cada sector en Dinero, Desarrollo y Diversión, sobre 10.`)}</p>`
       + statSection('Sector', 'Sectores', ELIGIBLE_SECTORS, BELOW_SECTORS)
       + methodHtml + backing,
+    jsonLd: ldScript([statsDatasetJsonLd({
+      path: '/por-sector', name: 'Las 3D del Trabajo por sector',
+      description: `Promedios de Dinero, Desarrollo y Diversión por sector, con el N de cada grupo. n=${WINDOW.coverage.with_sector} con sector declarado, datos al ${CUT_DATE_HUMAN}.`,
+      n: WINDOW.coverage.with_sector, rows: ELIGIBLE_SECTORS, dimensionName: 'Sector',
+    })]),
+    lastmod: CUT_DATE_ISO,
     changefreq: 'weekly',
     priority: '0.8',
   },
@@ -202,6 +236,12 @@ const statsRoutes: Route[] = [
     body: `<p>${esc(`Según ${PROJECT_NAME} (CEO en Camiseta, n=${WINDOW.coverage.with_age} con edad declarada, datos al ${CUT_DATE_HUMAN}), así puntúa su trabajo cada rango etario en Dinero, Desarrollo y Diversión, sobre 10.`)}</p>`
       + statSection('Edad', 'Rangos de edad', ELIGIBLE_AGES, BELOW_AGES)
       + methodHtml + backing,
+    jsonLd: ldScript([statsDatasetJsonLd({
+      path: '/por-edad', name: 'Las 3D del Trabajo por rango de edad',
+      description: `Promedios de Dinero, Desarrollo y Diversión por rango etario, con el N de cada grupo. n=${WINDOW.coverage.with_age} con edad declarada, datos al ${CUT_DATE_HUMAN}.`,
+      n: WINDOW.coverage.with_age, rows: ELIGIBLE_AGES, dimensionName: 'Rango de edad',
+    })]),
+    lastmod: CUT_DATE_ISO,
     changefreq: 'weekly',
     priority: '0.8',
   },
@@ -218,6 +258,11 @@ const commentsRoute: Route = {
       .map((c) => `<article><h2>${esc([c.country, c.sector, c.age, c.date].filter(Boolean).join(' · '))}</h2><p>Dinero: ${c.dinero}/10 · Desarrollo: ${c.desarrollo}/10 · Diversión: ${c.diversion}/10</p><blockquote><p>${esc(c.text)}</p></blockquote></article>`)
       .join('')
     + methodHtml + backing,
+  jsonLd: ldScript([commentsJsonLd(
+    (COMMENTS as ReadonlyArray<{ date: string; country: string | null; sector: string | null; age: string | null; dinero: number; desarrollo: number; diversion: number; text: string }>)
+      .slice(0, MAX_COMMENTS_RENDERED),
+  )]),
+  lastmod: CUT_DATE_ISO,
   changefreq: 'daily',
   priority: '0.8',
 };
@@ -267,6 +312,8 @@ const miscRoutes: Route[] = [
       + `<h2>Cómo citar</h2><p>${esc(CITATION)}</p>`
       + `<p>${esc(`Serie histórica completa (secundaria, no comparable con la ventana canónica): ${ALL_TIME.total} mediciones.`)}</p>`
       + methodHtml + backing,
+    jsonLd: ldScript([datasetJsonLd()]),
+    lastmod: CUT_DATE_ISO,
     changefreq: 'weekly',
     priority: '0.6',
   },
@@ -353,12 +400,13 @@ function sitemap(): string {
     ...ROUTES.map((r) => [
       '  <url>',
       `    <loc>${SITE}${r.path === '/' ? '/' : r.path}</loc>`,
+      ...(r.lastmod ? [`    <lastmod>${r.lastmod}</lastmod>`] : []),
       `    <changefreq>${r.changefreq ?? 'weekly'}</changefreq>`,
       `    <priority>${r.priority ?? '0.5'}</priority>`,
       '  </url>',
     ].join('\n')),
     ...['index', 'stats', 'insights', 'comentarios'].flatMap((f) => [
-      `  <url>\n    <loc>${SITE}/llm/${f}.txt</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.4</priority>\n  </url>`,
+      `  <url>\n    <loc>${SITE}/llm/${f}.txt</loc>\n    <lastmod>${CUT_DATE_ISO}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.4</priority>\n  </url>`,
     ]),
     '</urlset>',
     '',
@@ -379,6 +427,7 @@ Cita sugerida: ${CITATION}
 - [Estadísticas agregadas](${SITE}/llm/stats.txt): promedios por país, sector y edad, con el N de cada grupo.
 - [Hallazgos citables](${SITE}/llm/insights.txt): preguntas frecuentes respondidas con una cifra, su N y su fecha.
 - [Comentarios anónimos](${SITE}/llm/comentarios.txt): texto libre enviado por personas junto a sus 3D.
+- [Todo en un archivo](${SITE}/llms-full.txt): los cuatro archivos anteriores concatenados, para un solo fetch.
 
 ## Cómo citar
 
@@ -401,6 +450,9 @@ ${[...LANDINGS.map((l) => `- [${l.h1}](${SITE}${l.path})`),
 ## Opcional
 
 - [Archivos en Markdown](${SITE}/llm/stats.md): mismos contenidos con extensión .md.
+- [Índice en Markdown](${SITE}/llm/index.md)
+- [Hallazgos en Markdown](${SITE}/llm/insights.md)
+- [Comentarios en Markdown](${SITE}/llm/comentarios.md)
 `;
 }
 
@@ -430,6 +482,18 @@ function main() {
   writeFileSync(resolve('public/sitemap.xml'), xml);
   writeFileSync(join(DIST, 'llms.txt'), llmsTxt());
   writeFileSync(resolve('public/llms.txt'), llmsTxt());
+
+  // One-fetch bundle: several AI crawlers prefer a single file over four.
+  const full = ['index', 'stats', 'insights', 'comentarios']
+    .map((f) => {
+      const src = resolve(`public/llm/${f}.txt`);
+      return existsSync(src) ? readFileSync(src, 'utf8') : '';
+    })
+    .filter(Boolean)
+    .join('\n\n---\n\n');
+  const fullDoc = `# ${PROJECT_NAME} — corpus completo\n\n${UNIVERSE_LINE}\nCita sugerida: ${CITATION}\n\n---\n\n${full}\n`;
+  writeFileSync(join(DIST, 'llms-full.txt'), fullDoc);
+  writeFileSync(resolve('public/llms-full.txt'), fullDoc);
 
   console.log(`prerender: ${ROUTES.length} rutas escritas`);
 }

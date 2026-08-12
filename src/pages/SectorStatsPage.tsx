@@ -5,6 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
+import { SiteFooter } from '@/components/SiteFooter';
+import { statsDatasetJsonLd } from '@/content/schema';
+import { CUT_DATE_HUMAN, ELIGIBLE_SECTORS, WINDOW } from '@/content/facts';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
 import { BelowThresholdTable } from '@/components/stats/BelowThresholdTable';
@@ -150,6 +153,14 @@ export default function SectorStatsPage() {
         title="3D por sector — Dinero, Desarrollo y Diversión por industria"
         description="Comparativa de satisfacción laboral (3D) por sector: tech, salud, finanzas, educación y más."
         path="/por-sector"
+        jsonLd={statsDatasetJsonLd({
+          path: '/por-sector',
+          name: 'Las 3D del Trabajo por sector',
+          description: `Promedios de Dinero, Desarrollo y Diversión por sector laboral, con el N de cada grupo. n=${WINDOW.coverage.with_sector} con sector declarado, datos al ${CUT_DATE_HUMAN}.`,
+          n: WINDOW.coverage.with_sector,
+          rows: ELIGIBLE_SECTORS,
+          dimensionName: 'Sector',
+        })}
       />
       <div className="border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-4">
@@ -274,6 +285,7 @@ export default function SectorStatsPage() {
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

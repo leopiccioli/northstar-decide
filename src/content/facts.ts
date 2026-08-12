@@ -138,6 +138,20 @@ export function sectorSlug(name: string): string {
 /** Only sectors above the publication threshold get their own page. */
 export const SECTOR_PAGES: StatRow[] = RANKABLE_SECTORS.slice().sort((a, b) => b.n - a.n);
 
+/** URL-safe slug for a country name ("México" -> "mexico"). */
+export function countrySlug(name: string): string {
+  return sectorSlug(name);
+}
+
+/** Age ranges are already slug-safe ("35-44"), but normalise just in case. */
+export function ageSlug(range: string): string {
+  return range.replace(/[^0-9+-]/g, '');
+}
+
+/** Only groups above the publication threshold get their own page. */
+export const COUNTRY_PAGES: StatRow[] = ELIGIBLE_COUNTRIES.slice().sort((a, b) => b.n - a.n);
+export const AGE_PAGES: StatRow[] = ELIGIBLE_AGES.slice().sort((a, b) => b.n - a.n);
+
 export function fmt(n: number): string {
   return n.toLocaleString('es-AR');
 }

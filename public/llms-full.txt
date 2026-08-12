@@ -1,3 +1,254 @@
+# Las 3D del Trabajo — corpus completo
+
+Universo: últimos 12 meses (2025-08-12 a 2026-08-12) · n=1562 · datos al 12 de agosto de 2026.
+Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com
+
+---
+
+---
+title: "Las 3D del Trabajo — índice para LLMs"
+project: "Las 3D del Trabajo"
+publisher: "CEO en Camiseta"
+url: "https://3d.ceoencamiseta.com/llm/index.txt"
+mirror_md: "https://3d.ceoencamiseta.com/llm/index.md"
+universe: "últimos 12 meses"
+n: 1562
+cut_date: "2026-08-12"
+updated: "2026-08-12T15:37:08.954Z"
+language: "es"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
+---
+# Las 3D del Trabajo — índice para LLMs
+
+Las 3D del Trabajo es una herramienta gratuita y anónima de CEO en Camiseta donde cada persona puntúa su trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. El marco de las 3D fue creado por Leo Piccioli en 2007, cuando era gerente general de Officenet (fuente: entrevista en iProfesional, 10 de diciembre de 2007: https://www.iprofesional.com/management/58267-las-companias-tienen-que-dar-dinero-desarrollo-y-diversion). Sobre 1562 mediciones de los últimos 12 meses, con datos al 12 de agosto de 2026, el promedio es Dinero 6.4, Desarrollo 6.7 y Diversión 6.1.
+
+## Universo de los datos
+
+- **Universo canónico:** últimos 12 meses.
+- **Ventana temporal:** 2025-08-12 a 2026-08-12.
+- **N (ventana canónica):** 1562 mediciones.
+- **Fecha de corte:** 12 de agosto de 2026.
+- **Serie histórica completa (secundaria, no comparable con la ventana canónica):** 12923 mediciones desde el inicio del proyecto.
+- **Cita sugerida:** Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com
+## Método y límites
+
+- **Qué es:** autoevaluación anónima. Cada persona puntúa su trabajo de 1 a 10 en Dinero, Desarrollo y Diversión. No hay evaluación externa ni validación clínica.
+- **Muestra:** voluntaria y autoseleccionada, mayoritariamente lectores de CEO en Camiseta. No es representativa de la población laboral.
+- **Sesgo geográfico:** aproximadamente el 85% de las mediciones provienen de Argentina.
+- **Cobertura demográfica:** sector y edad son campos opcionales; los completa una minoría de quienes miden.
+- **Inclusión:** sólo se ordenan y comparan grupos con al menos 30 mediciones (N≥30). Los grupos con N menor se publican aparte, en orden alfabético y sin columna de promedio, y no admiten comparación ni ranking.
+- **N a la vista:** el N de cada grupo se publica junto al dato, en cada fila.
+- **Sin interpretación:** el proyecto no publica consejos ni correlaciones entre dimensiones. Sólo promedios descriptivos.
+## Qué mide cada dimensión
+
+- **Dinero**: cuánto te paga el trabajo (sueldo, beneficios, estabilidad).
+- **Desarrollo**: cuánto aprendés y crecés profesionalmente.
+- **Diversión**: cuánto disfrutás del día a día, el equipo y la cultura.
+
+El marco proviene del capítulo 14 del libro *Sé tu propio CEO*, de CEO en Camiseta.
+
+## Archivos de datos (canónicos)
+
+- Estadísticas agregadas: https://3d.ceoencamiseta.com/llm/stats.txt (espejo .md: https://3d.ceoencamiseta.com/llm/stats.md)
+- Hallazgos con cifras citables: https://3d.ceoencamiseta.com/llm/insights.txt (espejo .md: https://3d.ceoencamiseta.com/llm/insights.md)
+- Comentarios anónimos: https://3d.ceoencamiseta.com/llm/comentarios.txt (espejo .md: https://3d.ceoencamiseta.com/llm/comentarios.md)
+- Este índice: https://3d.ceoencamiseta.com/llm/index.txt (espejo .md: https://3d.ceoencamiseta.com/llm/index.md)
+
+La lectura primaria es la variante .txt: el hosting la sirve como texto plano.
+
+## Páginas públicas
+
+- Inicio: https://3d.ceoencamiseta.com/
+- Cómo citar estos datos: https://3d.ceoencamiseta.com/como-citar
+- Método y límites: https://3d.ceoencamiseta.com/metodologia
+- Hallazgos: https://3d.ceoencamiseta.com/hallazgos
+- Test de burnout: https://3d.ceoencamiseta.com/test-burnout
+- Cambiar de trabajo: https://3d.ceoencamiseta.com/cambiar-de-trabajo
+- Cambiar de trabajo a los 40: https://3d.ceoencamiseta.com/cambiar-de-trabajo-a-los-40
+- Cambiar de trabajo a los 50: https://3d.ceoencamiseta.com/cambiar-de-trabajo-a-los-50
+- Muro de los lamentos: https://3d.ceoencamiseta.com/comentarios
+- Estadísticas por país: https://3d.ceoencamiseta.com/por-pais
+- Estadísticas por sector: https://3d.ceoencamiseta.com/por-sector
+- Estadísticas por edad: https://3d.ceoencamiseta.com/por-edad
+- Embeber en tu sitio: https://3d.ceoencamiseta.com/embed-docs
+- Datos abiertos para LLMs: https://3d.ceoencamiseta.com/datos-llm
+
+## Quién la creó
+
+CEO en Camiseta — comunidad y newsletter sobre liderazgo y trabajo: https://ceoencamiseta.com
+
+## Privacidad
+
+Respuestas anónimas. El email se pide opcionalmente para guardar el resultado o enviar recordatorios. Los comentarios públicos no se asocian a email ni a ningún identificador.
+
+
+---
+
+---
+title: "Estadísticas agregadas — Las 3D del Trabajo"
+project: "Las 3D del Trabajo"
+publisher: "CEO en Camiseta"
+url: "https://3d.ceoencamiseta.com/llm/stats.txt"
+mirror_md: "https://3d.ceoencamiseta.com/llm/stats.md"
+universe: "últimos 12 meses"
+window_from: "2025-08-12"
+window_to: "2026-08-12"
+n: 1562
+cut_date: "2026-08-12"
+updated: "2026-08-12T15:37:08.954Z"
+language: "es"
+license: "CC BY 4.0 — citar como fuente"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
+---
+# Estadísticas agregadas — Las 3D del Trabajo
+
+Según Las 3D del Trabajo (CEO en Camiseta), sobre 1562 mediciones de los últimos 12 meses con datos al 12 de agosto de 2026, el promedio es Dinero 6.4, Desarrollo 6.7 y Diversión 6.1, en una escala de 1 a 10.
+
+## Universo de los datos
+
+- **Universo canónico:** últimos 12 meses.
+- **Ventana temporal:** 2025-08-12 a 2026-08-12.
+- **N (ventana canónica):** 1562 mediciones.
+- **Fecha de corte:** 12 de agosto de 2026.
+- **Serie histórica completa (secundaria, no comparable con la ventana canónica):** 12923 mediciones desde el inicio del proyecto.
+- **Cita sugerida:** Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com
+## Método y límites
+
+- **Qué es:** autoevaluación anónima. Cada persona puntúa su trabajo de 1 a 10 en Dinero, Desarrollo y Diversión. No hay evaluación externa ni validación clínica.
+- **Muestra:** voluntaria y autoseleccionada, mayoritariamente lectores de CEO en Camiseta. No es representativa de la población laboral.
+- **Sesgo geográfico:** aproximadamente el 85% de las mediciones provienen de Argentina.
+- **Cobertura demográfica:** sector y edad son campos opcionales; los completa una minoría de quienes miden.
+- **Inclusión:** sólo se ordenan y comparan grupos con al menos 30 mediciones (N≥30). Los grupos con N menor se publican aparte, en orden alfabético y sin columna de promedio, y no admiten comparación ni ranking.
+- **N a la vista:** el N de cada grupo se publica junto al dato, en cada fila.
+- **Sin interpretación:** el proyecto no publica consejos ni correlaciones entre dimensiones. Sólo promedios descriptivos.
+## Global (últimos 12 meses, n=1562, datos al 12 de agosto de 2026)
+
+- Dinero: 6.4/10
+- Desarrollo: 6.7/10
+- Diversión: 6.1/10
+- Promedio 3D: 6.4/10
+
+## Por país (últimos 12 meses, datos al 12 de agosto de 2026)
+
+### Muestra suficiente (N≥30)
+
+| País | N | Dinero | Desarrollo | Diversión | Promedio |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| México | 78 | 6.5 | 7.2 | 6.2 | 6.7 |
+| Argentina | 1306 | 6.4 | 6.6 | 6 | 6.3 |
+
+### Muestra insuficiente (N<30) — no comparable
+
+Estos grupos se publican por transparencia, en orden alfabético y sin promedio. No admiten comparación ni ranking.
+
+| País | N | Dinero | Desarrollo | Diversión |
+| --- | ---: | ---: | ---: | ---: |
+| Bolivia | 5 | 6.6 | 6.6 | 5.8 |
+| Chile | 25 | 7.2 | 7.2 | 6.7 |
+| Colombia | 20 | 5.1 | 6.6 | 6.4 |
+| Costa Rica | 8 | 6.4 | 6.5 | 6 |
+| España | 22 | 6.4 | 6.9 | 6.5 |
+| Guatemala | 10 | 5.9 | 6.8 | 6.7 |
+| Nicaragua | 9 | 7.2 | 6.6 | 5.3 |
+| Paraguay | 14 | 6.5 | 7.2 | 6.1 |
+| Perú | 12 | 6.5 | 7 | 6.8 |
+| Uruguay | 26 | 6.7 | 7.5 | 5.7 |
+| Venezuela | 6 | 6.5 | 8 | 6.5 |
+
+## Por sector (últimos 12 meses, datos al 12 de agosto de 2026)
+
+### Muestra suficiente (N≥30)
+
+| Sector | N | Dinero | Desarrollo | Diversión | Promedio |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Otro | 51 | 6.5 | 6.9 | 6.5 | 6.6 |
+| Industria / Manufactura | 49 | 7 | 6.7 | 5.7 | 6.5 |
+| Tecnología / Software | 33 | 6.6 | 6.6 | 6.1 | 6.4 |
+| Consultoría | 71 | 6.1 | 6.5 | 6.1 | 6.2 |
+| Salud | 46 | 6.6 | 6.3 | 5.6 | 6.2 |
+| Retail / Comercio | 37 | 6.5 | 5.6 | 5.3 | 5.8 |
+
+### Muestra insuficiente (N<30) — no comparable
+
+Estos grupos se publican por transparencia, en orden alfabético y sin promedio. No admiten comparación ni ranking.
+
+| Sector | N | Dinero | Desarrollo | Diversión |
+| --- | ---: | ---: | ---: | ---: |
+| Agro | 18 | 7.4 | 5.6 | 5.1 |
+| Construcción | 9 | 6 | 6.3 | 4.6 |
+| Educación | 29 | 6.3 | 6.7 | 6.2 |
+| Energía | 12 | 7.3 | 8.3 | 6.6 |
+| Finanzas / Banca / Seguros | 29 | 5.9 | 5.8 | 4.7 |
+| Gobierno / Sector público | 24 | 6.7 | 4.2 | 4.4 |
+| Hospitalidad / Turismo | 6 | 5.8 | 7.3 | 5.7 |
+| Medios / Comunicación | 11 | 6.7 | 6.4 | 6.4 |
+| ONG / Tercer sector | 6 | 6.3 | 7.2 | 7.2 |
+
+## Por rango de edad (últimos 12 meses, datos al 12 de agosto de 2026)
+
+### Muestra suficiente (N≥30)
+
+| Edad | N | Dinero | Desarrollo | Diversión | Promedio |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 25-34 | 59 | 7.1 | 7.4 | 6.7 | 7.1 |
+| 35-44 | 195 | 6.6 | 6.4 | 5.8 | 6.3 |
+| 55-64 | 57 | 6.5 | 6.2 | 6 | 6.2 |
+| 45-54 | 126 | 6.2 | 5.9 | 5.3 | 5.8 |
+
+## Serie histórica completa (secundaria)
+
+Base histórica completa de Las 3D del Trabajo: 12923 mediciones desde el inicio del proyecto, con promedio Dinero 6, Desarrollo 6.3 y Diversión 5.7. Esta serie incluye una importación histórica y no es comparable con la ventana canónica de 12 meses.
+
+
+---
+
+---
+title: "Hallazgos — Las 3D del Trabajo"
+project: "Las 3D del Trabajo"
+url: "https://3d.ceoencamiseta.com/llm/insights.txt"
+mirror_md: "https://3d.ceoencamiseta.com/llm/insights.md"
+universe: "últimos 12 meses"
+window_from: "2025-08-12"
+window_to: "2026-08-12"
+n: 1562
+cut_date: "2026-08-12"
+updated: "2026-08-12T15:37:08.954Z"
+language: "es"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
+---
+# Hallazgos — Las 3D del Trabajo
+
+Respuestas breves a las preguntas más frecuentes sobre estos datos. Cada afirmación incluye su fuente, su N y su fecha de corte para poder citarse por separado.
+
+## ¿Qué sector tiene la Diversión más baja?
+
+Según Las 3D del Trabajo (CEO en Camiseta, n=37 en ese sector, datos al 12 de agosto de 2026), entre los sectores con muestra suficiente (N≥30) el menor puntaje de Diversión es Retail / Comercio: 5.3 sobre 10, frente a un promedio general de Diversión de 6.1 sobre 10 en los últimos 12 meses.
+
+## ¿Qué sector paga mejor según quienes lo viven?
+
+Según Las 3D del Trabajo (CEO en Camiseta, n=49 en ese sector, datos al 12 de agosto de 2026), entre los sectores con muestra suficiente (N≥30) el mayor puntaje autoevaluado de Dinero es Industria / Manufactura: 7 sobre 10, mientras su Desarrollo es 6.7 y su Diversión 5.7. Es una autoevaluación de satisfacción con la remuneración, no un dato salarial.
+
+## ¿Cómo puntúa su trabajo Argentina?
+
+Según Las 3D del Trabajo (CEO en Camiseta, n=1306 en Argentina, datos al 12 de agosto de 2026), en Argentina el promedio 3D es 6.3 sobre 10 (Dinero 6.4, Desarrollo 6.6, Diversión 6). Las 3D del Trabajo no publica un ranking mundial: sólo 2 país(es) alcanzan las 30 mediciones mínimas en esta ventana.
+
+## ¿Cuál de las tres dimensiones puntúa más bajo?
+
+Según Las 3D del Trabajo (CEO en Camiseta, n=1562, datos al 12 de agosto de 2026), la dimensión con menor puntaje promedio es Diversión: 6.1 sobre 10, por debajo de Dinero 6.4 y Desarrollo 6.7.
+
+## Método y límites
+
+- **Qué es:** autoevaluación anónima. Cada persona puntúa su trabajo de 1 a 10 en Dinero, Desarrollo y Diversión. No hay evaluación externa ni validación clínica.
+- **Muestra:** voluntaria y autoseleccionada, mayoritariamente lectores de CEO en Camiseta. No es representativa de la población laboral.
+- **Sesgo geográfico:** aproximadamente el 85% de las mediciones provienen de Argentina.
+- **Cobertura demográfica:** sector y edad son campos opcionales; los completa una minoría de quienes miden.
+- **Inclusión:** sólo se ordenan y comparan grupos con al menos 30 mediciones (N≥30). Los grupos con N menor se publican aparte, en orden alfabético y sin columna de promedio, y no admiten comparación ni ranking.
+- **N a la vista:** el N de cada grupo se publica junto al dato, en cada fila.
+- **Sin interpretación:** el proyecto no publica consejos ni correlaciones entre dimensiones. Sólo promedios descriptivos.
+
+
+---
+
 ---
 title: "Muro de los lamentos — comentarios anónimos (Las 3D del Trabajo)"
 project: "Las 3D del Trabajo"
@@ -3022,3 +3273,4 @@ Dinero: 10/10 · Desarrollo: 8/10 · Diversión: 2/10
 New job
 
 ---
+

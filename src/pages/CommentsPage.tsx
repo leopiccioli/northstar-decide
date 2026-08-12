@@ -17,6 +17,9 @@ import {
 import { CommentShareCard } from "@/components/comments/CommentShareCard";
 import { StatsNav } from "@/components/stats/StatsNav";
 import { SEO } from "@/components/SEO";
+import { SiteFooter } from "@/components/SiteFooter";
+import { commentsJsonLd } from "@/content/schema";
+import COMMENTS_SNAPSHOT from "@/data/comments-snapshot";
 
 interface Comment {
   id: string;
@@ -66,6 +69,7 @@ const CommentsPage = () => {
         title="Muro de los lamentos — comentarios sobre el trabajo"
         description="Qué dice la gente sobre su trabajo: comentarios anónimos junto a sus 3D (Dinero, Desarrollo, Diversión)."
         path="/comentarios"
+        jsonLd={commentsJsonLd(COMMENTS_SNAPSHOT.slice(0, 100))}
       />
       {/* Header with title and toggle */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
@@ -136,6 +140,8 @@ const CommentsPage = () => {
           <MosaicView comments={comments || []} formatDate={formatDate} ctaPosition={ctaPosition} onSelect={setSelected} />
         )}
       </main>
+
+      <SiteFooter />
 
       {selected && (
         <CommentShareCard

@@ -6,6 +6,9 @@ import { MIN_RESPONSES_THRESHOLD } from '@/config/stats';
 import { AGE_RANGES } from '@/lib/demographics';
 import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
+import { SiteFooter } from '@/components/SiteFooter';
+import { statsDatasetJsonLd } from '@/content/schema';
+import { CUT_DATE_HUMAN, ELIGIBLE_AGES, WINDOW } from '@/content/facts';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
 import { BelowThresholdTable } from '@/components/stats/BelowThresholdTable';
@@ -156,6 +159,14 @@ export default function AgeStatsPage() {
         title="3D por edad — satisfacción laboral por rango etario"
         description="Cómo cambian Dinero, Desarrollo y Diversión en el trabajo según la edad. Datos de la comunidad."
         path="/por-edad"
+        jsonLd={statsDatasetJsonLd({
+          path: '/por-edad',
+          name: 'Las 3D del Trabajo por rango de edad',
+          description: `Promedios de Dinero, Desarrollo y Diversión por rango etario, con el N de cada grupo. n=${WINDOW.coverage.with_age} con edad declarada, datos al ${CUT_DATE_HUMAN}.`,
+          n: WINDOW.coverage.with_age,
+          rows: ELIGIBLE_AGES,
+          dimensionName: 'Rango de edad',
+        })}
       />
       <div className="border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-4">
@@ -280,6 +291,7 @@ export default function AgeStatsPage() {
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }
