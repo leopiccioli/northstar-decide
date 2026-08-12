@@ -454,14 +454,46 @@ const citePage: ContentPage = {
   ],
 };
 
+// The hub lists every insight, including the ones defined after it.
+{
+  const hubLinks = insightsHub.blocks[0] as Extract<Block, { type: 'links' }>;
+  hubLinks.items.push(...extraInsightPages.map((p) => ({ href: p.path, label: p.h1 })));
+  insightsHub.blocks.splice(1, 0, {
+    type: 'links',
+    title: 'Los datos, corte por corte',
+    items: [
+      ...COUNTRY_PAGES.map((c) => ({ href: `/pais/${countrySlug(c.key)}`, label: `${c.key} (n=${c.n})` })),
+      ...SECTOR_PAGES.map((s) => ({ href: `/sector/${sectorSlug(s.key)}`, label: `${s.key} (n=${s.n})` })),
+      ...AGE_PAGES.map((a) => ({ href: `/edad/${ageSlug(a.key)}`, label: `${ageLabel(a.key)} (n=${a.n})` })),
+    ],
+  });
+}
+
+/** Ancestors derived from the path prefix, so every nested page gets crumbs. */
+const CRUMB_PREFIXES: { prefix: string; crumb: { name: string; path: string } }[] = [
+  { prefix: '/hallazgos/', crumb: { name: 'Hallazgos', path: '/hallazgos' } },
+  { prefix: '/sector/', crumb: { name: 'Las 3D por sector', path: '/por-sector' } },
+  { prefix: '/pais/', crumb: { name: 'Las 3D por país', path: '/por-pais' } },
+  { prefix: '/edad/', crumb: { name: 'Las 3D por rango de edad', path: '/por-edad' } },
+];
+
+function withBreadcrumb(p: ContentPage): ContentPage {
+  if (p.breadcrumb) return p;
+  const match = CRUMB_PREFIXES.find((c) => p.path.startsWith(c.prefix));
+  return match ? { ...p, breadcrumb: [match.crumb, { name: p.h1, path: p.path }] } : p;
+}
+
 export const CONTENT_PAGES: ContentPage[] = [
   insightsHub,
   ...insightPages,
+  ...extraInsightPages,
   ...questionPages,
   ...sectorPages,
-  methodPage,
-  citePage,
-];
+  ...countryPages,
+  ...agePages,
+  { ...methodPage, dataset: true },
+  { ...citePage, dataset: true },
+].map(withBreadcrumb);
 
 export const CONTENT_PAGES_BY_PATH: Record<string, ContentPage> = Object.fromEntries(
   CONTENT_PAGES.map((p) => [p.path, p]),
