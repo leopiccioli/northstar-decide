@@ -22,6 +22,12 @@ export function SiteHeader() {
             CEO en Camiseta
           </a>
           <Link
+            to="/origen"
+            className="hover:text-foreground transition-colors"
+          >
+            Origen
+          </Link>
+          <Link
             to="/embed-docs"
             className="hover:text-foreground transition-colors"
           >

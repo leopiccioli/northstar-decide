@@ -20,6 +20,10 @@ import {
   PROJECT_NAME, PUBLISH_THRESHOLD, UNIVERSE_LINE, WINDOW, type StatRow,
 } from '../src/content/facts';
 import COMMENTS from '../src/data/comments-snapshot';
+import { ORIGEN_DATA, ORIGEN_META } from '../src/pages/OrigenPage';
+import NOTA_ASSET from '../src/assets/iprofesional-2007.png.asset.json';
+
+const NOTA_URL = NOTA_ASSET.url;
 
 const SITE = 'https://3d.ceoencamiseta.com';
 const DIST = resolve('dist');
@@ -240,6 +244,7 @@ const homeRoute: Route = {
       { href: '/comentarios', label: 'Muro de los lamentos' },
       { href: '/datos-llm', label: 'Datos abiertos para LLMs' },
       { href: '/embed-docs', label: 'Embeber Las 3D en tu sitio' },
+      { href: '/origen', label: 'El origen de las 3D' },
     ], 'Todo el sitio'),
   ].join(''),
   changefreq: 'weekly',
@@ -278,7 +283,41 @@ const miscRoutes: Route[] = [
   },
 ];
 
-const ROUTES: Route[] = [homeRoute, ...landingRoutes, ...statsRoutes, commentsRoute, ...contentRoutes, ...miscRoutes];
+const origenRoute: Route = {
+  path: '/origen',
+  title: 'El origen de las 3D: Dinero, Desarrollo y Diversión (desde 2007)',
+  description: 'Las 3D las creó Leo Piccioli en 2007. Hoy son un termómetro con más de 10.000 respuestas.',
+  h1: 'El origen de las 3D',
+  body: [
+    `<p>${esc(ORIGEN_META.lead)}</p>`,
+    `<figure><blockquote><p>${esc(ORIGEN_META.quote)}</p></blockquote><figcaption>${esc(ORIGEN_META.attribution)}</figcaption>`,
+    `<a href="${esc(ORIGEN_META.notaUrl)}" target="_blank" rel="noopener noreferrer"><img src="${esc(NOTA_URL)}" alt="${esc(ORIGEN_META.notaAlt)}" /></a></figure>`,
+    '<h2>Cómo se mide</h2>',
+    ul(ORIGEN_META.comoSeMide),
+    '<h2>Los datos</h2>',
+    `<p>${esc(`${ORIGEN_DATA.respuestas} (actualizado: ${ORIGEN_DATA.actualizado}).`)}</p>`,
+    faqHtml(ORIGEN_META.faq),
+    `<p><a href="/">Medí las 3D de tu empresa</a></p>`,
+  ].join(''),
+  jsonLd: `<script type="application/ld+json">${JSON.stringify([
+    {
+      '@context': 'https://schema.org', '@type': 'Article',
+      headline: ORIGEN_META.h1, description: ORIGEN_META.description,
+      url: `${SITE}/origen`, inLanguage: 'es', isAccessibleForFree: true,
+      author: { '@type': 'Person', name: 'Leo Piccioli' },
+      datePublished: '2007-12-10', dateModified: '2026-08-12',
+      publisher: { '@type': 'Organization', name: 'CEO en Camiseta', url: 'https://ceoencamiseta.com' },
+    },
+    {
+      '@context': 'https://schema.org', '@type': 'FAQPage',
+      mainEntity: ORIGEN_META.faq.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+    },
+  ])}</script>`,
+  changefreq: 'monthly',
+  priority: '0.7',
+};
+
+const ROUTES: Route[] = [homeRoute, origenRoute, ...landingRoutes, ...statsRoutes, commentsRoute, ...contentRoutes, ...miscRoutes];
 
 /* --------------------------------------------------------------- emitting */
 
