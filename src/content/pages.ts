@@ -3,12 +3,13 @@
 // browser renders never diverge.
 
 import {
-  AGE_PAGES, ageSlug, ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector,
-  CITATION, COUNTRY_PAGES, countrySlug, CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES,
+  AGE_PAGES, agePath, ageSlug, ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector,
+  CITATION, COUNTRY_PAGES, countryPath, countrySlug, CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES,
   ELIGIBLE_SECTORS, LIMITS, lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME,
-  PUBLISH_THRESHOLD, PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow,
+  PUBLISH_THRESHOLD, PUBLISHER, secondCountry, SECTOR_PAGES, sectorPath, sectorSlug, source, StatRow,
   UNIVERSE_LINE, WINDOW, worstFunSector,
 } from './facts';
+
 
 export type Block =
   | { type: 'p'; text: string }
