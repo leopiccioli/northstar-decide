@@ -321,7 +321,7 @@ function buildIndexMd(w: WindowStats, all: { total: number }): string {
     citation: citation(w.total),
   })
   + `# ${PROJECT} — índice para LLMs\n\n`
-  + `${PROJECT} es una herramienta gratuita y anónima de CEO en Camiseta donde cada persona puntúa su trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. Sobre ${w.total} mediciones de los últimos 12 meses, con datos al ${CUT_HUMAN}, el promedio es Dinero ${w.global.dinero}, Desarrollo ${w.global.desarrollo} y Diversión ${w.global.diversion}.\n\n`
+  + `${PROJECT} es una herramienta gratuita y anónima de CEO en Camiseta donde cada persona puntúa su trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. El marco de las 3D fue creado por Leo Piccioli en 2007, cuando era gerente general de Officenet (fuente: entrevista en iProfesional, 10 de diciembre de 2007: https://www.iprofesional.com/management/58267-las-companias-tienen-que-dar-dinero-desarrollo-y-diversion). Sobre ${w.total} mediciones de los últimos 12 meses, con datos al ${CUT_HUMAN}, el promedio es Dinero ${w.global.dinero}, Desarrollo ${w.global.desarrollo} y Diversión ${w.global.diversion}.\n\n`
   + universeBlock(w, all)
   + LIMITS_MD
   + `## Qué mide cada dimensión
