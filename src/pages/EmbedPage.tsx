@@ -19,11 +19,17 @@ export default function EmbedPage() {
   }, []);
 
   useEffect(() => {
-    getPostHog()?.capture('embed_view', {
-      source,
-      ctx: ctx ?? 'none',
-      themed: themeCSS ? 'auto' : 'default',
-    });
+    if (typeof window !== 'undefined' && window.gtag) {
+      try {
+        window.gtag('event', 'embed_view', {
+          source,
+          ctx: ctx ?? 'none',
+          themed: themeCSS ? 'auto' : 'default',
+        });
+      } catch (e) {
+        console.warn('GA4 error:', e);
+      }
+    }
   }, [ctx, source, themeCSS]);
 
   useEffect(() => {
