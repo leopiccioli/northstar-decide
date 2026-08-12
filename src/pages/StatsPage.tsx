@@ -332,8 +332,12 @@ export default function StatsPage() {
                       className="border-b border-border last:border-0 hover:bg-secondary/50"
                     >
                       <td className="px-4 py-3">
-                        {getCountryFlag(stat.country)} {getCountryName(stat.country)}
+                        {getCountryFlag(stat.country)}{' '}
+                        {countryPath(getCountryName(stat.country))
+                          ? <Link to={countryPath(getCountryName(stat.country))!} className="underline underline-offset-2 hover:text-foreground">{getCountryName(stat.country)}</Link>
+                          : getCountryName(stat.country)}
                       </td>
+
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.dinero)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.desarrollo)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.diversion)}</td>
