@@ -285,8 +285,8 @@ const miscRoutes: Route[] = [
 
 const origenRoute: Route = {
   path: '/origen',
-  title: 'El origen de las 3D: Dinero, Desarrollo y Diversión (desde 2007)',
-  description: 'Las 3D las creó Leo Piccioli en 2007. Hoy son un termómetro con más de 10.000 respuestas.',
+  title: ORIGEN_META.title,
+  description: ORIGEN_META.description,
   h1: 'El origen de las 3D',
   body: [
     `<p>${esc(ORIGEN_META.lead)}</p>`,
