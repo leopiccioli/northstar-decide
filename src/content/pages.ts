@@ -229,6 +229,8 @@ const insightPages: ContentPage[] = [
     blocks: [
       { type: 'p', text: `${PROJECT_NAME} no publica un ranking mundial: sólo ${ELIGIBLE_COUNTRIES.length} países alcanzan las ${PUBLISH_THRESHOLD} mediciones mínimas dentro de la ventana de 12 meses${secondCountry ? ` (${mainCountry.key}, n=${mainCountry.n}, y ${secondCountry.key}, n=${secondCountry.n})` : ''}. El resto se publica aparte, sin orden por promedio, porque con N chico cualquier ranking es ruido.` },
       ...statTables('País', 'Promedios por país', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES),
+      ...evidenceLinks(...COUNTRY_PAGES.map((c) => countryLink(c.key))),
+
       ...limitsBlocks,
       backingData,
       measure,
