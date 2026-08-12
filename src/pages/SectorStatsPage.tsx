@@ -263,7 +263,12 @@ export default function SectorStatsPage() {
                 <tbody>
                   {tableStats.map((stat) => (
                     <tr key={stat.sector} className="border-b border-border last:border-0 hover:bg-secondary/50">
-                      <td className="px-4 py-3">{stat.sector}</td>
+                      <td className="px-4 py-3">
+                        {sectorPath(stat.sector)
+                          ? <Link to={sectorPath(stat.sector)!} className="underline underline-offset-2 hover:text-foreground">{stat.sector}</Link>
+                          : stat.sector}
+                      </td>
+
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.dinero)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.desarrollo)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.diversion)}</td>
