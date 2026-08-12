@@ -1,5 +1,4 @@
-// Analytics module for Meta Pixel, X Pixel, GA4, and PostHog
-import { getPostHog } from './posthog';
+// Analytics module for Meta Pixel, X Pixel, and GA4
 
 declare global {
   interface Window {

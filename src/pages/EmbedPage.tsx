@@ -2,7 +2,6 @@ import { useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { DecisionFlow } from '@/components/decision/DecisionFlow';
 import { UserContext } from '@/types/decision';
-import { getPostHog } from '@/lib/posthog';
 import { readThemeFromParams, buildThemeCSS } from '@/lib/embedTheme';
 
 const VALID: UserContext[] = ['improve', 'change', 'compare', 'burnout', 'check'];
