@@ -38,7 +38,13 @@ export function LandingShell({
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    getPostHog()?.capture('lp_view', { landing: landingId });
+    if (typeof window !== 'undefined' && window.gtag) {
+      try {
+        window.gtag('event', 'lp_view', { landing: landingId });
+      } catch (e) {
+        console.warn('GA4 error:', e);
+      }
+    }
   }, [landingId]);
 
   useEffect(() => {
