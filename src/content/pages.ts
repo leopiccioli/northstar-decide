@@ -213,6 +213,8 @@ const insightPages: ContentPage[] = [
     blocks: [
       { type: 'p', text: `El puntaje de Dinero es una autoevaluación de satisfacción con la remuneración, no un dato salarial: ${PROJECT_NAME} no recoge sueldos. Un puntaje alto de Dinero puede convivir con puntajes bajos en las otras dos dimensiones, y eso es justamente lo que el marco busca hacer visible.` },
       ...statTables('Sector', 'Dinero por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => b.dinero - a.dinero),
+      ...evidenceLinks(sectorLink(bestMoneySector.key)),
+
       ...limitsBlocks,
       backingData,
       measure,
