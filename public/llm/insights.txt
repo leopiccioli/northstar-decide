@@ -8,7 +8,7 @@ window_from: "2025-08-12"
 window_to: "2026-08-12"
 n: 1562
 cut_date: "2026-08-12"
-updated: "2026-08-12T15:31:17.895Z"
+updated: "2026-08-12T15:37:08.954Z"
 language: "es"
 citation: "Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
