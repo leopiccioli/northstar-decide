@@ -381,6 +381,8 @@ const countryPages: ContentPage[] = COUNTRY_PAGES.map((c) => ({
     ] },
     { type: 'p', text: `Esta página se apoya en ${c.n} mediciones hechas desde ${c.key} dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. Supera el umbral de publicación (N≥${PUBLISH_THRESHOLD}), pero describe a quienes midieron y no representa a la población laboral del país.` },
     ...statTables('País', 'Todos los países', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES),
+    ...relatedBlocks('pais', c.key),
+
     ...limitsBlocks,
     backingData,
     measure,
