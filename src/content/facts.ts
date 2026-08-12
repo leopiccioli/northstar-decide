@@ -152,6 +152,22 @@ export function ageSlug(range: string): string {
 export const COUNTRY_PAGES: StatRow[] = ELIGIBLE_COUNTRIES.slice().sort((a, b) => b.n - a.n);
 export const AGE_PAGES: StatRow[] = ELIGIBLE_AGES.slice().sort((a, b) => b.n - a.n);
 
+/**
+ * Path of the detail page of a group, or null when it has none (N<30).
+ * Derived from the same lists that build the pages, so a link can never 404.
+ */
+const SECTOR_PAGE_KEYS = new Set(SECTOR_PAGES.map((s) => s.key));
+const COUNTRY_PAGE_KEYS = new Set(COUNTRY_PAGES.map((c) => c.key));
+const AGE_PAGE_KEYS = new Set(AGE_PAGES.map((a) => a.key));
+
+export const sectorPath = (key: string): string | null =>
+  SECTOR_PAGE_KEYS.has(key) ? `/sector/${sectorSlug(key)}` : null;
+export const countryPath = (key: string): string | null =>
+  COUNTRY_PAGE_KEYS.has(key) ? `/pais/${countrySlug(key)}` : null;
+export const agePath = (key: string): string | null =>
+  AGE_PAGE_KEYS.has(key) ? `/edad/${ageSlug(key)}` : null;
+
+
 export function fmt(n: number): string {
   return n.toLocaleString('es-AR');
 }
