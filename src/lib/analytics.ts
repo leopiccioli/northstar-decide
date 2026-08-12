@@ -142,7 +142,6 @@ export function trackFlowEvent(event: FlowEvent, data?: Record<string, unknown>)
     }
   }
 }
-}
 
 /**
  * Track a custom event (for future extensibility)
