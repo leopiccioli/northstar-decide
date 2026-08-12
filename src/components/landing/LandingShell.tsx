@@ -4,7 +4,7 @@ import { DecisionFlow } from '@/components/decision/DecisionFlow';
 import { UserContext } from '@/types/decision';
 import { FAQ, FAQItem } from './FAQ';
 import { SITE_CONFIG } from '@/config/urls';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchMeasurementCount, FALLBACK_MEASUREMENT_COUNT } from '@/lib/measurementCount';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UNIVERSE_LINE } from '@/content/facts';
