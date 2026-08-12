@@ -398,7 +398,7 @@ const countryPages: ContentPage[] = COUNTRY_PAGES.map((c) => ({
 
 /* --------------------------------------------------------------- age pages */
 
-const ageLabel = (key: string) => `${key} años`;
+
 
 const agePages: ContentPage[] = AGE_PAGES.map((a) => ({
   path: `/edad/${ageSlug(a.key)}`,
