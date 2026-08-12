@@ -352,6 +352,8 @@ const questionPages: ContentPage[] = [
     lead: `Según ${source(worstFunSector.n, 'en ese sector')}, el sector con menor puntaje de Diversión —la dimensión que mide el día a día, el equipo y la cultura— es ${worstFunSector.key}: ${worstFunSector.diversion} sobre 10, contra un promedio general de ${WINDOW.global.diversion}.`,
     blocks: [
       ...statTables('Sector', 'Clima del día a día (Diversión) por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => a.diversion - b.diversion),
+      ...evidenceLinks(sectorLink(worstFunSector.key)),
+
       { type: 'p', text: 'Diversión no significa pasarla bien todo el tiempo: mide si el trabajo suma o resta energía. Es una autoevaluación individual, no una encuesta de clima organizacional.' },
       ...limitsBlocks,
       backingData,
