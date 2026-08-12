@@ -90,8 +90,86 @@ function statTables(
   return blocks;
 }
 
+const ageLabel = (key: string) => `${key} años`;
+
+/* ------------------------------------------------------- internal linking */
+
+/** Detail pages that actually exist, so no link can ever point to a 404. */
+const SECTOR_PAGE_KEYS = new Set(SECTOR_PAGES.map((s) => s.key));
+const COUNTRY_PAGE_KEYS = new Set(COUNTRY_PAGES.map((c) => c.key));
+const AGE_PAGE_KEYS = new Set(AGE_PAGES.map((a) => a.key));
+
+export const sectorPath = (key: string) =>
+  SECTOR_PAGE_KEYS.has(key) ? `/sector/${sectorSlug(key)}` : null;
+export const countryPath = (key: string) =>
+  COUNTRY_PAGE_KEYS.has(key) ? `/pais/${countrySlug(key)}` : null;
+export const agePath = (key: string) =>
+  AGE_PAGE_KEYS.has(key) ? `/edad/${ageSlug(key)}` : null;
+
+type Cut = 'sector' | 'pais' | 'edad';
+
+const CUT_HUB: Record<Cut, { path: string; label: string }> = {
+  sector: { path: '/por-sector', label: 'Todos los sectores' },
+  pais: { path: '/por-pais', label: 'Todos los países' },
+  edad: { path: '/por-edad', label: 'Todos los rangos de edad' },
+};
+
+/** Insight pages that cite a given group, resolved from the same constants. */
+function relatedInsights(cut: Cut, key: string): { href: string; label: string }[] {
+  const out: { href: string; label: string }[] = [];
+  if (cut === 'sector') {
+    if (key === worstFunSector.key) {
+      out.push({ href: '/hallazgos/sector-con-menos-diversion', label: '¿Qué sector tiene la Diversión más baja?' });
+      out.push({ href: '/peor-clima-laboral-por-sector', label: '¿Qué sector tiene peor clima laboral?' });
+    }
+    if (key === bestMoneySector.key) {
+      out.push({ href: '/hallazgos/sector-que-mejor-paga', label: '¿Qué sector paga mejor, según quienes lo viven?' });
+    }
+  }
+  if (cut === 'pais' && key === mainCountry.key) {
+    out.push({ href: '/hallazgos/como-puntua-argentina', label: `¿Cómo puntúa su trabajo ${mainCountry.key}?` });
+  }
+  if (cut === 'edad') {
+    out.push({ href: '/hallazgos/el-trabajo-mejora-con-la-edad', label: '¿El trabajo mejora con la edad?' });
+  }
+  return out;
+}
+
+/**
+ * Sibling pages of the same cut, the hub above them, the insights that cite
+ * the group, and the other two cuts of the same dataset.
+ */
+function relatedBlocks(cut: Cut, key: string): Block[] {
+  const blocks: Block[] = [];
+
+  const siblings =
+    cut === 'sector'
+      ? SECTOR_PAGES.filter((s) => s.key !== key).map((s) => ({ href: `/sector/${sectorSlug(s.key)}`, label: `${s.key} (n=${s.n})` }))
+      : cut === 'pais'
+        ? COUNTRY_PAGES.filter((c) => c.key !== key).map((c) => ({ href: `/pais/${countrySlug(c.key)}`, label: `${c.key} (n=${c.n})` }))
+        : AGE_PAGES.filter((a) => a.key !== key).map((a) => ({ href: `/edad/${ageSlug(a.key)}`, label: `${ageLabel(a.key)} (n=${a.n})` }));
+
+  const hub = CUT_HUB[cut];
+  const siblingTitle =
+    cut === 'sector' ? 'Otros sectores medidos' : cut === 'pais' ? 'Otros países medidos' : 'Otros rangos de edad medidos';
+
+  blocks.push({ type: 'links', title: siblingTitle, items: [...siblings, { href: hub.path, label: hub.label }] });
+
+  const insights = relatedInsights(cut, key);
+  if (insights.length) {
+    blocks.push({ type: 'links', title: 'Hallazgos que usan este dato', items: insights });
+  }
+
+  const others = (['sector', 'pais', 'edad'] as Cut[])
+    .filter((c) => c !== cut)
+    .map((c) => ({ href: CUT_HUB[c].path, label: CUT_HUB[c].label }));
+  blocks.push({ type: 'links', title: 'El mismo dato, en otros cortes', items: others });
+
+  return blocks;
+}
 
 /* ---------------------------------------------------------------- insights */
+
 
 const insightPages: ContentPage[] = [
   {
