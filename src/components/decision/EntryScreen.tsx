@@ -1,7 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 
 import { usePrefetchContextScreen } from '@/hooks/usePrefetch';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchMeasurementCount, FALLBACK_MEASUREMENT_COUNT } from '@/lib/measurementCount';
 import { useTrackingData } from '@/hooks/useTrackingData';
 import { trackFlowEvent } from '@/lib/analytics';
 
