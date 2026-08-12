@@ -3,6 +3,16 @@ export default [
   {
     "date": "2026-08-11",
     "country": "Argentina",
+    "sector": "Educación",
+    "age": "18-24",
+    "dinero": 7,
+    "desarrollo": 4,
+    "diversion": 8,
+    "text": "Mi ingreso. No está mal, pero tengo capacidad ociosa jajaja. Tengo tiempo e ideas, que me gustaría implementar para ganar más dinero. Aparte, sería en otra área de mi vida: por eso es que mi actual trabajo no me genera mucho desarrollo"
+  },
+  {
+    "date": "2026-08-11",
+    "country": "Argentina",
     "sector": null,
     "age": "55-64",
     "dinero": 7,
@@ -2989,15 +2999,5 @@ export default [
     "desarrollo": 6,
     "diversion": 2,
     "text": "Poco sueldo"
-  },
-  {
-    "date": "2026-02-03",
-    "country": "Argentina",
-    "sector": null,
-    "age": null,
-    "dinero": 10,
-    "desarrollo": 8,
-    "diversion": 8,
-    "text": "poco sueldo"
   }
 ] as const;

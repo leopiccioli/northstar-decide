@@ -1,12 +1,12 @@
 // AUTO-GENERADO por scripts/generate-llm-data.ts — no editar a mano.
 export default {
-  "generatedAt": "2026-08-11T14:56:10.335Z",
-  "cutDateIso": "2026-08-11",
-  "cutDateHuman": "11 de agosto de 2026",
+  "generatedAt": "2026-08-12T13:56:23.786Z",
+  "cutDateIso": "2026-08-12",
+  "cutDateHuman": "12 de agosto de 2026",
   "window": {
-    "to": "2026-08-11",
-    "from": "2025-08-11",
-    "total": 1565,
+    "to": "2026-08-12",
+    "from": "2025-08-12",
+    "total": 1563,
     "by_age": [
       {
         "n": 59,
@@ -17,7 +17,7 @@ export default {
         "desarrollo": 7.4
       },
       {
-        "n": 196,
+        "n": 195,
         "key": "35-44",
         "dinero": 6.6,
         "promedio": 6.3,
@@ -51,7 +51,7 @@ export default {
     "coverage": {
       "with_age": 442,
       "with_sector": 431,
-      "with_country": 1565
+      "with_country": 1563
     },
     "by_sector": [
       {
@@ -103,12 +103,12 @@ export default {
         "desarrollo": 6.6
       },
       {
-        "n": 28,
+        "n": 29,
         "key": "Educación",
         "dinero": 6.3,
         "promedio": 6.4,
-        "diversion": 6.1,
-        "desarrollo": 6.8
+        "diversion": 6.2,
+        "desarrollo": 6.7
       },
       {
         "n": 6,
@@ -135,12 +135,12 @@ export default {
         "desarrollo": 6.3
       },
       {
-        "n": 19,
+        "n": 18,
         "key": "Agro",
         "dinero": 7.4,
         "promedio": 6,
-        "diversion": 5,
-        "desarrollo": 5.5
+        "diversion": 5.1,
+        "desarrollo": 5.6
       },
       {
         "n": 37,
@@ -201,20 +201,20 @@ export default {
         "desarrollo": 7
       },
       {
-        "n": 26,
-        "key": "Uruguay",
-        "dinero": 6.7,
-        "promedio": 6.6,
-        "diversion": 5.7,
-        "desarrollo": 7.5
-      },
-      {
-        "n": 79,
+        "n": 78,
         "key": "México",
         "dinero": 6.5,
-        "promedio": 6.6,
+        "promedio": 6.7,
         "diversion": 6.2,
-        "desarrollo": 7.1
+        "desarrollo": 7.2
+      },
+      {
+        "n": 22,
+        "key": "España",
+        "dinero": 6.4,
+        "promedio": 6.6,
+        "diversion": 6.5,
+        "desarrollo": 6.9
       },
       {
         "n": 14,
@@ -225,12 +225,12 @@ export default {
         "desarrollo": 7.2
       },
       {
-        "n": 22,
-        "key": "España",
-        "dinero": 6.4,
+        "n": 26,
+        "key": "Uruguay",
+        "dinero": 6.7,
         "promedio": 6.6,
-        "diversion": 6.5,
-        "desarrollo": 6.9
+        "diversion": 5.7,
+        "desarrollo": 7.5
       },
       {
         "n": 10,
@@ -257,7 +257,7 @@ export default {
         "desarrollo": 6.5
       },
       {
-        "n": 1308,
+        "n": 1307,
         "key": "Argentina",
         "dinero": 6.4,
         "promedio": 6.3,
@@ -283,7 +283,7 @@ export default {
     ]
   },
   "allTime": {
-    "total": 12922,
+    "total": 12923,
     "global": {
       "dinero": 6,
       "promedio": 6,

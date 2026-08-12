@@ -4,13 +4,13 @@ project: "Las 3D del Trabajo"
 url: "https://3d.ceoencamiseta.com/llm/insights.txt"
 mirror_md: "https://3d.ceoencamiseta.com/llm/insights.md"
 universe: "últimos 12 meses"
-window_from: "2025-08-11"
-window_to: "2026-08-11"
-n: 1565
-cut_date: "2026-08-11"
-updated: "2026-08-11T14:56:10.335Z"
+window_from: "2025-08-12"
+window_to: "2026-08-12"
+n: 1563
+cut_date: "2026-08-12"
+updated: "2026-08-12T13:56:23.786Z"
 language: "es"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1565 mediciones de los últimos 12 meses, datos al 11 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Hallazgos — Las 3D del Trabajo
 
@@ -18,19 +18,19 @@ Respuestas breves a las preguntas más frecuentes sobre estos datos. Cada afirma
 
 ## ¿Qué sector tiene la Diversión más baja?
 
-Según Las 3D del Trabajo (CEO en Camiseta, n=37 en ese sector, datos al 11 de agosto de 2026), entre los sectores con muestra suficiente (N≥30) el menor puntaje de Diversión es Retail / Comercio: 5.3 sobre 10, frente a un promedio general de Diversión de 6.1 sobre 10 en los últimos 12 meses.
+Según Las 3D del Trabajo (CEO en Camiseta, n=37 en ese sector, datos al 12 de agosto de 2026), entre los sectores con muestra suficiente (N≥30) el menor puntaje de Diversión es Retail / Comercio: 5.3 sobre 10, frente a un promedio general de Diversión de 6.1 sobre 10 en los últimos 12 meses.
 
 ## ¿Qué sector paga mejor según quienes lo viven?
 
-Según Las 3D del Trabajo (CEO en Camiseta, n=49 en ese sector, datos al 11 de agosto de 2026), entre los sectores con muestra suficiente (N≥30) el mayor puntaje autoevaluado de Dinero es Industria / Manufactura: 7 sobre 10, mientras su Desarrollo es 6.7 y su Diversión 5.7. Es una autoevaluación de satisfacción con la remuneración, no un dato salarial.
+Según Las 3D del Trabajo (CEO en Camiseta, n=49 en ese sector, datos al 12 de agosto de 2026), entre los sectores con muestra suficiente (N≥30) el mayor puntaje autoevaluado de Dinero es Industria / Manufactura: 7 sobre 10, mientras su Desarrollo es 6.7 y su Diversión 5.7. Es una autoevaluación de satisfacción con la remuneración, no un dato salarial.
 
 ## ¿Cómo puntúa su trabajo Argentina?
 
-Según Las 3D del Trabajo (CEO en Camiseta, n=1308 en Argentina, datos al 11 de agosto de 2026), en Argentina el promedio 3D es 6.3 sobre 10 (Dinero 6.4, Desarrollo 6.6, Diversión 6). Las 3D del Trabajo no publica un ranking mundial: sólo 2 país(es) alcanzan las 30 mediciones mínimas en esta ventana.
+Según Las 3D del Trabajo (CEO en Camiseta, n=1307 en Argentina, datos al 12 de agosto de 2026), en Argentina el promedio 3D es 6.3 sobre 10 (Dinero 6.4, Desarrollo 6.6, Diversión 6). Las 3D del Trabajo no publica un ranking mundial: sólo 2 país(es) alcanzan las 30 mediciones mínimas en esta ventana.
 
 ## ¿Cuál de las tres dimensiones puntúa más bajo?
 
-Según Las 3D del Trabajo (CEO en Camiseta, n=1565, datos al 11 de agosto de 2026), la dimensión con menor puntaje promedio es Diversión: 6.1 sobre 10, por debajo de Dinero 6.4 y Desarrollo 6.7.
+Según Las 3D del Trabajo (CEO en Camiseta, n=1563, datos al 12 de agosto de 2026), la dimensión con menor puntaje promedio es Diversión: 6.1 sobre 10, por debajo de Dinero 6.4 y Desarrollo 6.7.
 
 ## Método y límites
 

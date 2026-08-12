@@ -2,8 +2,8 @@
 
 > Herramienta anónima y gratuita de CEO en Camiseta para puntuar el trabajo de 1 a 10 en tres dimensiones: Dinero, Desarrollo y Diversión. Publica sus datos agregados como texto abierto y citable.
 
-Universo: últimos 12 meses (2025-08-11 a 2026-08-11) · n=1565 · datos al 11 de agosto de 2026.
-Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1565 mediciones de los últimos 12 meses, datos al 11 de agosto de 2026. https://3d.ceoencamiseta.com
+Universo: últimos 12 meses (2025-08-12 a 2026-08-12) · n=1563 · datos al 12 de agosto de 2026.
+Cita sugerida: Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com
 
 ## Datos
 
