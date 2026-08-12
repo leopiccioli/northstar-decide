@@ -141,21 +141,7 @@ export function trackFlowEvent(event: FlowEvent, data?: Record<string, unknown>)
       console.warn('GA4 error:', e);
     }
   }
-
-  // PostHog
-  try {
-    const ph = getPostHog();
-    if (ph) {
-      // On save_result, identify the user by email so we can join sessions across devices.
-      if (event === 'save_result' && data?.email && typeof data.email === 'string') {
-        const { email, ...rest } = data;
-        ph.identify(email, { email, ...rest });
-      }
-      ph.capture(event, data);
-    }
-  } catch (e) {
-    console.warn('PostHog error:', e);
-  }
+}
 }
 
 /**
