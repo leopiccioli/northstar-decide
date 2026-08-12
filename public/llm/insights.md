@@ -6,11 +6,11 @@ mirror_md: "https://3d.ceoencamiseta.com/llm/insights.md"
 universe: "últimos 12 meses"
 window_from: "2025-08-12"
 window_to: "2026-08-12"
-n: 1563
+n: 1562
 cut_date: "2026-08-12"
-updated: "2026-08-12T14:02:11.668Z"
+updated: "2026-08-12T15:06:12.575Z"
 language: "es"
-citation: "Las 3D del Trabajo (CEO en Camiseta), n=1563 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
+citation: "Las 3D del Trabajo (CEO en Camiseta), n=1562 mediciones de los últimos 12 meses, datos al 12 de agosto de 2026. https://3d.ceoencamiseta.com"
 ---
 # Hallazgos — Las 3D del Trabajo
 
@@ -26,11 +26,11 @@ Según Las 3D del Trabajo (CEO en Camiseta, n=49 en ese sector, datos al 12 de a
 
 ## ¿Cómo puntúa su trabajo Argentina?
 
-Según Las 3D del Trabajo (CEO en Camiseta, n=1307 en Argentina, datos al 12 de agosto de 2026), en Argentina el promedio 3D es 6.3 sobre 10 (Dinero 6.4, Desarrollo 6.6, Diversión 6). Las 3D del Trabajo no publica un ranking mundial: sólo 2 país(es) alcanzan las 30 mediciones mínimas en esta ventana.
+Según Las 3D del Trabajo (CEO en Camiseta, n=1306 en Argentina, datos al 12 de agosto de 2026), en Argentina el promedio 3D es 6.3 sobre 10 (Dinero 6.4, Desarrollo 6.6, Diversión 6). Las 3D del Trabajo no publica un ranking mundial: sólo 2 país(es) alcanzan las 30 mediciones mínimas en esta ventana.
 
 ## ¿Cuál de las tres dimensiones puntúa más bajo?
 
-Según Las 3D del Trabajo (CEO en Camiseta, n=1563, datos al 12 de agosto de 2026), la dimensión con menor puntaje promedio es Diversión: 6.1 sobre 10, por debajo de Dinero 6.4 y Desarrollo 6.7.
+Según Las 3D del Trabajo (CEO en Camiseta, n=1562, datos al 12 de agosto de 2026), la dimensión con menor puntaje promedio es Diversión: 6.1 sobre 10, por debajo de Dinero 6.4 y Desarrollo 6.7.
 
 ## Método y límites
 
