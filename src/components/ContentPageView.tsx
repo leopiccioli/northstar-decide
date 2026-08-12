@@ -2,6 +2,9 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { SITE_CONFIG } from '@/config/urls';
 import { Block, ContentPage } from '@/content/pages';
+import { breadcrumbJsonLd, datasetJsonLd } from '@/content/schema';
+import { CUT_DATE_ISO } from '@/content/facts';
+import { SiteFooter } from '@/components/SiteFooter';
 
 function BlockView({ block }: { block: Block }) {
   switch (block.type) {
