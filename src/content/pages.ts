@@ -3,12 +3,13 @@
 // browser renders never diverge.
 
 import {
-  AGE_PAGES, ageSlug, ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector,
-  CITATION, COUNTRY_PAGES, countrySlug, CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES,
+  AGE_PAGES, agePath, ageSlug, ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector,
+  CITATION, COUNTRY_PAGES, countryPath, countrySlug, CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES,
   ELIGIBLE_SECTORS, LIMITS, lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME,
-  PUBLISH_THRESHOLD, PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow,
+  PUBLISH_THRESHOLD, PUBLISHER, secondCountry, SECTOR_PAGES, sectorPath, sectorSlug, source, StatRow,
   UNIVERSE_LINE, WINDOW, worstFunSector,
 } from './facts';
+
 
 export type Block =
   | { type: 'p'; text: string }
@@ -90,8 +91,92 @@ function statTables(
   return blocks;
 }
 
+const ageLabel = (key: string) => `${key} años`;
+
+/* ------------------------------------------------------- internal linking */
+
+
+
+type Cut = 'sector' | 'pais' | 'edad';
+
+const CUT_HUB: Record<Cut, { path: string; label: string }> = {
+  sector: { path: '/por-sector', label: 'Todos los sectores' },
+  pais: { path: '/por-pais', label: 'Todos los países' },
+  edad: { path: '/por-edad', label: 'Todos los rangos de edad' },
+};
+
+/** Insight pages that cite a given group, resolved from the same constants. */
+function relatedInsights(cut: Cut, key: string): { href: string; label: string }[] {
+  const out: { href: string; label: string }[] = [];
+  if (cut === 'sector') {
+    if (key === worstFunSector.key) {
+      out.push({ href: '/hallazgos/sector-con-menos-diversion', label: '¿Qué sector tiene la Diversión más baja?' });
+      out.push({ href: '/peor-clima-laboral-por-sector', label: '¿Qué sector tiene peor clima laboral?' });
+    }
+    if (key === bestMoneySector.key) {
+      out.push({ href: '/hallazgos/sector-que-mejor-paga', label: '¿Qué sector paga mejor, según quienes lo viven?' });
+    }
+  }
+  if (cut === 'pais' && key === mainCountry.key) {
+    out.push({ href: '/hallazgos/como-puntua-argentina', label: `¿Cómo puntúa su trabajo ${mainCountry.key}?` });
+  }
+  if (cut === 'edad') {
+    out.push({ href: '/hallazgos/el-trabajo-mejora-con-la-edad', label: '¿El trabajo mejora con la edad?' });
+  }
+  return out;
+}
+
+/**
+ * Sibling pages of the same cut, the hub above them, the insights that cite
+ * the group, and the other two cuts of the same dataset.
+ */
+function relatedBlocks(cut: Cut, key: string): Block[] {
+  const blocks: Block[] = [];
+
+  const siblings =
+    cut === 'sector'
+      ? SECTOR_PAGES.filter((s) => s.key !== key).map((s) => ({ href: `/sector/${sectorSlug(s.key)}`, label: `${s.key} (n=${s.n})` }))
+      : cut === 'pais'
+        ? COUNTRY_PAGES.filter((c) => c.key !== key).map((c) => ({ href: `/pais/${countrySlug(c.key)}`, label: `${c.key} (n=${c.n})` }))
+        : AGE_PAGES.filter((a) => a.key !== key).map((a) => ({ href: `/edad/${ageSlug(a.key)}`, label: `${ageLabel(a.key)} (n=${a.n})` }));
+
+  const hub = CUT_HUB[cut];
+  const siblingTitle =
+    cut === 'sector' ? 'Otros sectores medidos' : cut === 'pais' ? 'Otros países medidos' : 'Otros rangos de edad medidos';
+
+  blocks.push({ type: 'links', title: siblingTitle, items: [...siblings, { href: hub.path, label: hub.label }] });
+
+  const insights = relatedInsights(cut, key);
+  if (insights.length) {
+    blocks.push({ type: 'links', title: 'Hallazgos que usan este dato', items: insights });
+  }
+
+  const others = (['sector', 'pais', 'edad'] as Cut[])
+    .filter((c) => c !== cut)
+    .map((c) => ({ href: CUT_HUB[c].path, label: CUT_HUB[c].label }));
+  blocks.push({ type: 'links', title: 'El mismo dato, en otros cortes', items: others });
+
+  return blocks;
+}
+
+const sectorLink = (key: string) => {
+  const href = sectorPath(key);
+  return href ? { href, label: `${key}: cómo puntúa su trabajo` } : null;
+};
+const countryLink = (key: string) => {
+  const href = countryPath(key);
+  return href ? { href, label: `${key}: cómo puntúa su trabajo` } : null;
+};
+
+/** Link from an insight back to the detail page of the group it cites. */
+function evidenceLinks(...maybe: ({ href: string; label: string } | null)[]): Block[] {
+  const items = maybe.filter((x): x is { href: string; label: string } => x !== null);
+  return items.length ? [{ type: 'links', title: 'La página completa de este dato', items }] : [];
+}
+
 
 /* ---------------------------------------------------------------- insights */
+
 
 const insightPages: ContentPage[] = [
   {
@@ -103,6 +188,8 @@ const insightPages: ContentPage[] = [
     blocks: [
       { type: 'p', text: `En ${worstFunSector.key}, ${PROJECT_NAME} registra Dinero ${worstFunSector.dinero}, Desarrollo ${worstFunSector.desarrollo} y Diversión ${worstFunSector.diversion} sobre 10 (n=${worstFunSector.n}, datos al ${CUT_DATE_HUMAN}). La Diversión mide cuánto disfruta la persona del día a día, el equipo y la cultura; no mide productividad ni clima medido por la empresa.` },
       ...statTables('Sector', 'Diversión por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => a.diversion - b.diversion),
+      ...evidenceLinks(sectorLink(worstFunSector.key)),
+
       ...limitsBlocks,
       backingData,
       measure,
@@ -117,6 +204,8 @@ const insightPages: ContentPage[] = [
     blocks: [
       { type: 'p', text: `El puntaje de Dinero es una autoevaluación de satisfacción con la remuneración, no un dato salarial: ${PROJECT_NAME} no recoge sueldos. Un puntaje alto de Dinero puede convivir con puntajes bajos en las otras dos dimensiones, y eso es justamente lo que el marco busca hacer visible.` },
       ...statTables('Sector', 'Dinero por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => b.dinero - a.dinero),
+      ...evidenceLinks(sectorLink(bestMoneySector.key)),
+
       ...limitsBlocks,
       backingData,
       measure,
@@ -131,6 +220,8 @@ const insightPages: ContentPage[] = [
     blocks: [
       { type: 'p', text: `${PROJECT_NAME} no publica un ranking mundial: sólo ${ELIGIBLE_COUNTRIES.length} países alcanzan las ${PUBLISH_THRESHOLD} mediciones mínimas dentro de la ventana de 12 meses${secondCountry ? ` (${mainCountry.key}, n=${mainCountry.n}, y ${secondCountry.key}, n=${secondCountry.n})` : ''}. El resto se publica aparte, sin orden por promedio, porque con N chico cualquier ranking es ruido.` },
       ...statTables('País', 'Promedios por país', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES),
+      ...evidenceLinks(...COUNTRY_PAGES.map((c) => countryLink(c.key))),
+
       ...limitsBlocks,
       backingData,
       measure,
@@ -150,6 +241,8 @@ const insightPages: ContentPage[] = [
         `Diversión: ${WINDOW.global.diversion} sobre 10`,
       ] },
       ...statTables('Edad', 'Promedios por rango de edad', ELIGIBLE_AGES, BELOW_AGES),
+      { type: 'links', title: 'Cada rango en detalle', items: AGE_PAGES.map((a) => ({ href: `/edad/${ageSlug(a.key)}`, label: ageLabel(a.key) })) },
+
       ...limitsBlocks,
       backingData,
       measure,
@@ -252,6 +345,8 @@ const questionPages: ContentPage[] = [
     lead: `Según ${source(worstFunSector.n, 'en ese sector')}, el sector con menor puntaje de Diversión —la dimensión que mide el día a día, el equipo y la cultura— es ${worstFunSector.key}: ${worstFunSector.diversion} sobre 10, contra un promedio general de ${WINDOW.global.diversion}.`,
     blocks: [
       ...statTables('Sector', 'Clima del día a día (Diversión) por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (a, b) => a.diversion - b.diversion),
+      ...evidenceLinks(sectorLink(worstFunSector.key)),
+
       { type: 'p', text: 'Diversión no significa pasarla bien todo el tiempo: mide si el trabajo suma o resta energía. Es una autoevaluación individual, no una encuesta de clima organizacional.' },
       ...limitsBlocks,
       backingData,
@@ -277,6 +372,8 @@ const sectorPages: ContentPage[] = SECTOR_PAGES.map((s) => ({
     ] },
     { type: 'p', text: `Esta página se apoya en ${s.n} mediciones de ${s.key} dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. Supera el umbral de publicación (N≥${PUBLISH_THRESHOLD}), pero describe a quienes midieron y no representa al sector completo.` },
     ...statTables('Sector', 'Todos los sectores', ELIGIBLE_SECTORS, BELOW_SECTORS),
+    ...relatedBlocks('sector', s.key),
+
 
     ...limitsBlocks,
     backingData,
@@ -301,6 +398,8 @@ const countryPages: ContentPage[] = COUNTRY_PAGES.map((c) => ({
     ] },
     { type: 'p', text: `Esta página se apoya en ${c.n} mediciones hechas desde ${c.key} dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. Supera el umbral de publicación (N≥${PUBLISH_THRESHOLD}), pero describe a quienes midieron y no representa a la población laboral del país.` },
     ...statTables('País', 'Todos los países', ELIGIBLE_COUNTRIES, BELOW_COUNTRIES),
+    ...relatedBlocks('pais', c.key),
+
     ...limitsBlocks,
     backingData,
     measure,
@@ -320,7 +419,7 @@ const countryPages: ContentPage[] = COUNTRY_PAGES.map((c) => ({
 
 /* --------------------------------------------------------------- age pages */
 
-const ageLabel = (key: string) => `${key} años`;
+
 
 const agePages: ContentPage[] = AGE_PAGES.map((a) => ({
   path: `/edad/${ageSlug(a.key)}`,
@@ -337,6 +436,8 @@ const agePages: ContentPage[] = AGE_PAGES.map((a) => ({
     ] },
     { type: 'p', text: `Esta página se apoya en ${a.n} mediciones de personas de ${a.key} años dentro de la ventana canónica de 12 meses de ${PROJECT_NAME}, con datos al ${CUT_DATE_HUMAN}. La edad es un campo opcional: la completó una minoría de quienes midieron.` },
     ...statTables('Edad', 'Todos los rangos de edad', ELIGIBLE_AGES, BELOW_AGES),
+    ...relatedBlocks('edad', a.key),
+
     ...limitsBlocks,
     backingData,
     measure,
@@ -365,6 +466,8 @@ const extraInsightPages: ContentPage[] = [
       { type: 'ul', items: dimensionRanking.map((d, i) => `${i + 1}. ${d.name}: ${d.value} sobre 10.`) },
       { type: 'p', text: `Las tres dimensiones se puntúan por separado y no se combinan en un índice único: el promedio 3D de ${WINDOW.global.promedio} sobre 10 se publica sólo como referencia. Comparar Dinero contra Diversión sirve para ver qué está comprando cada persona con su sueldo, no para decidir por ella.` },
       ...statTables('Sector', 'Las tres dimensiones por sector', ELIGIBLE_SECTORS, BELOW_SECTORS, (x, y) => y.dinero - x.dinero),
+      { type: 'links', title: 'Cada sector en detalle', items: SECTOR_PAGES.map((s) => ({ href: `/sector/${sectorSlug(s.key)}`, label: s.key })) },
+
       ...limitsBlocks,
       backingData,
       measure,

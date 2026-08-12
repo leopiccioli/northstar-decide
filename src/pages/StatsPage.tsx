@@ -14,7 +14,7 @@ import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
 import { SiteFooter } from '@/components/SiteFooter';
 import { statsDatasetJsonLd } from '@/content/schema';
-import { CUT_DATE_HUMAN, ELIGIBLE_COUNTRIES, N } from '@/content/facts';
+import { countryPath, CUT_DATE_HUMAN, ELIGIBLE_COUNTRIES, N } from '@/content/facts';
 
 type Period = 'quarter' | 'all';
 type SortColumn = 'country' | 'dinero' | 'desarrollo' | 'diversion' | 'promedio' | 'count';
@@ -332,8 +332,12 @@ export default function StatsPage() {
                       className="border-b border-border last:border-0 hover:bg-secondary/50"
                     >
                       <td className="px-4 py-3">
-                        {getCountryFlag(stat.country)} {getCountryName(stat.country)}
+                        {getCountryFlag(stat.country)}{' '}
+                        {countryPath(getCountryName(stat.country))
+                          ? <Link to={countryPath(getCountryName(stat.country))!} className="underline underline-offset-2 hover:text-foreground">{getCountryName(stat.country)}</Link>
+                          : getCountryName(stat.country)}
                       </td>
+
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.dinero)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.desarrollo)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.diversion)}</td>

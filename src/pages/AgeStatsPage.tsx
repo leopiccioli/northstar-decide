@@ -8,7 +8,7 @@ import logoImage from '@/assets/3d-logo.svg';
 import { SEO } from '@/components/SEO';
 import { SiteFooter } from '@/components/SiteFooter';
 import { statsDatasetJsonLd } from '@/content/schema';
-import { CUT_DATE_HUMAN, ELIGIBLE_AGES, WINDOW } from '@/content/facts';
+import { agePath, CUT_DATE_HUMAN, ELIGIBLE_AGES, WINDOW } from '@/content/facts';
 import { StatsNav } from '@/components/stats/StatsNav';
 import { StatsFreshness } from '@/components/stats/StatsFreshness';
 import { BelowThresholdTable } from '@/components/stats/BelowThresholdTable';
@@ -269,7 +269,12 @@ export default function AgeStatsPage() {
                 <tbody>
                   {tableStats.map((stat) => (
                     <tr key={stat.age_range} className="border-b border-border last:border-0 hover:bg-secondary/50">
-                      <td className="px-4 py-3 font-mono">{stat.age_range}</td>
+                      <td className="px-4 py-3 font-mono">
+                        {agePath(stat.age_range)
+                          ? <Link to={agePath(stat.age_range)!} className="underline underline-offset-2 hover:text-foreground">{stat.age_range}</Link>
+                          : stat.age_range}
+                      </td>
+
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.dinero)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.desarrollo)}</td>
                       <td className="px-4 py-3 text-right font-mono">{formatValue(stat.diversion)}</td>
