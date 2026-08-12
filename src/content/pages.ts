@@ -3,11 +3,11 @@
 // browser renders never diverge.
 
 import {
-  ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector, CITATION,
-  CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES, ELIGIBLE_SECTORS, LIMITS,
-  lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME, PUBLISH_THRESHOLD,
-  PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow, UNIVERSE_LINE,
-  WINDOW, worstFunSector,
+  AGE_PAGES, ageSlug, ALL_TIME, BELOW_AGES, BELOW_COUNTRIES, BELOW_SECTORS, bestMoneySector,
+  CITATION, COUNTRY_PAGES, countrySlug, CUT_DATE_HUMAN, ELIGIBLE_AGES, ELIGIBLE_COUNTRIES,
+  ELIGIBLE_SECTORS, LIMITS, lowestDimension, mainCountry, N, NOT_COMPARABLE_NOTE, PROJECT_NAME,
+  PUBLISH_THRESHOLD, PUBLISHER, secondCountry, SECTOR_PAGES, sectorSlug, source, StatRow,
+  UNIVERSE_LINE, WINDOW, worstFunSector,
 } from './facts';
 
 export type Block =
@@ -30,6 +30,10 @@ export interface ContentPage {
   lead: string;
   blocks: Block[];
   faq?: FAQEntry[];
+  /** Ancestors for BreadcrumbList, without the "Inicio" crumb. */
+  breadcrumb?: { name: string; path: string }[];
+  /** Pages whose whole content is the open dataset carry the Dataset schema. */
+  dataset?: boolean;
 }
 
 const measure: Block = { type: 'cta', href: '/', label: 'Medir mi trabajo en 20 segundos' };
